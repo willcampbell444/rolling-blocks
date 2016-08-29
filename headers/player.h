@@ -18,6 +18,7 @@ public:
     void draw(glm::mat4 viewProjectionMatrix);
     void move(int x, int z);
     void update();
+    void setMinMax();
     glm::vec3 getCameraPos();
 private:
     int _floorWidth, _floorLength;
@@ -36,7 +37,11 @@ private:
     float _angle = 0.0f;
     int _frame = 0;
     int _angleSign = 1;
-    int _height = 2;
+    int _minX, _minX;
+    int _minY, _minY;
+    int _minZ, _minZ;
+    std::vector<glm::vec3> _playerPeices;
+    std::vector<glm::vec3> _nextPeices;
     glm::mat4 _transformMatrix;
 
     Shaders* _shader;
