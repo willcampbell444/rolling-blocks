@@ -27,8 +27,6 @@ private:
     int _nextX = 0;
     int _nextZ = 0;
     bool _isTransition = false;
-    glm::vec3 _direction;
-    glm::vec3 _nextDirection;
     glm::vec3 _rotationAxis;
     glm::vec3 _rotationAxisPosition;
     glm::vec3 _oldCameraPos;
@@ -37,9 +35,9 @@ private:
     float _angle = 0.0f;
     int _frame = 0;
     int _angleSign = 1;
-    int _minX, _minX;
-    int _minY, _minY;
-    int _minZ, _minZ;
+    int _minX, _maxX;
+    int _minY, _maxY;
+    int _minZ, _maxZ;
     std::vector<glm::vec3> _playerPeices;
     std::vector<glm::vec3> _nextPeices;
     glm::mat4 _transformMatrix;
