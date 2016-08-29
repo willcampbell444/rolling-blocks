@@ -135,7 +135,7 @@ void Player::setMinMax() {
 }
 
 void Player::move(int x, int z) {
-    if (!_isTransition) {
+    if (!_isTransition && _playerPeices.size()) {
         _isTransition = true;
         _angle = 0.0f;
         _rotationAxis = glm::vec3(z, 0, x);
@@ -166,14 +166,14 @@ void Player::move(int x, int z) {
                 _nextPeices[i].y = _maxZ-_playerPeices[i].z;
             }
             _angleSign = 1;
-            _rotationAxisPosition = glm::vec3(0, 0, _floorWidth/2.0f - _maxZ - 1);
+            _rotationAxisPosition = glm::vec3(0, 0, _floorLength/2.0f - _maxZ - 1);
         } else if (z == -1) {
             for (int i = 0; i < _nextPeices.size(); i++) {
                 _nextPeices[i].z = _minZ-_playerPeices[i].y-1;
                 _nextPeices[i].y = _playerPeices[i].z-_minZ;
             }
             _angleSign = 1;
-            _rotationAxisPosition = glm::vec3(0, 0, _floorWidth/2.0f - _minZ);
+            _rotationAxisPosition = glm::vec3(0, 0, _floorLength/2.0f - _minZ);
         }
 
         setMinMax();
@@ -187,7 +187,7 @@ void Player::move(int x, int z) {
     }
 }
 
-void Player::update() {
+void Player::update(unsigned char* map) {
     if (_isTransition) {
         _frame += 1;
         float mu = _frame/50.0f;
@@ -199,6 +199,24 @@ void Player::update() {
             _isTransition = false;
             _frame = 0;
             _angle = 0.0f;
+        }
+        for (int i = 0; i < _playerPeices.size(); i++) {
+            if (_playerPeices[i].x < 0 
+                || _playerPeices[i].x > _floorWidth-1 
+                || _playerPeices[i].z < 0 
+                || _playerPeices[i].z > _floorLength-1
+                || map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 0
+            ) {
+                _falling.push_back(glm::vec4(_playerPeices[i].x, _playerPeices[i].y, _playerPeices[i].z, 2));
+                _playerPeices.erase(_playerPeices.begin() + i);
+                i -= 1;
+            }
+        }
+    }
+    for (int i = 0; i < _falling.size(); i++) {
+        _falling[i][3] += 1;
+        if (_falling[i][3] > 1000) {
+            _falling.erase(_falling.begin() + i);
         }
     }
 }
@@ -216,6 +234,28 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
             glm::vec3(
                 (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/0.9),
                 (0.5f + peice.y) * (1.0/0.9),
+                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/0.9)
+            )
+        );
+        glUniformMatrix4fv(
+            _shader->getUniformLocation("transformMatrix"), 
+            1, 
+            GL_FALSE, 
+            glm::value_ptr(_transformMatrix)
+        );
+        glBindVertexArray(_vertexArrayObject);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(_lineVertexArrayObject);
+        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+    }
+    for (glm::vec4 peice: _falling) {
+        _transformMatrix = viewProjectionMatrix
+        * glm::scale(glm::mat4(1.0f), glm::vec3(0.90f, 0.90f, 0.90f))
+        * glm::translate(
+            glm::mat4(1.0f), 
+            glm::vec3(
+                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/0.9),
+                (0.5f + peice.y - peice[3]*peice[3]*0.005) * (1.0/0.9),
                 (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/0.9)
             )
         );

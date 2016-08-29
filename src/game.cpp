@@ -51,8 +51,8 @@ Game::Game() {
 
     glClearColor(0.168627, 0.188235, 0.23137, 1.0f);
 
-    _floor = new Floor(&_shaders[0], 9, 9);
-    _player = new Player(&_shaders[0], 9, 9);
+    _floor = new Floor(&_shaders[0], 15, 10);
+    _player = new Player(&_shaders[0], 15, 10);
 }
 
 Game::~Game() {
@@ -75,25 +75,8 @@ void Game::update() {
     if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(_window, GL_TRUE);
     }
-    // if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
-    //     _cameraX += 0.1;
-    // }
-    // if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
-    //     _cameraX -= 0.1;
-    // }
-    // if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
-    //     _cameraY += 0.1;
-    // }
-    // if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
-    //     _cameraY -= 0.1;
-    // }
-    // if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
-    //     _cameraZ += 0.1;
-    // }
-    // if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
-    //     _cameraZ -= 0.1;
-    // }
-    if (_cameraAngle > -45 && _cameraAngle < 45) {
+    
+    if (_cameraAngle > 315 || _cameraAngle < 45) {
         if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
             _player->move(1, 0);
         }
@@ -160,7 +143,7 @@ void Game::update() {
         _cameraAngle = 360;
     }
 
-    _player->update();
+    _player->update(_floor->getMap());
 
     glm::vec3 cameraPos = _player->getCameraPos();
 

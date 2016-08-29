@@ -13,8 +13,11 @@ public:
     ~Floor();
     void create();
     void draw(glm::mat4 viewProjectionMatrix);
+    unsigned char* getMap();
 private:
-    int _width, _length;
+    int _width, _length, _numFilled;
+
+    unsigned char* _map;
 
     GLuint _vertexArrayObject;
     GLuint _vertexBufferObject;

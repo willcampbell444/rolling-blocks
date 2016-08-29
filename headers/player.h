@@ -17,7 +17,7 @@ public:
     ~Player();
     void draw(glm::mat4 viewProjectionMatrix);
     void move(int x, int z);
-    void update();
+    void update(unsigned char* map);
     void setMinMax();
     glm::vec3 getCameraPos();
 private:
@@ -40,6 +40,7 @@ private:
     int _minZ, _maxZ;
     std::vector<glm::vec3> _playerPeices;
     std::vector<glm::vec3> _nextPeices;
+    std::vector<glm::vec4> _falling;
     glm::mat4 _transformMatrix;
 
     Shaders* _shader;
