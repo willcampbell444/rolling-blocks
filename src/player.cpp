@@ -1,6 +1,6 @@
 #include <player.h>
 
-Player::Player(Shaders* shader, int w, int l) {
+Player::Player(Shaders* shader, int w, int l, std::vector<glm::vec3> startPosition) {
     _floorWidth = w;
     _floorLength = l;
 
@@ -81,19 +81,7 @@ Player::Player(Shaders* shader, int w, int l) {
 
     _rotationAxis = glm::vec3(0, 0, 1);
 
-    _playerPeices.push_back(glm::vec3(0, 0, 0));
-    // _playerPeices.push_back(glm::vec3(0, 0, 1));
-    _playerPeices.push_back(glm::vec3(1, 0, 0));
-    _playerPeices.push_back(glm::vec3(1, 0, 1));
-    _playerPeices.push_back(glm::vec3(0, 1, 0));
-    // _playerPeices.push_back(glm::vec3(0, 1, 1));
-    // _playerPeices.push_back(glm::vec3(1, 1, 0));
-    _playerPeices.push_back(glm::vec3(1, 1, 1));
-    _playerPeices.push_back(glm::vec3(0, 2, 0));
-    _playerPeices.push_back(glm::vec3(0, 2, 1));
-    // _playerPeices.push_back(glm::vec3(1, 2, 0));
-    _playerPeices.push_back(glm::vec3(1, 2, 1));
-
+    _playerPeices = startPosition;
     _nextPeices = _playerPeices;
 
     setMinMax();
@@ -178,7 +166,6 @@ void Player::move(int x, int z) {
 
         setMinMax();
 
-        // std::cout << _minZ << ", " << _maxZ << ", " << (_minZ+_maxZ+1)/2.0f << std::endl;
         _newCameraPos = glm::vec3(
             -(_floorWidth/2.0f)+(_minX+_maxX+1)/2.0f,
             (_minY+_maxY+1)/2.0f,

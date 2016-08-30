@@ -9,10 +9,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <cube.h>
 #include <floor.h>
 #include <player.h>
 #include <cmath>
+#include <map.h>
+#include <globals.h>
 
 class Game {
 public:
@@ -67,13 +68,13 @@ private:
     glm::mat4 _projectionMatrix;
 	glm::mat4 _projectionViewMatrix;
 
-    GLint _uniColor;
-
     glm::vec3 _gray;
     glm::vec3 _blue;
 
     Floor* _floor;
     Player* _player;
+
+    Map _map;
 
     float _cameraAngle = 0.0f;
 };

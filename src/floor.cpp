@@ -3,28 +3,17 @@
 const float GAP = 0.05f;
 const float BOTTOM = -2.0f;
 
-Floor::Floor(Shaders* shader, int width, int length) {
+Floor::Floor(Shaders* shader, int width, int length, unsigned char* tiles) {
     _width = width;
     _length = length;
     _shader = shader;
 
-    unsigned char* tiles = new unsigned char[_width*_length];
     _map = tiles;
 
+    _numFilled = _width*_length;
     for (int i = 0; i < _width*_length; i++) {
-        tiles[i] = 1;
-    }
-
-    tiles[30] = 0;
-    tiles[43] = 0;
-    tiles[22] = 0;
-    tiles[23] = 0;
-    tiles[24] = 0;
-
-    _numFilled = 0;
-    for (int i = 0; i < _width*_length; i++) {
-        if (tiles[i] == 1) {
-            _numFilled += 1;
+        if (_map[i] == 0) {
+            _numFilled -= 1;
         }
     }
 
@@ -36,71 +25,138 @@ Floor::Floor(Shaders* shader, int width, int length) {
 
     for (float i = -(width)/2.0f; i < (width)/2.0f; i += 1.0f) {
         for (float j = -(length)/2.0f; j < (length)/2.0f; j += 1.0f) {
-            if (tiles[tileCount] == 1) {
+            if (_map[tileCount] == 1) {
                 vertices[ count ]  = i+GAP;
                 vertices[count+1]  = -GAP;
                 vertices[count+2]  = j+GAP;
 
-                vertices[count+3]  = 0.752941;
-                vertices[count+4]  = 0.772549;
-                vertices[count+5]  = 0.8078431;
+                vertices[count+3]  = GLOBAL::FLOOR_COLOR.r;
+                vertices[count+4]  = GLOBAL::FLOOR_COLOR.g;
+                vertices[count+5]  = GLOBAL::FLOOR_COLOR.b;
 
                 vertices[count+6]  = i+1-GAP;
                 vertices[count+7]  = -GAP;
                 vertices[count+8]  = j+GAP;
 
-                vertices[count+9]  = 0.752941;
-                vertices[count+10]  = 0.772549;
-                vertices[count+11]  = 0.8078431;
+                vertices[count+9]  = GLOBAL::FLOOR_COLOR.r;
+                vertices[count+10]  = GLOBAL::FLOOR_COLOR.g;
+                vertices[count+11]  = GLOBAL::FLOOR_COLOR.b;
 
                 vertices[count+12]  = i+1-GAP;
                 vertices[count+13]  = -GAP;
                 vertices[count+14]  = j+1-GAP;
 
-                vertices[count+15]  = 0.752941;
-                vertices[count+16]  = 0.772549;
-                vertices[count+17]  = 0.8078431;
+                vertices[count+15]  = GLOBAL::FLOOR_COLOR.r;
+                vertices[count+16]  = GLOBAL::FLOOR_COLOR.g;
+                vertices[count+17]  = GLOBAL::FLOOR_COLOR.b;
 
                 vertices[count+18]  = i+GAP;
                 vertices[count+19] = -GAP;
                 vertices[count+20] = j+1-GAP;
 
-                vertices[count+21]  = 0.752941;
-                vertices[count+22]  = 0.772549;
-                vertices[count+23]  = 0.8078431;
+                vertices[count+21]  = GLOBAL::FLOOR_COLOR.r;
+                vertices[count+22]  = GLOBAL::FLOOR_COLOR.g;
+                vertices[count+23]  = GLOBAL::FLOOR_COLOR.b;
 
                 vertices[count+24] = i+GAP;
                 vertices[count+25] = BOTTOM+GAP;
                 vertices[count+26] = j+GAP;
 
 
-                vertices[count+27]  = 0.168627;
-                vertices[count+28]  = 0.188235;
-                vertices[count+29]  = 0.23137;
+                vertices[count+27]  = GLOBAL::FLOOR_BOTTOM.r;
+                vertices[count+28]  = GLOBAL::FLOOR_BOTTOM.g;
+                vertices[count+29]  = GLOBAL::FLOOR_BOTTOM.b;
 
                 vertices[count+30] = i+1-GAP;
                 vertices[count+31] = BOTTOM+GAP;
                 vertices[count+32] = j+GAP;
 
-                vertices[count+33]  = 0.168627;
-                vertices[count+34]  = 0.188235;
-                vertices[count+35]  = 0.23137;
+                vertices[count+33]  = GLOBAL::FLOOR_BOTTOM.r;
+                vertices[count+34]  = GLOBAL::FLOOR_BOTTOM.g;
+                vertices[count+35]  = GLOBAL::FLOOR_BOTTOM.b;
 
                 vertices[count+36] = i+1-GAP;
                 vertices[count+37] = BOTTOM+GAP;
                 vertices[count+38] = j+1-GAP;
 
-                vertices[count+39]  = 0.168627;
-                vertices[count+40]  = 0.188235;
-                vertices[count+41]  = 0.23137;
+                vertices[count+39]  = GLOBAL::FLOOR_BOTTOM.r;
+                vertices[count+40]  = GLOBAL::FLOOR_BOTTOM.g;
+                vertices[count+41]  = GLOBAL::FLOOR_BOTTOM.b;
 
                 vertices[count+42] = i+GAP;
                 vertices[count+43] = BOTTOM+GAP;
                 vertices[count+44] = j+1-GAP;
 
-                vertices[count+45]  = 0.168627;
-                vertices[count+46]  = 0.188235;
-                vertices[count+47]  = 0.23137;
+                vertices[count+45]  = GLOBAL::FLOOR_BOTTOM.r;
+                vertices[count+46]  = GLOBAL::FLOOR_BOTTOM.g;
+                vertices[count+47]  = GLOBAL::FLOOR_BOTTOM.b;
+
+                count += 48;
+            } else if (_map[tileCount] == 2) {
+                vertices[ count ]  = i+GAP;
+                vertices[count+1]  = -5*GAP;
+                vertices[count+2]  = j+GAP;
+
+                vertices[count+3]  = GLOBAL::VICTORY_COLOR.r;
+                vertices[count+4]  = GLOBAL::VICTORY_COLOR.g;
+                vertices[count+5]  = GLOBAL::VICTORY_COLOR.b;
+
+                vertices[count+6]  = i+1-GAP;
+                vertices[count+7]  = -5*GAP;
+                vertices[count+8]  = j+GAP;
+
+                vertices[count+9]  = GLOBAL::VICTORY_COLOR.r;
+                vertices[count+10]  = GLOBAL::VICTORY_COLOR.g;
+                vertices[count+11]  = GLOBAL::VICTORY_COLOR.b;
+
+                vertices[count+12]  = i+1-GAP;
+                vertices[count+13]  = -5*GAP;
+                vertices[count+14]  = j+1-GAP;
+
+                vertices[count+15]  = GLOBAL::VICTORY_COLOR.r;
+                vertices[count+16]  = GLOBAL::VICTORY_COLOR.g;
+                vertices[count+17]  = GLOBAL::VICTORY_COLOR.b;
+
+                vertices[count+18]  = i+GAP;
+                vertices[count+19] = -5*GAP;
+                vertices[count+20] = j+1-GAP;
+
+                vertices[count+21]  = GLOBAL::VICTORY_COLOR.r;
+                vertices[count+22]  = GLOBAL::VICTORY_COLOR.g;
+                vertices[count+23]  = GLOBAL::VICTORY_COLOR.b;
+
+                vertices[count+24] = i+GAP;
+                vertices[count+25] = BOTTOM+GAP;
+                vertices[count+26] = j+GAP;
+
+
+                vertices[count+27]  = GLOBAL::FLOOR_BOTTOM.r;
+                vertices[count+28]  = GLOBAL::FLOOR_BOTTOM.g;
+                vertices[count+29]  = GLOBAL::FLOOR_BOTTOM.b;
+
+                vertices[count+30] = i+1-GAP;
+                vertices[count+31] = BOTTOM+GAP;
+                vertices[count+32] = j+GAP;
+
+                vertices[count+33]  = GLOBAL::FLOOR_BOTTOM.r;
+                vertices[count+34]  = GLOBAL::FLOOR_BOTTOM.g;
+                vertices[count+35]  = GLOBAL::FLOOR_BOTTOM.b;
+
+                vertices[count+36] = i+1-GAP;
+                vertices[count+37] = BOTTOM+GAP;
+                vertices[count+38] = j+1-GAP;
+
+                vertices[count+39]  = GLOBAL::FLOOR_BOTTOM.r;
+                vertices[count+40]  = GLOBAL::FLOOR_BOTTOM.g;
+                vertices[count+41]  = GLOBAL::FLOOR_BOTTOM.b;
+
+                vertices[count+42] = i+GAP;
+                vertices[count+43] = BOTTOM+GAP;
+                vertices[count+44] = j+1-GAP;
+
+                vertices[count+45]  = GLOBAL::FLOOR_BOTTOM.r;
+                vertices[count+46]  = GLOBAL::FLOOR_BOTTOM.g;
+                vertices[count+47]  = GLOBAL::FLOOR_BOTTOM.b;
 
                 count += 48;
             }
@@ -113,70 +169,136 @@ Floor::Floor(Shaders* shader, int width, int length) {
 
     for (float i = -(width)/2.0f; i < (width)/2.0f; i += 1.0f) {
         for (float j = -(length)/2.0f; j < (length)/2.0f; j += 1.0f) {
-            if (tiles[tileCount] == 1) {
+            if (_map[tileCount] == 1) {
                 lineVertices[ count ]  = i+GAP;
                 lineVertices[count+1]  = -GAP;
                 lineVertices[count+2]  = j+GAP;
 
-                lineVertices[count+3]  = 1;
-                lineVertices[count+4]  = 1;
-                lineVertices[count+5]  = 1;
+                lineVertices[count+3]  = GLOBAL::FLOOR_BORDER.r;
+                lineVertices[count+4]  = GLOBAL::FLOOR_BORDER.g;
+                lineVertices[count+5]  = GLOBAL::FLOOR_BORDER.b;
 
                 lineVertices[count+6]  = i+1-GAP;
                 lineVertices[count+7]  = -GAP;
                 lineVertices[count+8]  = j+GAP;
 
-                lineVertices[count+9]  = 1;
-                lineVertices[count+10]  = 1;
-                lineVertices[count+11]  = 1;
+                lineVertices[count+9]  = GLOBAL::FLOOR_BORDER.r;
+                lineVertices[count+10]  = GLOBAL::FLOOR_BORDER.g;
+                lineVertices[count+11]  = GLOBAL::FLOOR_BORDER.b;
 
                 lineVertices[count+12]  = i+1-GAP;
                 lineVertices[count+13]  = -GAP;
                 lineVertices[count+14]  = j+1-GAP;
 
-                lineVertices[count+15]  = 1;
-                lineVertices[count+16]  = 1;
-                lineVertices[count+17]  = 1;
+                lineVertices[count+15]  = GLOBAL::FLOOR_BORDER.r;
+                lineVertices[count+16]  = GLOBAL::FLOOR_BORDER.g;
+                lineVertices[count+17]  = GLOBAL::FLOOR_BORDER.b;
 
                 lineVertices[count+18]  = i+GAP;
                 lineVertices[count+19] = -GAP;
                 lineVertices[count+20] = j+1-GAP;
 
-                lineVertices[count+21]  = 1;
-                lineVertices[count+22]  = 1;
-                lineVertices[count+23]  = 1;
+                lineVertices[count+21]  = GLOBAL::FLOOR_BORDER.r;
+                lineVertices[count+22]  = GLOBAL::FLOOR_BORDER.g;
+                lineVertices[count+23]  = GLOBAL::FLOOR_BORDER.b;
 
                 lineVertices[count+24] = i+GAP;
                 lineVertices[count+25] = BOTTOM+GAP;
                 lineVertices[count+26] = j+GAP;
 
-                lineVertices[count+27]  = 0.168627;
-                lineVertices[count+28]  = 0.188235;
-                lineVertices[count+29]  = 0.23137;
+                lineVertices[count+27]  = GLOBAL::FLOOR_BOTTOM.r;
+                lineVertices[count+28]  = GLOBAL::FLOOR_BOTTOM.g;
+                lineVertices[count+29]  = GLOBAL::FLOOR_BOTTOM.b;
 
                 lineVertices[count+30] = i+1-GAP;
                 lineVertices[count+31] = BOTTOM+GAP;
                 lineVertices[count+32] = j+GAP;
 
-                lineVertices[count+33]  = 0.168627;
-                lineVertices[count+34]  = 0.188235;
-                lineVertices[count+35]  = 0.23137;
+                lineVertices[count+33]  = GLOBAL::FLOOR_BOTTOM.r;
+                lineVertices[count+34]  = GLOBAL::FLOOR_BOTTOM.g;
+                lineVertices[count+35]  = GLOBAL::FLOOR_BOTTOM.b;
 
                 lineVertices[count+36] = i+1-GAP;
                 lineVertices[count+37] = BOTTOM+GAP;
                 lineVertices[count+38] = j+1-GAP;
 
-                lineVertices[count+39]  = 0.168627;
-                lineVertices[count+40]  = 0.188235;
-                lineVertices[count+41]  = 0.23137;
+                lineVertices[count+39]  = GLOBAL::FLOOR_BOTTOM.r;
+                lineVertices[count+40]  = GLOBAL::FLOOR_BOTTOM.g;
+                lineVertices[count+41]  = GLOBAL::FLOOR_BOTTOM.b;
 
                 lineVertices[count+42] = i+GAP;
                 lineVertices[count+43] = BOTTOM+GAP;
                 lineVertices[count+44] = j+1-GAP;
 
-                lineVertices[count+45]  = 0.168627;
-                lineVertices[count+46]  = 0.188235;
-                lineVertices[count+47]  = 0.23137;
+                lineVertices[count+45]  = GLOBAL::FLOOR_BOTTOM.r;
+                lineVertices[count+46]  = GLOBAL::FLOOR_BOTTOM.g;
+                lineVertices[count+47]  = GLOBAL::FLOOR_BOTTOM.b;
+
+                count += 48;
+            } else if (_map[tileCount] == 2) {
+                lineVertices[ count ]  = i+GAP;
+                lineVertices[count+1]  = -5*GAP;
+                lineVertices[count+2]  = j+GAP;
+
+                lineVertices[count+3]  = GLOBAL::VICTORY_BORDER.r;
+                lineVertices[count+4]  = GLOBAL::VICTORY_BORDER.g;
+                lineVertices[count+5]  = GLOBAL::VICTORY_BORDER.b;
+
+                lineVertices[count+6]  = i+1-GAP;
+                lineVertices[count+7]  = -5*GAP;
+                lineVertices[count+8]  = j+GAP;
+
+                lineVertices[count+9]  = GLOBAL::VICTORY_BORDER.r;
+                lineVertices[count+10]  = GLOBAL::VICTORY_BORDER.g;
+                lineVertices[count+11]  = GLOBAL::VICTORY_BORDER.b;
+
+                lineVertices[count+12]  = i+1-GAP;
+                lineVertices[count+13]  = -5*GAP;
+                lineVertices[count+14]  = j+1-GAP;
+
+                lineVertices[count+15]  = GLOBAL::VICTORY_BORDER.r;
+                lineVertices[count+16]  = GLOBAL::VICTORY_BORDER.g;
+                lineVertices[count+17]  = GLOBAL::VICTORY_BORDER.b;
+
+                lineVertices[count+18]  = i+GAP;
+                lineVertices[count+19] = -5*GAP;
+                lineVertices[count+20] = j+1-GAP;
+
+                lineVertices[count+21]  = GLOBAL::VICTORY_BORDER.r;
+                lineVertices[count+22]  = GLOBAL::VICTORY_BORDER.g;
+                lineVertices[count+23]  = GLOBAL::VICTORY_BORDER.b;
+
+                lineVertices[count+24] = i+GAP;
+                lineVertices[count+25] = BOTTOM+GAP;
+                lineVertices[count+26] = j+GAP;
+
+                lineVertices[count+27]  = GLOBAL::FLOOR_BOTTOM.r;
+                lineVertices[count+28]  = GLOBAL::FLOOR_BOTTOM.g;
+                lineVertices[count+29]  = GLOBAL::FLOOR_BOTTOM.b;
+
+                lineVertices[count+30] = i+1-GAP;
+                lineVertices[count+31] = BOTTOM+GAP;
+                lineVertices[count+32] = j+GAP;
+
+                lineVertices[count+33]  = GLOBAL::FLOOR_BOTTOM.r;
+                lineVertices[count+34]  = GLOBAL::FLOOR_BOTTOM.g;
+                lineVertices[count+35]  = GLOBAL::FLOOR_BOTTOM.b;
+
+                lineVertices[count+36] = i+1-GAP;
+                lineVertices[count+37] = BOTTOM+GAP;
+                lineVertices[count+38] = j+1-GAP;
+
+                lineVertices[count+39]  = GLOBAL::FLOOR_BOTTOM.r;
+                lineVertices[count+40]  = GLOBAL::FLOOR_BOTTOM.g;
+                lineVertices[count+41]  = GLOBAL::FLOOR_BOTTOM.b;
+
+                lineVertices[count+42] = i+GAP;
+                lineVertices[count+43] = BOTTOM+GAP;
+                lineVertices[count+44] = j+1-GAP;
+
+                lineVertices[count+45]  = GLOBAL::FLOOR_BOTTOM.r;
+                lineVertices[count+46]  = GLOBAL::FLOOR_BOTTOM.g;
+                lineVertices[count+47]  = GLOBAL::FLOOR_BOTTOM.b;
 
                 count += 48;
             }

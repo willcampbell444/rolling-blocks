@@ -10,10 +10,11 @@
 #include <shaders.h>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 class Player {
 public:
-    Player(Shaders* shader, int x, int y);
+    Player(Shaders* shader, int x, int y, std::vector<glm::vec3> startPosition);
     ~Player();
     void draw(glm::mat4 viewProjectionMatrix);
     void move(int x, int z);

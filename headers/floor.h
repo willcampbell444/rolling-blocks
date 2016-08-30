@@ -6,10 +6,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <globals.h>
 
 class Floor {
 public:
-    Floor(Shaders* shader, int width, int length);
+    Floor(Shaders* shader, int width, int length, unsigned char* tiles);
     ~Floor();
     void create();
     void draw(glm::mat4 viewProjectionMatrix);

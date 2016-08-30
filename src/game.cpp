@@ -35,24 +35,16 @@ Game::Game() {
     }
     _shaders[0].createProgram();
 
-    if (!_shaders[1].loadShader(GL_VERTEX_SHADER, "shaders/vertexTwo.glsl")) {
-        std::cout << "Vertex Shader Failed To Compile";
-    }
-    if (!_shaders[1].loadShader(GL_FRAGMENT_SHADER, "shaders/fragmentTwo.glsl")) {
-        std::cout << "Fragment Shader Failed To Compile";
-    }
-    _shaders[1].createProgram();
-
     _shaders[0].use();
 
     _projectionMatrix = glm::perspective(glm::radians(50.0f), 800.0f / 600.0f, 1.0f, 50.0f);
 
-    glUniform3f(_uniColor, 0.752941, 0.772549, 0.8078431);
+    glClearColor(GLOBAL::BACKGROUND.r, GLOBAL::BACKGROUND.g, GLOBAL::BACKGROUND.b, 1.0f);
 
-    glClearColor(0.168627, 0.188235, 0.23137, 1.0f);
+    _map.read("maps/test.map");
 
-    _floor = new Floor(&_shaders[0], 15, 10);
-    _player = new Player(&_shaders[0], 15, 10);
+    _floor = new Floor(&_shaders[0], _map.getWidth(), _map.getLength(), _map.getTiles());
+    _player = new Player(&_shaders[0], _map.getWidth(), _map.getLength(), _map.getStartPosition());
 }
 
 Game::~Game() {
@@ -75,7 +67,7 @@ void Game::update() {
     if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(_window, GL_TRUE);
     }
-    
+
     if (_cameraAngle > 315 || _cameraAngle < 45) {
         if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
             _player->move(1, 0);
@@ -143,7 +135,7 @@ void Game::update() {
         _cameraAngle = 360;
     }
 
-    _player->update(_floor->getMap());
+    _player->update(_map.getTiles());
 
     glm::vec3 cameraPos = _player->getCameraPos();
 
