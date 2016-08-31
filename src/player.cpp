@@ -82,7 +82,8 @@ Player::Player(Shaders* shader, int w, int l, std::vector<glm::vec3> startPositi
     _rotationAxis = glm::vec3(0, 0, 1);
 
     _playerPeices = startPosition;
-    _nextPeices = _playerPeices;
+    _newPeices = _playerPeices;
+    gravity();
 
     setMinMax();
 
@@ -100,7 +101,7 @@ void Player::setMinMax() {
     _maxX = -999999;
     _maxY = -999999;
     _maxZ = -999999;
-    for (auto peice: _nextPeices) {
+    for (auto peice: _playerPeices) {
         if (peice.x < _minX) {
             _minX = peice.x;
         }
@@ -125,45 +126,48 @@ void Player::setMinMax() {
 void Player::move(int x, int z) {
     if (!_isTransition && _playerPeices.size()) {
         _isTransition = true;
-        _angle = 0.0f;
+        _angle = 90.0f;
         _rotationAxis = glm::vec3(z, 0, x);
         _frame = 0;
         _oldCameraPos = _cameraPos;
-        _nextPeices = _playerPeices;
+        _newPeices = _playerPeices;
 
         setMinMax();
 
         if (x == 1) {
-            for (int i = 0; i < _nextPeices.size(); i++) {
-                _nextPeices[i].x = _maxX+_playerPeices[i].y+1;
-                _nextPeices[i].y = _maxX-_playerPeices[i].x;
+            for (int i = 0; i < _newPeices.size(); i++) {
+                _newPeices[i].x = _maxX+_playerPeices[i].y+1;
+                _newPeices[i].y = _maxX-_playerPeices[i].x;
             }
-            _angleSign = -1;
+            _angleSign = 1;
             _rotationAxisPosition = glm::vec3(_floorWidth/2.0f - _maxX - 1, 0, 0);
         } else if (x == -1) {
-            for (int i = 0; i < _nextPeices.size(); i++) {
-                _nextPeices[i].x = _minX-_playerPeices[i].y-1;
-                _nextPeices[i].y = _playerPeices[i].x-_minX;
+            for (int i = 0; i < _newPeices.size(); i++) {
+                _newPeices[i].x = _minX-_playerPeices[i].y-1;
+                _newPeices[i].y = _playerPeices[i].x-_minX;
             }
-            _angleSign = -1;
+            _angleSign = 1;
             _rotationAxisPosition = glm::vec3(_floorWidth/2.0f - _minX, 0, 0);
         }
         if (z == 1) {
-            for (int i = 0; i < _nextPeices.size(); i++) {
-                _nextPeices[i].z = _maxZ+_playerPeices[i].y+1;
-                _nextPeices[i].y = _maxZ-_playerPeices[i].z;
+            for (int i = 0; i < _newPeices.size(); i++) {
+                _newPeices[i].z = _maxZ+_playerPeices[i].y+1;
+                _newPeices[i].y = _maxZ-_playerPeices[i].z;
             }
-            _angleSign = 1;
+            _angleSign = -1;
             _rotationAxisPosition = glm::vec3(0, 0, _floorLength/2.0f - _maxZ - 1);
         } else if (z == -1) {
-            for (int i = 0; i < _nextPeices.size(); i++) {
-                _nextPeices[i].z = _minZ-_playerPeices[i].y-1;
-                _nextPeices[i].y = _playerPeices[i].z-_minZ;
+            for (int i = 0; i < _newPeices.size(); i++) {
+                _newPeices[i].z = _minZ-_playerPeices[i].y-1;
+                _newPeices[i].y = _playerPeices[i].z-_minZ;
             }
-            _angleSign = 1;
+            _angleSign = -1;
             _rotationAxisPosition = glm::vec3(0, 0, _floorLength/2.0f - _minZ);
         }
 
+        _playerPeices = _newPeices;
+
+        gravity();
         setMinMax();
 
         _newCameraPos = glm::vec3(
@@ -174,29 +178,80 @@ void Player::move(int x, int z) {
     }
 }
 
+void Player::gravity() {
+    std::vector<glm::vec3> previous;
+    std::vector<int> notDone;
+    _oldPeices = _playerPeices;
+
+    for (int i = 0; i < _newPeices.size(); i++) {
+        notDone.push_back(i);
+    }
+    for (int i = 0; i < notDone.size(); i++) {
+        if (_newPeices[notDone[i]].y == 0) {
+            previous.push_back(_newPeices[notDone[i]]);
+            notDone.erase(notDone.begin() + i);
+            i -= 1;
+        }
+    }
+    int level = 1;
+    bool anyFalls = false;
+    while (notDone.size() > 0 && level < 5) {
+        for (int i = 0; i < notDone.size(); i++) {
+            if (_newPeices[notDone[i]].y == level) {
+                bool success = false;
+                for (auto peice: previous) {
+                    if (_newPeices[notDone[i]].x == peice.x
+                        && _newPeices[notDone[i]].y-1 == peice.y
+                        && _newPeices[notDone[i]].z == peice.z
+                    ) {
+                        previous.push_back(_newPeices[notDone[i]]);
+                        notDone.erase(notDone.begin() + i);
+                        i -= 1;
+                        success = true;
+                        break;
+                    }
+                }
+                if (!success) {
+                    anyFalls = true;
+                    _newPeices[notDone[i]].y -= 1;
+                    notDone.erase(notDone.begin() + i);
+                    i -= 1;
+                }
+            }
+        }
+        level += 1;
+    }
+    if (anyFalls) {
+        gravity();
+    }
+}
+
 void Player::update(unsigned char* map) {
     if (_isTransition) {
         _frame += 1;
         float mu = _frame/50.0f;
         mu = ((mu) * (mu) * (3 - 2 * (mu)));
-        _angle = 90.0f*mu;
+        _angle = 90.0f*(1-mu);
         _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+        for (int i = 0; i < _playerPeices.size(); i++) {
+            _playerPeices[i].y = _oldPeices[i].y*(1-mu) + _newPeices[i].y*mu;
+        }
         if (_frame >= 50) {
-            _playerPeices = _nextPeices;
             _isTransition = false;
             _frame = 0;
             _angle = 0.0f;
-        }
-        for (int i = 0; i < _playerPeices.size(); i++) {
-            if (_playerPeices[i].x < 0 
-                || _playerPeices[i].x > _floorWidth-1 
-                || _playerPeices[i].z < 0 
-                || _playerPeices[i].z > _floorLength-1
-                || map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 0
-            ) {
-                _falling.push_back(glm::vec4(_playerPeices[i].x, _playerPeices[i].y, _playerPeices[i].z, 2));
-                _playerPeices.erase(_playerPeices.begin() + i);
-                i -= 1;
+            _playerPeices = _newPeices;
+            for (int i = 0; i < _playerPeices.size(); i++) {
+                if (_playerPeices[i].x < 0 
+                    || _playerPeices[i].x > _floorWidth-1 
+                    || _playerPeices[i].z < 0 
+                    || _playerPeices[i].z > _floorLength-1
+                    || map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 0
+                ) {
+                    _falling.push_back(glm::vec4(_playerPeices[i].x, _playerPeices[i].y, _playerPeices[i].z, 2));
+                    _playerPeices.erase(_playerPeices.begin() + i);
+                    i -= 1;
+                }
             }
         }
     }

@@ -20,6 +20,7 @@ public:
     void move(int x, int z);
     void update(unsigned char* map);
     void setMinMax();
+    void gravity();
     glm::vec3 getCameraPos();
 private:
     int _floorWidth, _floorLength;
@@ -40,7 +41,8 @@ private:
     int _minY, _maxY;
     int _minZ, _maxZ;
     std::vector<glm::vec3> _playerPeices;
-    std::vector<glm::vec3> _nextPeices;
+    std::vector<glm::vec3> _oldPeices;
+    std::vector<glm::vec3> _newPeices;
     std::vector<glm::vec4> _falling;
     glm::mat4 _transformMatrix;
 
