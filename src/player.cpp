@@ -84,6 +84,7 @@ Player::Player(Shaders* shader, int w, int l, std::vector<glm::vec3> startPositi
     _playerPeices = startPosition;
     _newPeices = _playerPeices;
     gravity();
+    _playerPeices = _newPeices;
 
     setMinMax();
 
@@ -92,6 +93,13 @@ Player::Player(Shaders* shader, int w, int l, std::vector<glm::vec3> startPositi
         (_minY+_maxY+1)/2.0f,
         -(_floorLength/2.0f)+(_minZ+_maxZ+1)/2.0f
     );
+
+    if (_maxX - _minX > _maxZ - _minZ) {
+        _cameraDistance.x = _maxX - _minX + 5;
+    } else {
+        _cameraDistance.x = _maxZ - _minZ + 5;
+    }
+    _cameraDistance.y = _maxY - _minY + 3;
 }
 
 void Player::setMinMax() {
@@ -130,6 +138,7 @@ void Player::move(int x, int z) {
         _rotationAxis = glm::vec3(z, 0, x);
         _frame = 0;
         _oldCameraPos = _cameraPos;
+        _oldCameraDistance = _cameraDistance;
         _newPeices = _playerPeices;
 
         setMinMax();
@@ -175,6 +184,13 @@ void Player::move(int x, int z) {
             (_minY+_maxY+1)/2.0f,
             -(_floorLength/2.0f)+(_minZ+_maxZ+1)/2.0f
         );
+
+        if (_maxX - _minX > _maxZ - _minZ) {
+            _newCameraDistance.x = _maxX - _minX + 5;
+        } else {
+            _newCameraDistance.x = _maxZ - _minZ + 5;
+        }
+        _newCameraDistance.y = _maxY - _minY + 3;
     }
 }
 
@@ -233,6 +249,7 @@ void Player::update(unsigned char* map) {
         mu = ((mu) * (mu) * (3 - 2 * (mu)));
         _angle = 90.0f*(1-mu);
         _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
         for (int i = 0; i < _playerPeices.size(); i++) {
             _playerPeices[i].y = _oldPeices[i].y*(1-mu) + _newPeices[i].y*mu;
         }
@@ -316,4 +333,8 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
 
 glm::vec3 Player::getCameraPos() {
     return _cameraPos;
+}
+
+glm::vec2 Player::getCameraDistance() {
+    return _cameraDistance;
 }

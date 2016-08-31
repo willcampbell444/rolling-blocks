@@ -138,9 +138,10 @@ void Game::update() {
     _player->update(_map.getTiles());
 
     glm::vec3 cameraPos = _player->getCameraPos();
+    glm::vec2 cameraDistance = _player->getCameraDistance();
 
     _viewMatrix = glm::lookAt(
-        glm::vec3(cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*5, cameraPos.y + 3, cameraPos.z - std::sin(_cameraAngle*(3.14159/180))*5),
+        glm::vec3(cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*cameraDistance.x, cameraPos.y + cameraDistance.y, cameraPos.z - std::sin(_cameraAngle*(3.14159/180))*cameraDistance.x),
         cameraPos,
         glm::vec3(0.0f, 1.0f, 0.0f)
     );

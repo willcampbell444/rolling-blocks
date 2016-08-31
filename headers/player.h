@@ -22,6 +22,7 @@ public:
     void setMinMax();
     void gravity();
     glm::vec3 getCameraPos();
+    glm::vec2 getCameraDistance();
 private:
     int _floorWidth, _floorLength;
     int _x = 4;
@@ -34,6 +35,9 @@ private:
     glm::vec3 _oldCameraPos;
     glm::vec3 _newCameraPos;
     glm::vec3 _cameraPos;
+    glm::vec2 _cameraDistance;
+    glm::vec2 _oldCameraDistance;
+    glm::vec2 _newCameraDistance;
     float _angle = 0.0f;
     int _frame = 0;
     int _angleSign = 1;
