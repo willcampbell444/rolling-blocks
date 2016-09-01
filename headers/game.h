@@ -17,11 +17,11 @@
 
 class Game {
 public:
-	Game();
-	~Game();
-	void update();
-	void draw();
-	GLFWwindow* getWindow();
+    Game();
+    ~Game();
+    void update();
+    void draw();
+    GLFWwindow* getWindow();
 private:
     GLfloat _vertices[56] = {
         //side
@@ -57,16 +57,16 @@ private:
         1, 2, 3
     };
 
-	GLFWwindow* _window;
-	Shaders _shaders[2];
+    GLFWwindow* _window;
+    Shaders _shaders[2];
 
-	GLuint _vao[2];
-	GLuint _vbo[2];
-	GLuint _ebo[2];
+    GLuint _vao[2];
+    GLuint _vbo[2];
+    GLuint _ebo[2];
 
     glm::mat4 _viewMatrix;
     glm::mat4 _projectionMatrix;
-	glm::mat4 _projectionViewMatrix;
+    glm::mat4 _projectionViewMatrix;
 
     glm::vec3 _gray;
     glm::vec3 _blue;
