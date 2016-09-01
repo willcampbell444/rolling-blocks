@@ -21,6 +21,7 @@ public:
     void update(unsigned char* map);
     void setMinMax();
     void gravity();
+    void onBlock();
     void sever();
     void attach();
     glm::vec3 getCameraPos();

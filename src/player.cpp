@@ -178,6 +178,7 @@ void Player::move(int x, int z) {
         _playerPeices = _newPeices;
 
         gravity();
+        onBlock();
         setMinMax();
 
         _newCameraPos = glm::vec3(
@@ -212,7 +213,7 @@ void Player::gravity() {
     }
     int level = 1;
     bool anyFalls = false;
-    while (notDone.size() > 0 && level < 5) {
+    while (notDone.size() > 0) {
         for (int i = 0; i < notDone.size(); i++) {
             if (_newPeices[notDone[i]].y == level) {
                 bool success = false;
@@ -240,6 +241,16 @@ void Player::gravity() {
     }
     if (anyFalls) {
         gravity();
+    }
+}
+
+void Player::onBlock() {
+    for (int i = 0; i < _static.size(); i++) {
+        for (int j = 0; j < _newPeices.size(); j++) {
+            if (_newPeices[j].x == _static[i].x && _newPeices[j].z == _static[i].z) {
+                _newPeices[j].y += 1;
+            }
+        }
     }
 }
 
@@ -343,7 +354,6 @@ void Player::sever() {
     int top = -1;
     int topIndex;
     for (int i = 0; i < groupCounts.size(); i++) {
-        std::cout << groups[i] << std::endl;
         if (groupCounts[i] > top) {
             top = groupCounts[i];
             topIndex = i;
