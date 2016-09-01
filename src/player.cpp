@@ -84,6 +84,7 @@ Player::Player(Shaders* shader, int w, int l, std::vector<glm::vec3> startPositi
     _playerPeices = startPosition;
     _newPeices = _playerPeices;
     gravity();
+    sever();
     _playerPeices = _newPeices;
 
     setMinMax();
@@ -270,12 +271,135 @@ void Player::update(unsigned char* map) {
                     i -= 1;
                 }
             }
+            attach();
+            sever();
         }
     }
     for (int i = 0; i < _falling.size(); i++) {
         _falling[i][3] += 1;
         if (_falling[i][3] > 1000) {
             _falling.erase(_falling.begin() + i);
+        }
+    }
+}
+
+void Player::sever() {
+    std::vector<int> groups;
+    std::vector<int> groupCounts;
+    for (int i = 0; i < _playerPeices.size(); i++) {
+        groups.push_back(i);
+        groupCounts.push_back(1);
+    }
+
+    for (int i = 0; i < _playerPeices.size(); i++) {
+        for (int j = i+1; j < _playerPeices.size(); j++)
+        {
+            if (
+                (
+                    _playerPeices[i].x+1 == _playerPeices[j].x
+                    && _playerPeices[i].y == _playerPeices[j].y
+                    && _playerPeices[i].z == _playerPeices[j].z
+                )
+                || (
+                    _playerPeices[i].x-1 == _playerPeices[j].x 
+                    && _playerPeices[i].y == _playerPeices[j].y
+                    && _playerPeices[i].z == _playerPeices[j].z
+                )
+                || (
+                    _playerPeices[i].x == _playerPeices[j].x 
+                    && _playerPeices[i].y+1 == _playerPeices[j].y
+                    && _playerPeices[i].z == _playerPeices[j].z
+                )
+                || (
+                    _playerPeices[i].x == _playerPeices[j].x
+                    && _playerPeices[i].y-1 == _playerPeices[j].y
+                    && _playerPeices[i].z == _playerPeices[j].z
+                )
+                || (
+                    _playerPeices[i].x == _playerPeices[j].x
+                    && _playerPeices[i].y == _playerPeices[j].y
+                    && _playerPeices[i].z+1 == _playerPeices[j].z
+                )
+                || (
+                    _playerPeices[i].x == _playerPeices[j].x
+                    && _playerPeices[i].y == _playerPeices[j].y
+                    && _playerPeices[i].z-1 == _playerPeices[j].z
+                )
+            ) {
+                int groupOne = groups[i];
+                int groupTwo = groups[j];
+
+                for (int k = 0; k < groups.size(); k++) {
+                    if (groups[k] == groupTwo) {
+                        groups[k] = groupOne;
+                        groupCounts[groupOne] += 1;
+                        groupCounts[groupTwo] -= 1;
+                    }
+                }
+            }
+        }
+    }
+
+    int top = -1;
+    int topIndex;
+    for (int i = 0; i < groupCounts.size(); i++) {
+        std::cout << groups[i] << std::endl;
+        if (groupCounts[i] > top) {
+            top = groupCounts[i];
+            topIndex = i;
+        }
+    }
+
+    for (int i = 0; i < _playerPeices.size(); i++) {
+        if (groups[i] != topIndex) {
+            _static.push_back(_playerPeices[i]);
+            _playerPeices.erase(_playerPeices.begin() + i);
+            groups.erase(groups.begin() + i);
+            i -= 1;
+        }
+    }
+}
+
+void Player::attach() {
+    for (int i = 0; i < _playerPeices.size(); i++) {
+        for (int j = 0; j < _static.size(); j++)
+        {
+            if (
+                (
+                    _playerPeices[i].x+1 == _static[j].x
+                    && _playerPeices[i].y == _static[j].y
+                    && _playerPeices[i].z == _static[j].z
+                )
+                || (
+                    _playerPeices[i].x-1 == _static[j].x 
+                    && _playerPeices[i].y == _static[j].y
+                    && _playerPeices[i].z == _static[j].z
+                )
+                || (
+                    _playerPeices[i].x == _static[j].x 
+                    && _playerPeices[i].y+1 == _static[j].y
+                    && _playerPeices[i].z == _static[j].z
+                )
+                || (
+                    _playerPeices[i].x == _static[j].x
+                    && _playerPeices[i].y-1 == _static[j].y
+                    && _playerPeices[i].z == _static[j].z
+                )
+                || (
+                    _playerPeices[i].x == _static[j].x
+                    && _playerPeices[i].y == _static[j].y
+                    && _playerPeices[i].z+1 == _static[j].z
+                )
+                || (
+                    _playerPeices[i].x == _static[j].x
+                    && _playerPeices[i].y == _static[j].y
+                    && _playerPeices[i].z-1 == _static[j].z
+                )
+            ) {
+                _playerPeices.push_back(_static[j]);
+                _static.erase(_static.begin() + j);
+                j -= 1;
+            }
         }
     }
 }
@@ -315,6 +439,28 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
             glm::vec3(
                 (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/0.9),
                 (0.5f + peice.y - peice[3]*peice[3]*0.005) * (1.0/0.9),
+                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/0.9)
+            )
+        );
+        glUniformMatrix4fv(
+            _shader->getUniformLocation("transformMatrix"), 
+            1, 
+            GL_FALSE, 
+            glm::value_ptr(_transformMatrix)
+        );
+        glBindVertexArray(_vertexArrayObject);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(_lineVertexArrayObject);
+        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+    }
+    for (glm::vec3 peice: _static) {
+        _transformMatrix = viewProjectionMatrix
+        * glm::scale(glm::mat4(1.0f), glm::vec3(0.90f, 0.90f, 0.90f))
+        * glm::translate(
+            glm::mat4(1.0f), 
+            glm::vec3(
+                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/0.9),
+                (0.5f + peice.y) * (1.0/0.9),
                 (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/0.9)
             )
         );

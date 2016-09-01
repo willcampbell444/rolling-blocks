@@ -21,6 +21,8 @@ public:
     void update(unsigned char* map);
     void setMinMax();
     void gravity();
+    void sever();
+    void attach();
     glm::vec3 getCameraPos();
     glm::vec2 getCameraDistance();
 private:
@@ -47,6 +49,7 @@ private:
     std::vector<glm::vec3> _playerPeices;
     std::vector<glm::vec3> _oldPeices;
     std::vector<glm::vec3> _newPeices;
+    std::vector<glm::vec3> _static;
     std::vector<glm::vec4> _falling;
     glm::mat4 _transformMatrix;
 
