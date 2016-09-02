@@ -13,6 +13,7 @@
 #include <player.h>
 #include <cmath>
 #include <map.h>
+#include <vector>
 #include <globals.h>
 
 class Game {
@@ -21,6 +22,8 @@ public:
     ~Game();
     void update();
     void draw();
+    void loadMap();
+    bool end();
     GLFWwindow* getWindow();
 private:
     GLfloat _vertices[56] = {
@@ -59,6 +62,10 @@ private:
 
     GLFWwindow* _window;
     Shaders _shaders[2];
+
+    int _level = 0;
+    std::vector<const char*> _levelMapNames;
+    bool _end = false;
 
     GLuint _vao[2];
     GLuint _vbo[2];

@@ -10,9 +10,9 @@
 
 class Floor {
 public:
-    Floor(Shaders* shader, int width, int length, unsigned char* tiles);
+    Floor(Shaders* shader);
     ~Floor();
-    void create();
+    void create(int width, int length, unsigned char* tiles);
     void draw(glm::mat4 viewProjectionMatrix);
     unsigned char* getMap();
 private:

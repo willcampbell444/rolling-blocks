@@ -3,10 +3,37 @@
 const float GAP = 0.05f;
 const float BOTTOM = -2.0f;
 
-Floor::Floor(Shaders* shader, int width, int length, unsigned char* tiles) {
+Floor::Floor(Shaders* shader) {
+    glGenVertexArrays(1, &_vertexArrayObject);
+    glBindVertexArray(_vertexArrayObject);
+
+    glGenBuffers(1, &_elementBufferObject);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferObject);
+
+    glGenBuffers(1, &_vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);
+
+    glGenVertexArrays(1, &_lineVertexArrayObject);
+    glBindVertexArray(_lineVertexArrayObject);
+
+    glGenBuffers(1, &_lineElementBufferObject);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _lineElementBufferObject);
+
+    glGenBuffers(1, &_lineVertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, _lineVertexBufferObject);
+
+    _shader = shader;
+}
+
+Floor::~Floor() {
+    glDeleteBuffers(1, &_vertexBufferObject);
+    glDeleteBuffers(1, &_elementBufferObject);
+    glDeleteVertexArrays(1, &_vertexArrayObject);
+}
+
+void Floor::create(int width, int length, unsigned char* tiles) {
     _width = width;
     _length = length;
-    _shader = shader;
 
     _map = tiles;
 
@@ -348,46 +375,34 @@ Floor::Floor(Shaders* shader, int width, int length, unsigned char* tiles) {
         }
     }
 
-    glGenVertexArrays(1, &_vertexArrayObject);
     glBindVertexArray(_vertexArrayObject);
-
-    glGenBuffers(1, &_elementBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4*_numFilled*6*6, elements, GL_STATIC_DRAW);
 
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4*_numFilled*6*6, elements, GL_STATIC_DRAW);
     delete elements;
 
-    glGenBuffers(1, &_vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER, 4*_numFilled*8*6, vertices, GL_STATIC_DRAW);
-
     delete vertices;
 
-    GLuint attrib = _shader->getAttributeLocation("position");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
-
-    attrib = _shader->getAttributeLocation("color");
+    GLuint attrib = _shader->getAttributeLocation("color");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 
+    attrib = _shader->getAttributeLocation("position");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
 
 
-    glGenVertexArrays(1, &_lineVertexArrayObject);
     glBindVertexArray(_lineVertexArrayObject);
-
-    glGenBuffers(1, &_lineElementBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, _lineVertexBufferObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _lineElementBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4*_numFilled*24, lineElements, GL_STATIC_DRAW);
 
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4*_numFilled*24, lineElements, GL_STATIC_DRAW);
     delete lineElements;
 
-    glGenBuffers(1, &_lineVertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, _lineVertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER, 4*_numFilled*8*6, lineVertices, GL_STATIC_DRAW);
-    
     delete lineVertices;
-
     attrib = _shader->getAttributeLocation("position");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
@@ -395,20 +410,12 @@ Floor::Floor(Shaders* shader, int width, int length, unsigned char* tiles) {
     attrib = _shader->getAttributeLocation("color");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
-}
 
-Floor::~Floor() {
-    glDeleteBuffers(1, &_vertexBufferObject);
-    glDeleteBuffers(1, &_elementBufferObject);
-    glDeleteVertexArrays(1, &_vertexArrayObject);
 }
 
 unsigned char* Floor::getMap() {
     return _map;
 }
-
-void Floor::create() {
-} 
 
 void Floor::draw(glm::mat4 viewProjectionMatrix) {
     _shader->use();

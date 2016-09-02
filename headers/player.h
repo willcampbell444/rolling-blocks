@@ -14,8 +14,8 @@
 
 class Player {
 public:
-    Player(Shaders* shader, int x, int y, std::vector<glm::vec3> startPosition);
-    ~Player();
+    Player(Shaders* shader);
+    void create(int x, int y, std::vector<glm::vec3> startPosition);
     void draw(glm::mat4 viewProjectionMatrix);
     void move(int x, int z);
     void update(unsigned char* map);
@@ -24,14 +24,11 @@ public:
     void onBlock();
     void sever();
     void attach();
+    bool win();
     glm::vec3 getCameraPos();
     glm::vec2 getCameraDistance();
 private:
     int _floorWidth, _floorLength;
-    int _x = 4;
-    int _z = 4;
-    int _nextX = 0;
-    int _nextZ = 0;
     bool _isTransition = false;
     glm::vec3 _rotationAxis;
     glm::vec3 _rotationAxisPosition;
@@ -43,6 +40,7 @@ private:
     glm::vec2 _newCameraDistance;
     float _angle = 0.0f;
     int _frame = 0;
+    int _endTimer = 0;
     int _angleSign = 1;
     int _minX, _maxX;
     int _minY, _maxY;

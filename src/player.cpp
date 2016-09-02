@@ -1,9 +1,6 @@
 #include <player.h>
 
-Player::Player(Shaders* shader, int w, int l, std::vector<glm::vec3> startPosition) {
-    _floorWidth = w;
-    _floorLength = l;
-
+Player::Player(Shaders* shader) {
     _shader = shader;
 
     float vertices[48] = {
@@ -78,6 +75,15 @@ Player::Player(Shaders* shader, int w, int l, std::vector<glm::vec3> startPositi
     attrib = _shader->getAttributeLocation("color");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+}
+
+void Player::create(int x, int y, std::vector<glm::vec3> startPosition) {
+    _floorWidth = x;
+    _floorLength = y;
+
+    _static.clear();
+    _falling.clear();
+    _endTimer = 0;
 
     _rotationAxis = glm::vec3(0, 0, 1);
 
@@ -101,6 +107,16 @@ Player::Player(Shaders* shader, int w, int l, std::vector<glm::vec3> startPositi
         _cameraDistance.x = _maxZ - _minZ + 5;
     }
     _cameraDistance.y = _maxY - _minY + 3;
+}
+
+bool Player::win() {
+    if (_playerPeices.size() == 0) {
+        _endTimer += 1;
+        if (_endTimer == 100) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Player::setMinMax() {

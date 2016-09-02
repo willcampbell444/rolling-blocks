@@ -1,4 +1,5 @@
 #include <map.h>
+#include <iostream>
 
 Map::~Map() {
 	delete _tiles;
@@ -11,15 +12,22 @@ void Map::read(const char* filename) {
 	file >> _width;
 	file >> _length;
 
+	if (_tiles) {
+		delete[] _tiles;
+	}
+
 	_tiles = new unsigned char[_width*_length];
 	for (int i = 0; i < _width*_length; i++) {
 		file >> _tiles[i];
 		_tiles[i] -= '0';
 	}
 
-	unsigned char playerBlockCount, x, y, z;
+	_startPosition.clear();
+
+	int playerBlockCount;
+	unsigned char x, y, z;
 	file >> playerBlockCount;
-	for (int i = 0; i < (playerBlockCount - '0'); i++) {
+	for (int i = 0; i < playerBlockCount; i++) {
 		file >> x;
 		file >> y;
 		file >> z;

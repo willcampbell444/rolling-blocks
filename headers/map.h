@@ -14,7 +14,7 @@ public:
 	int getLength();
 	std::vector<glm::vec3> getStartPosition();
 private:
-	unsigned char* _tiles;
+	unsigned char* _tiles = nullptr;
 	int _width;
 	int _length;
 	std::vector<glm::vec3> _startPosition;

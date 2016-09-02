@@ -41,10 +41,15 @@ Game::Game() {
 
     glClearColor(GLOBAL::BACKGROUND.r, GLOBAL::BACKGROUND.g, GLOBAL::BACKGROUND.b, 1.0f);
 
-    _map.read("maps/test.map");
+    _floor = new Floor(&_shaders[0]);
+    _player = new Player(&_shaders[0]);
 
-    _floor = new Floor(&_shaders[0], _map.getWidth(), _map.getLength(), _map.getTiles());
-    _player = new Player(&_shaders[0], _map.getWidth(), _map.getLength(), _map.getStartPosition());
+    _levelMapNames.push_back("maps/test2.map");
+    _levelMapNames.push_back("maps/test.map");
+    _levelMapNames.push_back("maps/test2.map");
+    _levelMapNames.push_back("maps/test.map");
+
+    loadMap();
 }
 
 Game::~Game() {
@@ -53,6 +58,7 @@ Game::~Game() {
     glDeleteVertexArrays(2, _vao);
 
     delete _floor;
+    delete _player;
 
     glfwTerminate();
 }
@@ -61,7 +67,30 @@ GLFWwindow* Game::getWindow() {
     return _window;
 }
 
+bool Game::end() {
+    return _end;
+}
+
+void Game::loadMap() {
+    if (_level == _levelMapNames.size()) {
+        _end = true;
+        return;
+    }
+    _map.read(_levelMapNames[_level]);
+    _level += 1;
+
+    _floor->create(_map.getWidth(), _map.getLength(), _map.getTiles());
+    _player->create(_map.getWidth(), _map.getLength(), _map.getStartPosition());
+}
+
 void Game::update() {
+    if (_player->win()) {
+        loadMap();
+        if (_end) {
+            return;
+        }
+    }
+
     glfwPollEvents();
 
     if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
