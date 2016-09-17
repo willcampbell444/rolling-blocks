@@ -149,7 +149,7 @@ void Player::setMinMax() {
 }
 
 void Player::move(int x, int z) {
-    if (!_isTransition && _playerPeices.size()) {
+    if (!_isTransition && _playerPeices.size() && !_isCameraTransition) {
         _isTransition = true;
         _angle = 90.0f;
         _rotationAxis = glm::vec3(z, 0, x);
@@ -274,13 +274,15 @@ void Player::update(unsigned char* map) {
     if (_isTransition) {
         _frame += 1;
         float mu = _frame/50.0f;
-        mu = ((mu) * (mu) * (3 - 2 * (mu)));
+        mu = (mu * mu);
         _angle = 90.0f*(1-mu);
-        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
-        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
         for (int i = 0; i < _playerPeices.size(); i++) {
             _playerPeices[i].y = _oldPeices[i].y*(1-mu) + _newPeices[i].y*mu;
         }
+        mu = _frame/50.0f;
+        mu = (mu * mu * (3 - 2 * (mu)));
+        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
         if (_frame >= 50) {
             _isTransition = false;
             _frame = 0;
@@ -298,8 +300,43 @@ void Player::update(unsigned char* map) {
                     i -= 1;
                 }
             }
+
             attach();
             sever();
+
+            _oldCameraDistance = _newCameraDistance;
+            _oldCameraPos = _newCameraPos;
+
+            setMinMax();
+
+            _newCameraPos = glm::vec3(
+                -(_floorWidth/2.0f)+(_minX+_maxX+1)/2.0f,
+                (_minY+_maxY+1)/2.0f,
+                -(_floorLength/2.0f)+(_minZ+_maxZ+1)/2.0f
+            );
+
+            if (_maxX - _minX > _maxZ - _minZ) {
+                _newCameraDistance.x = _maxX - _minX + 5;
+            } else {
+                _newCameraDistance.x = _maxZ - _minZ + 5;
+            }
+            _newCameraDistance.y = _maxY - _minY + 3;
+
+            if (_oldCameraPos != _newCameraPos) {
+                _isCameraTransition = true;
+            }
+        }
+    } else if (_isCameraTransition) {
+        _frame += 1;
+        float mu = _frame/50.0f;
+        mu = (mu * mu * (3 - 2 * (mu)));
+        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+        if (_frame >= 50) {
+            _isCameraTransition = false;
+            _oldCameraDistance = _newCameraDistance;
+            _oldCameraPos = _newCameraPos;
+            _frame = 0;
         }
     }
     for (int i = 0; i < _falling.size(); i++) {
@@ -311,10 +348,15 @@ void Player::update(unsigned char* map) {
 }
 
 void Player::sever() {
-    std::vector<int> groups;
+    std::vector<int> playerGroups;
+    std::vector<int> staticGroups;
     std::vector<int> groupCounts;
     for (int i = 0; i < _playerPeices.size(); i++) {
-        groups.push_back(i);
+        playerGroups.push_back(i);
+        groupCounts.push_back(1);
+    }
+    for (int i = 0; i < _static.size(); i++) {
+        staticGroups.push_back(groupCounts.size());
         groupCounts.push_back(1);
     }
 
@@ -353,12 +395,184 @@ void Player::sever() {
                     && _playerPeices[i].z-1 == _playerPeices[j].z
                 )
             ) {
-                int groupOne = groups[i];
-                int groupTwo = groups[j];
+                int groupOne = playerGroups[i];
+                int groupTwo = playerGroups[j];
 
-                for (int k = 0; k < groups.size(); k++) {
-                    if (groups[k] == groupTwo) {
-                        groups[k] = groupOne;
+                for (int k = 0; k < playerGroups.size(); k++) {
+                    if (playerGroups[k] == groupTwo) {
+                        playerGroups[k] = groupOne;
+                        groupCounts[groupOne] += 1;
+                        groupCounts[groupTwo] -= 1;
+                    }
+                }
+
+                for (int k = 0; k < staticGroups.size(); k++) {
+                    if (staticGroups[k] == groupTwo) {
+                        staticGroups[k] = groupOne;
+                        groupCounts[groupOne] += 1;
+                        groupCounts[groupTwo] -= 1;
+                    }
+                }
+            }
+        }
+        for (int j = i+1; j < _static.size(); j++)
+        {
+            if (
+                (
+                    _playerPeices[i].x+1 == _static[j].x
+                    && _playerPeices[i].y == _static[j].y
+                    && _playerPeices[i].z == _static[j].z
+                )
+                || (
+                    _playerPeices[i].x-1 == _static[j].x 
+                    && _playerPeices[i].y == _static[j].y
+                    && _playerPeices[i].z == _static[j].z
+                )
+                || (
+                    _playerPeices[i].x == _static[j].x 
+                    && _playerPeices[i].y+1 == _static[j].y
+                    && _playerPeices[i].z == _static[j].z
+                )
+                || (
+                    _playerPeices[i].x == _static[j].x
+                    && _playerPeices[i].y-1 == _static[j].y
+                    && _playerPeices[i].z == _static[j].z
+                )
+                || (
+                    _playerPeices[i].x == _static[j].x
+                    && _playerPeices[i].y == _static[j].y
+                    && _playerPeices[i].z+1 == _static[j].z
+                )
+                || (
+                    _playerPeices[i].x == _static[j].x
+                    && _playerPeices[i].y == _static[j].y
+                    && _playerPeices[i].z-1 == _static[j].z
+                )
+            ) {
+                int groupOne = playerGroups[i];
+                int groupTwo = staticGroups[j];
+
+                for (int k = 0; k < playerGroups.size(); k++) {
+                    if (playerGroups[k] == groupTwo) {
+                        playerGroups[k] = groupOne;
+                        groupCounts[groupOne] += 1;
+                        groupCounts[groupTwo] -= 1;
+                    }
+                }
+
+                for (int k = 0; k < staticGroups.size(); k++) {
+                    if (staticGroups[k] == groupTwo) {
+                        staticGroups[k] = groupOne;
+                        groupCounts[groupOne] += 1;
+                        groupCounts[groupTwo] -= 1;
+                    }
+                }
+            }
+        }
+    }
+    for (int i = 0; i < _static.size(); i++) {
+        for (int j = i+1; j < _playerPeices.size(); j++)
+        {
+            if (
+                (
+                    _static[i].x+1 == _playerPeices[j].x
+                    && _static[i].y == _playerPeices[j].y
+                    && _static[i].z == _playerPeices[j].z
+                )
+                || (
+                    _static[i].x-1 == _playerPeices[j].x 
+                    && _static[i].y == _playerPeices[j].y
+                    && _static[i].z == _playerPeices[j].z
+                )
+                || (
+                    _static[i].x == _playerPeices[j].x 
+                    && _static[i].y+1 == _playerPeices[j].y
+                    && _static[i].z == _playerPeices[j].z
+                )
+                || (
+                    _static[i].x == _playerPeices[j].x
+                    && _static[i].y-1 == _playerPeices[j].y
+                    && _static[i].z == _playerPeices[j].z
+                )
+                || (
+                    _static[i].x == _playerPeices[j].x
+                    && _static[i].y == _playerPeices[j].y
+                    && _static[i].z+1 == _playerPeices[j].z
+                )
+                || (
+                    _static[i].x == _playerPeices[j].x
+                    && _static[i].y == _playerPeices[j].y
+                    && _static[i].z-1 == _playerPeices[j].z
+                )
+            ) {
+                int groupOne = staticGroups[i];
+                int groupTwo = playerGroups[j];
+
+                for (int k = 0; k < playerGroups.size(); k++) {
+                    if (playerGroups[k] == groupTwo) {
+                        playerGroups[k] = groupOne;
+                        groupCounts[groupOne] += 1;
+                        groupCounts[groupTwo] -= 1;
+                    }
+                }
+
+                for (int k = 0; k < staticGroups.size(); k++) {
+                    if (staticGroups[k] == groupTwo) {
+                        staticGroups[k] = groupOne;
+                        groupCounts[groupOne] += 1;
+                        groupCounts[groupTwo] -= 1;
+                    }
+                }
+            }
+        }
+        for (int j = i+1; j < _static.size(); j++)
+        {
+            if (
+                (
+                    _static[i].x+1 == _static[j].x
+                    && _static[i].y == _static[j].y
+                    && _static[i].z == _static[j].z
+                )
+                || (
+                    _static[i].x-1 == _static[j].x 
+                    && _static[i].y == _static[j].y
+                    && _static[i].z == _static[j].z
+                )
+                || (
+                    _static[i].x == _static[j].x 
+                    && _static[i].y+1 == _static[j].y
+                    && _static[i].z == _static[j].z
+                )
+                || (
+                    _static[i].x == _static[j].x
+                    && _static[i].y-1 == _static[j].y
+                    && _static[i].z == _static[j].z
+                )
+                || (
+                    _static[i].x == _static[j].x
+                    && _static[i].y == _static[j].y
+                    && _static[i].z+1 == _static[j].z
+                )
+                || (
+                    _static[i].x == _static[j].x
+                    && _static[i].y == _static[j].y
+                    && _static[i].z-1 == _static[j].z
+                )
+            ) {
+                int groupOne = staticGroups[i];
+                int groupTwo = staticGroups[j];
+
+                for (int k = 0; k < playerGroups.size(); k++) {
+                    if (playerGroups[k] == groupTwo) {
+                        playerGroups[k] = groupOne;
+                        groupCounts[groupOne] += 1;
+                        groupCounts[groupTwo] -= 1;
+                    }
+                }
+
+                for (int k = 0; k < staticGroups.size(); k++) {
+                    if (staticGroups[k] == groupTwo) {
+                        staticGroups[k] = groupOne;
                         groupCounts[groupOne] += 1;
                         groupCounts[groupTwo] -= 1;
                     }
@@ -377,10 +591,19 @@ void Player::sever() {
     }
 
     for (int i = 0; i < _playerPeices.size(); i++) {
-        if (groups[i] != topIndex) {
+        if (playerGroups[i] != topIndex) {
             _static.push_back(_playerPeices[i]);
             _playerPeices.erase(_playerPeices.begin() + i);
-            groups.erase(groups.begin() + i);
+            playerGroups.erase(playerGroups.begin() + i);
+            i -= 1;
+        }
+    }
+
+    for (int i = 0; i < staticGroups.size(); i++) {
+        if (staticGroups[i] == topIndex) {
+            _playerPeices.push_back(_static[i]);
+            _static.erase(_static.begin() + i);
+            staticGroups.erase(staticGroups.begin() + i);
             i -= 1;
         }
     }

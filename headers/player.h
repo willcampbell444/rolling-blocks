@@ -30,6 +30,7 @@ public:
 private:
     int _floorWidth, _floorLength;
     bool _isTransition = false;
+    bool _isCameraTransition = false;
     glm::vec3 _rotationAxis;
     glm::vec3 _rotationAxisPosition;
     glm::vec3 _oldCameraPos;
