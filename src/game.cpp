@@ -81,16 +81,12 @@ void Game::loadMap() {
 
     _floor->create(_map.getWidth(), _map.getLength(), _map.getTiles());
     _player->create(_map.getWidth(), _map.getLength(), _map.getStartPosition());
+
+    _cameraAngle = 0.0f;
+    _cameraHeight = 0.0f;
 }
 
 void Game::update() {
-    if (_player->win()) {
-        loadMap();
-        if (_end) {
-            return;
-        }
-    }
-
     glfwPollEvents();
 
     if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -99,63 +95,69 @@ void Game::update() {
 
     if (_cameraAngle > 315 || _cameraAngle < 45) {
         if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
-            _player->move(1, 0);
+            _player->move(1, 0, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
-            _player->move(0, -1);
+            _player->move(0, -1, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
-            _player->move(-1, 0);
+            _player->move(-1, 0, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
-            _player->move(0, 1);
+            _player->move(0, 1, _map.getTiles());
         }
     } else if (_cameraAngle > 45 && _cameraAngle < 135) {
         if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
-            _player->move(0, 1);
+            _player->move(0, 1, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
-            _player->move(1, 0);
+            _player->move(1, 0, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
-            _player->move(0, -1);
+            _player->move(0, -1, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
-            _player->move(-1, 0);
+            _player->move(-1, 0, _map.getTiles());
         }
     } else if (_cameraAngle > 135 && _cameraAngle < 225) {
         if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
-            _player->move(-1, 0);
+            _player->move(-1, 0, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
-            _player->move(0, 1);
+            _player->move(0, 1, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
-            _player->move(1, 0);
+            _player->move(1, 0, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
-            _player->move(0, -1);
+            _player->move(0, -1, _map.getTiles());
         }
     } else {
         if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
-            _player->move(0, -1);
+            _player->move(0, -1, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
-            _player->move(-1, 0);
+            _player->move(-1, 0, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
-            _player->move(0, 1);
+            _player->move(0, 1, _map.getTiles());
         }
         if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
-            _player->move(1, 0);
+            _player->move(1, 0, _map.getTiles());
         }
     }
 
-    if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS) {
-        _cameraAngle = (int)_cameraAngle + 1.0f;
+    if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        _cameraAngle += 1.0f;
     }
-    if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS) {
-        _cameraAngle = (int)_cameraAngle - 1.0f;
+    if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        _cameraAngle -= 1.0f;
+    }
+    if (glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) {
+        _cameraHeight += 0.1f;
+    }
+    if (glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        _cameraHeight -= 0.1f;
     }
 
     if (_cameraAngle > 360) {
@@ -164,18 +166,29 @@ void Game::update() {
         _cameraAngle = 360;
     }
 
-    _player->update(_map.getTiles());
+    _player->update(_map.getTiles(), _map.getVictoryTiles());
 
     glm::vec3 cameraPos = _player->getCameraPos();
     glm::vec2 cameraDistance = _player->getCameraDistance();
 
     _viewMatrix = glm::lookAt(
-        glm::vec3(cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*cameraDistance.x, cameraPos.y + cameraDistance.y, cameraPos.z - std::sin(_cameraAngle*(3.14159/180))*cameraDistance.x),
+        glm::vec3(
+            cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*cameraDistance.x,
+            cameraPos.y + cameraDistance.y + _cameraHeight,
+            cameraPos.z - std::sin(_cameraAngle*(3.14159/180))*cameraDistance.x
+        ),
         cameraPos,
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
 
     _projectionViewMatrix = _projectionMatrix * _viewMatrix;
+    
+    if (_player->win()) {
+        loadMap();
+        if (_end) {
+            return;
+        }
+    }
 }
 
 void Game::draw() {

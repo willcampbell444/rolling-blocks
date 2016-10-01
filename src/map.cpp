@@ -15,11 +15,15 @@ void Map::read(const char* filename) {
 	if (_tiles) {
 		delete[] _tiles;
 	}
+	_victoryTiles.clear();
 
 	_tiles = new unsigned char[_width*_length];
 	for (int i = 0; i < _width*_length; i++) {
 		file >> _tiles[i];
 		_tiles[i] -= '0';
+		if (_tiles[i] == 2) {
+			_victoryTiles.push_back(glm::vec2(i/_width, i%_width));
+		}
 	}
 
 	_startPosition.clear();
@@ -49,4 +53,9 @@ int Map::getLength() {
 
 std::vector<glm::vec3> Map::getStartPosition() {
 	return _startPosition;
+}
+
+
+std::vector<glm::vec2> Map::getVictoryTiles() {
+	return _victoryTiles;
 }

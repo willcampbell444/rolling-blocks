@@ -1,6 +1,6 @@
 #include <floor.h>
 
-const float GAP = 0.05f;
+const float GAP = GLOBAL::GAP;
 const float BOTTOM = -2.0f;
 
 Floor::Floor(Shaders* shader) {

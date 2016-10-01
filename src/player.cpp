@@ -4,15 +4,27 @@ Player::Player(Shaders* shader) {
     _shader = shader;
 
     float vertices[48] = {
-        -0.5,  0.5,  -0.5, 0.752941, 0.772549, 0.8078431,
-        -0.5,  0.5,   0.5, 0.752941, 0.772549, 0.8078431,
-         0.5,  0.5,   0.5, 0.752941, 0.772549, 0.8078431,
-         0.5,  0.5,  -0.5, 0.752941, 0.772549, 0.8078431,
+        -0.5,  0.5,  -0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
+        -0.5,  0.5,   0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
+         0.5,  0.5,   0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
+         0.5,  0.5,  -0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
 
-        -0.5,  -0.5,  -0.5, 0.752941, 0.772549, 0.8078431,
-        -0.5,  -0.5,   0.5, 0.752941, 0.772549, 0.8078431,
-         0.5,  -0.5,   0.5, 0.752941, 0.772549, 0.8078431,
-         0.5,  -0.5,  -0.5, 0.752941, 0.772549, 0.8078431,
+        -0.5,  -0.5,  -0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
+        -0.5,  -0.5,   0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
+         0.5,  -0.5,   0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
+         0.5,  -0.5,  -0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
+    };
+
+    float doneVertices[48] = {
+        -0.5,  0.5,  -0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
+        -0.5,  0.5,   0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
+         0.5,  0.5,   0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
+         0.5,  0.5,  -0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
+
+        -0.5,  -0.5,  -0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
+        -0.5,  -0.5,   0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
+         0.5,  -0.5,   0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
+         0.5,  -0.5,  -0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
     };
 
     GLuint elements[36] = {
@@ -30,15 +42,18 @@ Player::Player(Shaders* shader) {
         0, 4, 1, 5, 2, 6, 3, 7
     };
 
+    GLuint elementBufferObject;
+    GLuint vertexBufferObject;
+
     glGenVertexArrays(1, &_vertexArrayObject);
     glBindVertexArray(_vertexArrayObject);
 
-    glGenBuffers(1, &_elementBufferObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferObject);
+    glGenBuffers(1, &elementBufferObject);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*36, elements, GL_STATIC_DRAW);
 
-    glGenBuffers(1, &_vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);
+    glGenBuffers(1, &vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, vertices, GL_STATIC_DRAW);
 
     GLuint attrib = _shader->getAttributeLocation("position");
@@ -51,11 +66,30 @@ Player::Player(Shaders* shader) {
 
 
 
+    glGenVertexArrays(1, &_doneVertexArrayObject);
+    glBindVertexArray(_doneVertexArrayObject);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+
+    glGenBuffers(1, &vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, doneVertices, GL_STATIC_DRAW);
+
+    attrib = _shader->getAttributeLocation("position");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
+
+    attrib = _shader->getAttributeLocation("color");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+
+
+
     glGenVertexArrays(1, &_lineVertexArrayObject);
     glBindVertexArray(_lineVertexArrayObject);
 
-    glGenBuffers(1, &_lineElementBufferObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _lineElementBufferObject);
+    glGenBuffers(1, &elementBufferObject);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*36, lineElements, GL_STATIC_DRAW);
 
     for (int i = 0; i < 8; i++) {
@@ -64,8 +98,8 @@ Player::Player(Shaders* shader) {
         vertices[i*6+5] = 0;
     }
 
-    glGenBuffers(1, &_lineVertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, _lineVertexBufferObject);
+    glGenBuffers(1, &vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, vertices, GL_STATIC_DRAW);
 
     attrib = _shader->getAttributeLocation("position");
@@ -83,6 +117,7 @@ void Player::create(int x, int y, std::vector<glm::vec3> startPosition) {
 
     _static.clear();
     _falling.clear();
+    _done.clear();
     _endTimer = 0;
 
     _rotationAxis = glm::vec3(0, 0, 1);
@@ -110,13 +145,29 @@ void Player::create(int x, int y, std::vector<glm::vec3> startPosition) {
 }
 
 bool Player::win() {
-    if (_playerPeices.size() == 0) {
+    if (_playerPeices.size() == 0 || _won) {
+        _isTransition = false;
+        _isCameraTransition = false;
         _endTimer += 1;
-        if (_endTimer == 100) {
+        if (_endTimer == 150) {
             return true;
         }
     }
     return false;
+}
+
+void Player::checkVictory(std::vector<glm::vec2> victoryTiles) {
+    for (int i = 0; i < victoryTiles.size(); i++) {
+        for (glm::vec3 peice: _done) {
+            if (peice.x == victoryTiles[i].x && peice.z == victoryTiles[i].y) {
+                victoryTiles.erase(victoryTiles.begin() + i);
+                i -= 1;
+            }
+        }
+    }
+    if (victoryTiles.size() == 0) {
+        _won = true;
+    }
 }
 
 void Player::setMinMax() {
@@ -148,7 +199,7 @@ void Player::setMinMax() {
     }
 }
 
-void Player::move(int x, int z) {
+void Player::move(int x, int z, unsigned char* map) {
     if (!_isTransition && _playerPeices.size() && !_isCameraTransition) {
         _isTransition = true;
         _angle = 90.0f;
@@ -195,6 +246,7 @@ void Player::move(int x, int z) {
 
         gravity();
         onBlock();
+        onWinTile(map);
         setMinMax();
 
         _newCameraPos = glm::vec3(
@@ -209,6 +261,14 @@ void Player::move(int x, int z) {
             _newCameraDistance.x = _maxZ - _minZ + 5;
         }
         _newCameraDistance.y = _maxY - _minY + 3;
+    }
+}
+
+void Player::onWinTile(unsigned char* map) {
+    for (int i = 0; i < _newPeices.size(); i++) {
+        if (map[(int)(_newPeices[i].x*_floorLength + _newPeices[i].z)] == 2) {
+            _newPeices[i].y -= GLOBAL::GAP*5.0f;
+        }
     }
 }
 
@@ -268,9 +328,16 @@ void Player::onBlock() {
             }
         }
     }
+    for (int i = 0; i < _done.size(); i++) {
+        for (int j = 0; j < _newPeices.size(); j++) {
+            if (_newPeices[j].x == _done[i].x && _newPeices[j].z == _done[i].z) {
+                _newPeices[j].y += 1;
+            }
+        }
+    }
 }
 
-void Player::update(unsigned char* map) {
+void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles) {
     if (_isTransition) {
         _frame += 1;
         float mu = _frame/50.0f;
@@ -296,6 +363,11 @@ void Player::update(unsigned char* map) {
                     || map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 0
                 ) {
                     _falling.push_back(glm::vec4(_playerPeices[i].x, _playerPeices[i].y, _playerPeices[i].z, 2));
+                    _playerPeices.erase(_playerPeices.begin() + i);
+                    i -= 1;
+                }
+                if (map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 2) {
+                    _done.push_back(glm::vec4(_playerPeices[i].x, _playerPeices[i].y, _playerPeices[i].z, 2));
                     _playerPeices.erase(_playerPeices.begin() + i);
                     i -= 1;
                 }
@@ -325,6 +397,8 @@ void Player::update(unsigned char* map) {
             if (_oldCameraPos != _newCameraPos) {
                 _isCameraTransition = true;
             }
+
+            checkVictory(victoryTiles);
         }
     } else if (_isCameraTransition) {
         _frame += 1;
@@ -660,13 +734,13 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
         * glm::translate(glm::mat4(1.0f), -_rotationAxisPosition)
         * glm::rotate(glm::mat4(1.0f), glm::radians(_angleSign*_angle), _rotationAxis)
         * glm::translate(glm::mat4(1.0f), _rotationAxisPosition)
-        * glm::scale(glm::mat4(1.0f), glm::vec3(0.90f, 0.90f, 0.90f))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
         * glm::translate(
             glm::mat4(1.0f), 
             glm::vec3(
-                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/0.9),
-                (0.5f + peice.y) * (1.0/0.9),
-                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/0.9)
+                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
             )
         );
         glUniformMatrix4fv(
@@ -682,13 +756,13 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
     }
     for (glm::vec4 peice: _falling) {
         _transformMatrix = viewProjectionMatrix
-        * glm::scale(glm::mat4(1.0f), glm::vec3(0.90f, 0.90f, 0.90f))
+        * glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
         * glm::translate(
             glm::mat4(1.0f), 
             glm::vec3(
-                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/0.9),
-                (0.5f + peice.y - peice[3]*peice[3]*0.005) * (1.0/0.9),
-                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/0.9)
+                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                (0.5f + peice.y - peice[3]*peice[3]*0.005) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
             )
         );
         glUniformMatrix4fv(
@@ -704,13 +778,13 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
     }
     for (glm::vec3 peice: _static) {
         _transformMatrix = viewProjectionMatrix
-        * glm::scale(glm::mat4(1.0f), glm::vec3(0.90f, 0.90f, 0.90f))
+        * glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
         * glm::translate(
             glm::mat4(1.0f), 
             glm::vec3(
-                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/0.9),
-                (0.5f + peice.y) * (1.0/0.9),
-                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/0.9)
+                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
             )
         );
         glUniformMatrix4fv(
@@ -720,6 +794,28 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
             glm::value_ptr(_transformMatrix)
         );
         glBindVertexArray(_vertexArrayObject);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(_lineVertexArrayObject);
+        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+    }
+    for (glm::vec3 peice: _done) {
+        _transformMatrix = viewProjectionMatrix
+        * glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
+        * glm::translate(
+            glm::mat4(1.0f), 
+            glm::vec3(
+                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+            )
+        );
+        glUniformMatrix4fv(
+            _shader->getUniformLocation("transformMatrix"), 
+            1, 
+            GL_FALSE, 
+            glm::value_ptr(_transformMatrix)
+        );
+        glBindVertexArray(_doneVertexArrayObject);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         glBindVertexArray(_lineVertexArrayObject);
         glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);

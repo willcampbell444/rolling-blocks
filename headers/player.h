@@ -10,6 +10,7 @@
 #include <shaders.h>
 #include <cmath>
 #include <iostream>
+#include <globals.h>
 #include <vector>
 
 class Player {
@@ -17,20 +18,24 @@ public:
     Player(Shaders* shader);
     void create(int x, int y, std::vector<glm::vec3> startPosition);
     void draw(glm::mat4 viewProjectionMatrix);
-    void move(int x, int z);
-    void update(unsigned char* map);
-    void setMinMax();
-    void gravity();
-    void onBlock();
-    void sever();
-    void attach();
+    void move(int x, int z, unsigned char* map);
+    void update(unsigned char* map, std::vector<glm::vec2> victoryTiles);
     bool win();
     glm::vec3 getCameraPos();
     glm::vec2 getCameraDistance();
 private:
+    void setMinMax();
+    void gravity();
+    void onBlock();
+    void onWinTile(unsigned char* map);
+    void checkVictory(std::vector<glm::vec2> victoryTiles);
+    void sever();
+    void attach();
+
     int _floorWidth, _floorLength;
     bool _isTransition = false;
     bool _isCameraTransition = false;
+    bool _won = false;
     glm::vec3 _rotationAxis;
     glm::vec3 _rotationAxisPosition;
     glm::vec3 _oldCameraPos;
@@ -50,18 +55,15 @@ private:
     std::vector<glm::vec3> _oldPeices;
     std::vector<glm::vec3> _newPeices;
     std::vector<glm::vec3> _static;
+    std::vector<glm::vec3> _done;
     std::vector<glm::vec4> _falling;
     glm::mat4 _transformMatrix;
 
     Shaders* _shader;
 
     GLuint _vertexArrayObject;
-    GLuint _vertexBufferObject;
-    GLuint _elementBufferObject;
-
+    GLuint _doneVertexArrayObject;
     GLuint _lineVertexArrayObject;
-    GLuint _lineVertexBufferObject;
-    GLuint _lineElementBufferObject;
 };
 
 #endif
