@@ -80,7 +80,7 @@ void Game::loadMap() {
     _level += 1;
 
     _floor->create(_map.getWidth(), _map.getLength(), _map.getTiles());
-    _player->create(_map.getWidth(), _map.getLength(), _map.getStartPosition());
+    _player->create(_map.getWidth(), _map.getLength(), _map.getTiles(), _map.getStartPosition());
 
     _cameraAngle = 0.0f;
     _cameraHeight = 0.0f;

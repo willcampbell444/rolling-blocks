@@ -11,12 +11,14 @@
 #include <cmath>
 #include <iostream>
 #include <globals.h>
+// #include <algorithm>
+#include <math.h>
 #include <vector>
 
 class Player {
 public:
     Player(Shaders* shader);
-    void create(int x, int y, std::vector<glm::vec3> startPosition);
+    void create(int x, int y, unsigned char* map, std::vector<glm::vec3> startPosition);
     void draw(glm::mat4 viewProjectionMatrix);
     void move(int x, int z, unsigned char* map);
     void update(unsigned char* map, std::vector<glm::vec2> victoryTiles);
@@ -26,9 +28,10 @@ public:
 private:
     void setMinMax();
     void gravity();
-    void onBlock();
+    void onBlock(int x, int z);
     void onWinTile(unsigned char* map);
     void checkVictory(std::vector<glm::vec2> victoryTiles);
+    void fillHeightMap();
     void sever();
     void attach();
 
@@ -57,6 +60,7 @@ private:
     std::vector<glm::vec3> _static;
     std::vector<glm::vec3> _done;
     std::vector<glm::vec4> _falling;
+    int** _heightMap = nullptr;
     glm::mat4 _transformMatrix;
 
     Shaders* _shader;

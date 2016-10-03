@@ -111,9 +111,21 @@ Player::Player(Shaders* shader) {
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 }
 
-void Player::create(int x, int y, std::vector<glm::vec3> startPosition) {
+void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> startPosition) {
+    if (_heightMap != nullptr) {
+        for (int i = 0; i < _floorWidth; i++) {
+            delete[] _heightMap[i];
+        }
+        delete[] _heightMap;
+    }
+
     _floorWidth = x;
     _floorLength = y;
+    
+    _heightMap = new int*[_floorWidth];
+    for (int i = 0; i < _floorWidth; i++) {
+        _heightMap[i] = new int[_floorLength];
+    }
 
     _static.clear();
     _falling.clear();
@@ -126,7 +138,17 @@ void Player::create(int x, int y, std::vector<glm::vec3> startPosition) {
     _newPeices = _playerPeices;
     gravity();
     sever();
+
+    onWinTile(map);
     _playerPeices = _newPeices;
+
+    for (int i = 0; i < _playerPeices.size(); i++) {
+        if (map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 2) {
+            _done.push_back(glm::vec4(_playerPeices[i].x, _playerPeices[i].y, _playerPeices[i].z, 2));
+            _playerPeices.erase(_playerPeices.begin() + i);
+            i -= 1;
+        }
+    }
 
     setMinMax();
 
@@ -170,6 +192,20 @@ void Player::checkVictory(std::vector<glm::vec2> victoryTiles) {
     }
 }
 
+void Player::fillHeightMap() {
+    for (int i = 0; i < _floorWidth; i++) {
+        for (int j = 0; j < _floorLength; j++) {
+            _heightMap[i][j] = 0;
+        }
+    }
+    for (glm::vec3 peice: _static) {
+        _heightMap[(int)peice.x][(int)peice.z] += 1;
+    }
+    for (glm::vec3 peice: _done) {
+        _heightMap[(int)peice.x][(int)peice.z] += 1;
+    }
+}
+
 void Player::setMinMax() {
     _minX =  999999;
     _minY =  999999;
@@ -201,6 +237,7 @@ void Player::setMinMax() {
 
 void Player::move(int x, int z, unsigned char* map) {
     if (!_isTransition && _playerPeices.size() && !_isCameraTransition) {
+        fillHeightMap();
         _isTransition = true;
         _angle = 90.0f;
         _rotationAxis = glm::vec3(z, 0, x);
@@ -242,10 +279,14 @@ void Player::move(int x, int z, unsigned char* map) {
             _rotationAxisPosition = glm::vec3(0, 0, _floorLength/2.0f - _minZ);
         }
 
+        _oldPeices = _playerPeices;
         _playerPeices = _newPeices;
 
+        onBlock(x, z);
         gravity();
-        onBlock();
+
+        _oldPeices = _playerPeices;
+
         onWinTile(map);
         setMinMax();
 
@@ -267,7 +308,7 @@ void Player::move(int x, int z, unsigned char* map) {
 void Player::onWinTile(unsigned char* map) {
     for (int i = 0; i < _newPeices.size(); i++) {
         if (map[(int)(_newPeices[i].x*_floorLength + _newPeices[i].z)] == 2) {
-            _newPeices[i].y -= GLOBAL::GAP*5.0f;
+            _newPeices[i].y -= GLOBAL::GAP*4.0f;
         }
     }
 }
@@ -275,7 +316,6 @@ void Player::onWinTile(unsigned char* map) {
 void Player::gravity() {
     std::vector<glm::vec3> previous;
     std::vector<int> notDone;
-    _oldPeices = _playerPeices;
 
     for (int i = 0; i < _newPeices.size(); i++) {
         notDone.push_back(i);
@@ -294,9 +334,19 @@ void Player::gravity() {
             if (_newPeices[notDone[i]].y == level) {
                 bool success = false;
                 for (auto peice: previous) {
-                    if (_newPeices[notDone[i]].x == peice.x
-                        && _newPeices[notDone[i]].y-1 == peice.y
-                        && _newPeices[notDone[i]].z == peice.z
+                    if (
+                        (
+                            _newPeices[notDone[i]].x == peice.x
+                            && _newPeices[notDone[i]].y-1 == peice.y
+                            && _newPeices[notDone[i]].z == peice.z
+                        ) || (
+                            _newPeices[notDone[i]].y
+                            == _heightMap[
+                                (int)_newPeices[notDone[i]].x
+                            ][
+                                (int)_newPeices[notDone[i]].z
+                            ]
+                        )
                     ) {
                         previous.push_back(_newPeices[notDone[i]]);
                         notDone.erase(notDone.begin() + i);
@@ -320,18 +370,71 @@ void Player::gravity() {
     }
 }
 
-void Player::onBlock() {
-    for (int i = 0; i < _static.size(); i++) {
-        for (int j = 0; j < _newPeices.size(); j++) {
-            if (_newPeices[j].x == _static[i].x && _newPeices[j].z == _static[i].z) {
-                _newPeices[j].y += 1;
+void Player::onBlock(int x, int z) {
+    float maxDistance, targetDistance;
+    for (int i = 0; i < _newPeices.size(); i++) {
+        maxDistance = (
+            pow(_newPeices[i].y+1.0f, 2)
+            + pow(
+                (
+                    _newPeices[i].x 
+                    - (_minX*abs((x/2.0f-0.5f)) + _maxX*abs((x/2.0f+0.5f)))
+                ) * x, 2)
+            + pow(
+                (
+                    _newPeices[i].z
+                    - (_minZ*abs((z/2.0f-0.5f)) + _maxZ*abs((z/2.0f+0.5f)))
+                ) * z, 2)
+        );
+        for (int j = 1; (
+            j <= _oldPeices[i].x - _newPeices[i].x
+            || j <= _newPeices[i].x - _oldPeices[i].x
+            || j <= _oldPeices[i].z - _newPeices[i].z
+            || j <= _newPeices[i].z - _oldPeices[i].z
+        ); j++) {
+            targetDistance = (
+                pow(_heightMap[(int)_oldPeices[i].x+(j*x)][(int)_oldPeices[i].z+(j*z)], 2)
+                + pow(
+                    (
+                        (_oldPeices[i].x + j*x)
+                        - (_minX*abs((x/2.0f-0.5f)) + _maxX*abs((x/2.0f+0.5f)))
+                    ) * x, 2)
+                + pow(
+                    (
+                        (_oldPeices[i].z + j*z)
+                        - (_minZ*abs((x/2.0f-0.5f)) + _maxZ*abs((x/2.0f+0.5f)))
+                    ) * z, 2)
+            );
+        std::cout << maxDistance << ", " << targetDistance << std::endl;
+            if (targetDistance >= maxDistance) {
+                _newPeices[i].x -= x;
+                _newPeices[i].z -= z;
             }
         }
-    }
-    for (int i = 0; i < _done.size(); i++) {
-        for (int j = 0; j < _newPeices.size(); j++) {
-            if (_newPeices[j].x == _done[i].x && _newPeices[j].z == _done[i].z) {
-                _newPeices[j].y += 1;
+
+        _newPeices[i].y += _heightMap[(int)_newPeices[i].x][(int)_newPeices[i].z];
+        bool movedUp = true;
+        while (movedUp) {
+            movedUp = false;
+            for (glm::vec3 peice: _newPeices) {
+            }
+            for (int j = 0; j < i; j++) {
+                if (_newPeices[j].x == _newPeices[i].x
+                    && _newPeices[j].y == _newPeices[i].y 
+                    && _newPeices[j].z == _newPeices[i].z
+                ) {
+                    movedUp = true;
+                    _newPeices[i].y += 1;
+                }
+            }
+            for (int j = i+1; j < _newPeices.size(); j++) {
+                if (_newPeices[j].x == _newPeices[i].x
+                    && _newPeices[j].y == _newPeices[i].y 
+                    && _newPeices[j].z == _newPeices[i].z
+                ) {
+                    movedUp = true;
+                    _newPeices[i].y += 1;
+                }
             }
         }
     }
@@ -345,6 +448,8 @@ void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles) {
         _angle = 90.0f*(1-mu);
         for (int i = 0; i < _playerPeices.size(); i++) {
             _playerPeices[i].y = _oldPeices[i].y*(1-mu) + _newPeices[i].y*mu;
+            _playerPeices[i].z = _oldPeices[i].z*(1-mu) + _newPeices[i].z*mu;
+            _playerPeices[i].x = _oldPeices[i].x*(1-mu) + _newPeices[i].x*mu;
         }
         mu = _frame/50.0f;
         mu = (mu * mu * (3 - 2 * (mu)));
@@ -362,12 +467,22 @@ void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles) {
                     || _playerPeices[i].z > _floorLength-1
                     || map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 0
                 ) {
-                    _falling.push_back(glm::vec4(_playerPeices[i].x, _playerPeices[i].y, _playerPeices[i].z, 2));
+                    _falling.push_back(glm::vec4(
+                        _playerPeices[i].x,
+                        _playerPeices[i].y,
+                        _playerPeices[i].z,
+                        2
+                    ));
                     _playerPeices.erase(_playerPeices.begin() + i);
                     i -= 1;
                 }
                 if (map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 2) {
-                    _done.push_back(glm::vec4(_playerPeices[i].x, _playerPeices[i].y, _playerPeices[i].z, 2));
+                    _done.push_back(glm::vec4(
+                        _playerPeices[i].x,
+                        _playerPeices[i].y,
+                        _playerPeices[i].z,
+                        2
+                    ));
                     _playerPeices.erase(_playerPeices.begin() + i);
                     i -= 1;
                 }
