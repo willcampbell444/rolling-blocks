@@ -402,13 +402,12 @@ void Player::onBlock(int x, int z) {
                 + pow(
                     (
                         (_oldPeices[i].z + j*z)
-                        - (_minZ*abs((x/2.0f-0.5f)) + _maxZ*abs((x/2.0f+0.5f)))
+                        - (_minZ*abs((z/2.0f-0.5f)) + _maxZ*abs((z/2.0f+0.5f)))
                     ) * z, 2)
             );
-        std::cout << maxDistance << ", " << targetDistance << std::endl;
             if (targetDistance >= maxDistance) {
-                _newPeices[i].x -= x;
-                _newPeices[i].z -= z;
+                _newPeices[i].x = _oldPeices[i].x + j*x - x;
+                _newPeices[i].z = _oldPeices[i].z + j*z - z;
             }
         }
 
