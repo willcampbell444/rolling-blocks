@@ -112,20 +112,10 @@ Player::Player(Shaders* shader) {
 }
 
 void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> startPosition) {
-    if (_heightMap != nullptr) {
-        for (int i = 0; i < _floorWidth; i++) {
-            delete[] _heightMap[i];
-        }
-        delete[] _heightMap;
-    }
-
     _floorWidth = x;
     _floorLength = y;
     
-    _heightMap = new int*[_floorWidth];
-    for (int i = 0; i < _floorWidth; i++) {
-        _heightMap[i] = new int[_floorLength];
-    }
+    _heightMap.create(_floorWidth, _floorLength);
 
     _static.clear();
     _falling.clear();

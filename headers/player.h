@@ -11,7 +11,7 @@
 #include <cmath>
 #include <iostream>
 #include <globals.h>
-// #include <algorithm>
+#include <heightMap.h>
 #include <math.h>
 #include <vector>
 
@@ -60,7 +60,7 @@ private:
     std::vector<glm::vec3> _static;
     std::vector<glm::vec3> _done;
     std::vector<glm::vec4> _falling;
-    int** _heightMap = nullptr;
+    HeightMap _heightMap;
     glm::mat4 _transformMatrix;
 
     Shaders* _shader;
