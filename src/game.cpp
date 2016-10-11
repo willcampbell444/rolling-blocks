@@ -45,10 +45,7 @@ Game::Game() {
     _player = new Player(&_shaders[0]);
 
     _levelMapNames.push_back("maps/level001.map");
-    _levelMapNames.push_back("maps/test2.map");
-    _levelMapNames.push_back("maps/test.map");
-    _levelMapNames.push_back("maps/test2.map");
-    _levelMapNames.push_back("maps/test.map");
+    _levelMapNames.push_back("maps/level002.map");
 
     loadMap();
 }
@@ -159,6 +156,13 @@ void Game::update() {
     }
     if (glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
         _cameraHeight -= 0.1f;
+    }
+
+    if (glfwGetKey(_window, GLFW_KEY_Z) == GLFW_PRESS) {
+        _player->changeGroup(-1);
+    }
+    if (glfwGetKey(_window, GLFW_KEY_X) == GLFW_PRESS) {
+        _player->changeGroup(1);
     }
 
     if (_cameraAngle > 360) {

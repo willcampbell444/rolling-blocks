@@ -109,6 +109,30 @@ Player::Player(Shaders* shader) {
     attrib = _shader->getAttributeLocation("color");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+
+
+    glGenVertexArrays(1, &_staticLineVertexArrayObject);
+    glBindVertexArray(_staticLineVertexArrayObject);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+
+    for (int i = 0; i < 8; i++) {
+        vertices[i*6+3] = 1;
+        vertices[i*6+4] = 1;
+        vertices[i*6+5] = 1;
+    }
+
+    glGenBuffers(1, &vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, vertices, GL_STATIC_DRAW);
+
+    attrib = _shader->getAttributeLocation("position");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
+
+    attrib = _shader->getAttributeLocation("color");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 }
 
 void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> startPosition) {
@@ -525,9 +549,62 @@ void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles) {
     }
 }
 
+void Player::changeGroup(int direction) {
+    if (!_isTransition && !_isCameraTransition){
+        _group += direction;
+        if (_group < 0) {
+            _group = _numGroups - 1;
+        } else if (_group >= _numGroups) {
+            _group = 0;
+        }
+
+        for (int i = 0; i < _playerPeices.size(); i++) {
+            if (playerGroups[i] != _group) {
+                _static.push_back(_playerPeices[i]);
+                staticGroups.push_back(playerGroups[i]);
+                _playerPeices.erase(_playerPeices.begin() + i);
+                playerGroups.erase(playerGroups.begin() + i);
+                i -= 1;
+            }
+        }
+
+        for (int i = 0; i < staticGroups.size(); i++) {
+            if (staticGroups[i] == _group) {
+                _playerPeices.push_back(_static[i]);
+                playerGroups.push_back(staticGroups[i]);
+                _static.erase(_static.begin() + i);
+                staticGroups.erase(staticGroups.begin() + i);
+                i -= 1;
+            }
+        }
+
+        if (direction != 0) {
+            _isCameraTransition = true;
+
+            _oldCameraPos = _cameraPos;
+            _oldCameraDistance = _cameraDistance;
+
+            setMinMax();
+
+            _newCameraPos = glm::vec3(
+                -(_floorWidth/2.0f)+(_minX+_maxX+1)/2.0f,
+                (_minY+_maxY+1)/2.0f,
+                -(_floorLength/2.0f)+(_minZ+_maxZ+1)/2.0f
+            );
+
+            if (_maxX - _minX > _maxZ - _minZ) {
+                _newCameraDistance.x = _maxX - _minX + 5;
+            } else {
+                _newCameraDistance.x = _maxZ - _minZ + 5;
+            }
+            _newCameraDistance.y = _maxY - _minY + 3;
+        }
+    }
+}
+
 void Player::sever() {
-    std::vector<int> playerGroups;
-    std::vector<int> staticGroups;
+    playerGroups.clear();
+    staticGroups.clear();
     std::vector<int> groupCounts;
     for (int i = 0; i < _playerPeices.size(); i++) {
         playerGroups.push_back(i);
@@ -759,6 +836,7 @@ void Player::sever() {
         }
     }
 
+    _numGroups = 0;
     int top = -1;
     int topIndex;
     for (int i = 0; i < groupCounts.size(); i++) {
@@ -766,25 +844,13 @@ void Player::sever() {
             top = groupCounts[i];
             topIndex = i;
         }
-    }
-
-    for (int i = 0; i < _playerPeices.size(); i++) {
-        if (playerGroups[i] != topIndex) {
-            _static.push_back(_playerPeices[i]);
-            _playerPeices.erase(_playerPeices.begin() + i);
-            playerGroups.erase(playerGroups.begin() + i);
-            i -= 1;
+        if (groupCounts[i] > 0){
+            _numGroups += 1;
         }
     }
 
-    for (int i = 0; i < staticGroups.size(); i++) {
-        if (staticGroups[i] == topIndex) {
-            _playerPeices.push_back(_static[i]);
-            _static.erase(_static.begin() + i);
-            staticGroups.erase(staticGroups.begin() + i);
-            i -= 1;
-        }
-    }
+    _group = topIndex;
+    changeGroup(0);
 }
 
 void Player::attach() {
@@ -899,7 +965,7 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
         );
         glBindVertexArray(_vertexArrayObject);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(_lineVertexArrayObject);
+        glBindVertexArray(_staticLineVertexArrayObject);
         glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
     }
     for (glm::vec3 peice: _done) {

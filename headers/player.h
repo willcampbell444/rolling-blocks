@@ -21,6 +21,7 @@ public:
     void create(int x, int y, unsigned char* map, std::vector<glm::vec3> startPosition);
     void draw(glm::mat4 viewProjectionMatrix);
     void move(int x, int z, unsigned char* map);
+    void changeGroup(int direction);
     void update(unsigned char* map, std::vector<glm::vec2> victoryTiles);
     bool win();
     glm::vec3 getCameraPos();
@@ -54,12 +55,15 @@ private:
     int _minX, _maxX;
     int _minY, _maxY;
     int _minZ, _maxZ;
+    int _group, _numGroups;
     std::vector<glm::vec3> _playerPeices;
     std::vector<glm::vec3> _oldPeices;
     std::vector<glm::vec3> _newPeices;
     std::vector<glm::vec3> _static;
     std::vector<glm::vec3> _done;
     std::vector<glm::vec4> _falling;
+    std::vector<int> playerGroups;
+    std::vector<int> staticGroups;
     HeightMap _heightMap;
     glm::mat4 _transformMatrix;
 
@@ -68,6 +72,7 @@ private:
     GLuint _vertexArrayObject;
     GLuint _doneVertexArrayObject;
     GLuint _lineVertexArrayObject;
+    GLuint _staticLineVertexArrayObject;
 };
 
 #endif
