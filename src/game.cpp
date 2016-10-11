@@ -44,6 +44,7 @@ Game::Game() {
     _floor = new Floor(&_shaders[0]);
     _player = new Player(&_shaders[0]);
 
+    _levelMapNames.push_back("maps/test2.map");
     _levelMapNames.push_back("maps/level001.map");
     _levelMapNames.push_back("maps/level002.map");
 

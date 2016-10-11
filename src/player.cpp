@@ -178,6 +178,8 @@ void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> sta
         _cameraDistance.x = _maxZ - _minZ + 5;
     }
     _cameraDistance.y = _maxY - _minY + 3;
+
+    _group = 0;
 }
 
 bool Player::win() {
@@ -553,13 +555,13 @@ void Player::changeGroup(int direction) {
     if (!_isTransition && !_isCameraTransition){
         _group += direction;
         if (_group < 0) {
-            _group = _numGroups - 1;
-        } else if (_group >= _numGroups) {
+            _group = _groups.size() - 1;
+        } else if (_group >= _groups.size()) {
             _group = 0;
         }
 
         for (int i = 0; i < _playerPeices.size(); i++) {
-            if (playerGroups[i] != _group) {
+            if (playerGroups[i] != _groups[_group]) {
                 _static.push_back(_playerPeices[i]);
                 staticGroups.push_back(playerGroups[i]);
                 _playerPeices.erase(_playerPeices.begin() + i);
@@ -569,7 +571,7 @@ void Player::changeGroup(int direction) {
         }
 
         for (int i = 0; i < staticGroups.size(); i++) {
-            if (staticGroups[i] == _group) {
+            if (staticGroups[i] == _groups[_group]) {
                 _playerPeices.push_back(_static[i]);
                 playerGroups.push_back(staticGroups[i]);
                 _static.erase(_static.begin() + i);
@@ -836,20 +838,14 @@ void Player::sever() {
         }
     }
 
-    _numGroups = 0;
-    int top = -1;
-    int topIndex;
+    _groups.clear();
     for (int i = 0; i < groupCounts.size(); i++) {
-        if (groupCounts[i] > top) {
-            top = groupCounts[i];
-            topIndex = i;
-        }
-        if (groupCounts[i] > 0){
-            _numGroups += 1;
+        if (groupCounts[i] > 0) {
+            _groups.push_back(i);
         }
     }
 
-    _group = topIndex;
+    _group = 0;
     changeGroup(0);
 }
 

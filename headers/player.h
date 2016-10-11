@@ -55,7 +55,7 @@ private:
     int _minX, _maxX;
     int _minY, _maxY;
     int _minZ, _maxZ;
-    int _group, _numGroups;
+    int _group = 0;
     std::vector<glm::vec3> _playerPeices;
     std::vector<glm::vec3> _oldPeices;
     std::vector<glm::vec3> _newPeices;
@@ -64,6 +64,7 @@ private:
     std::vector<glm::vec4> _falling;
     std::vector<int> playerGroups;
     std::vector<int> staticGroups;
+    std::vector<int> _groups;
     HeightMap _heightMap;
     glm::mat4 _transformMatrix;
 
