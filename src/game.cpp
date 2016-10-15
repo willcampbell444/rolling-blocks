@@ -41,21 +41,20 @@ Game::Game() {
 
     _floor = new Floor(&_shaders[0]);
     _player = new Player(&_shaders[0]);
-
     _menu = new Menu(&_shaders[0]);
-    std::string* options = new std::string[3];
-    options[0] = "THE";
-    options[1] = "567";
-    options[2] = "TEST";
-    _menu->setOptions(options, 3);
 
     _state = GLOBAL::STATE_MENU;
 
-    _levelMapNames.push_back("maps/test2.map");
-    _levelMapNames.push_back("maps/level001.map");
-    _levelMapNames.push_back("maps/level002.map");
+    _levelFileNames.push_back("maps/test2.map");
+    _levelNames.push_back("TEST");
 
-    loadMap();
+    _levelFileNames.push_back("maps/level001.map");
+    _levelNames.push_back("L 1");
+
+    _levelFileNames.push_back("maps/level002.map");
+    _levelNames.push_back("L 2");
+
+    _menu->setOptions(_levelNames);
 }
 
 Game::~Game() {
@@ -77,12 +76,8 @@ bool Game::end() {
     return _end;
 }
 
-void Game::loadMap() {
-    if (_level == _levelMapNames.size()) {
-        _state = GLOBAL::STATE_MENU;
-        return;
-    }
-    _map.read(_levelMapNames[_level]);
+void Game::loadMap(const char* fileName) {
+    _map.read(fileName);
     _level += 1;
 
     _floor->create(_map.getWidth(), _map.getLength(), _map.getTiles());
@@ -163,14 +158,34 @@ void Game::update() {
         cameraDistance = _player->getCameraDistance();
     
         if (_player->win()) {
-            loadMap();
-            if (_end) {
-                return;
-            }
+            _menu->setOptions(_levelNames);
+            _state = GLOBAL::STATE_MENU;
         }
     } else if (_state == GLOBAL::STATE_MENU) {
         cameraPos = _menu->getCameraPos();
         cameraDistance = _menu->getCameraDistance();
+
+        if (
+            glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS
+            || glfwGetKey(_window, GLFW_KEY_Z) == GLFW_PRESS
+        ) {
+            _menu->move(-1);
+        } else if (
+            glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS
+            || glfwGetKey(_window, GLFW_KEY_X) == GLFW_PRESS
+        ) {
+            _menu->move(1);
+        }
+
+        if (glfwGetKey(_window, GLFW_KEY_W)) {
+            _menu->select();
+        }
+
+        _menu->update();
+        if (_menu->result() != -1) {
+            loadMap(_levelFileNames[_menu->result()]);
+            _state = GLOBAL::STATE_PLAY;
+        }
     }
 
     if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) {

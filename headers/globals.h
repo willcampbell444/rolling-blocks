@@ -18,7 +18,9 @@ namespace GLOBAL {
 	const float BLOCK_WIDTH = 1.0f-(GAP*2.0f);
 	const float BOTTOM = -2.0f;
 
-	const float FRAMES = 200.0f;
+	const float FALL_HEIGHT = 7;
+
+	const float FRAMES = 50.0f;
 
 	const int STATE_PLAY = 0;
 	const int STATE_MENU = 1;

@@ -37,8 +37,12 @@ private:
     void attach();
 
     int _floorWidth, _floorLength;
+    bool _isBeginning = true;
+    bool _isEnding = false;
+    bool _wait = false;
     bool _isTransition = false;
     bool _isCameraTransition = false;
+    bool _finished = false;
     bool _won = false;
     glm::vec3 _rotationAxis;
     glm::vec3 _rotationAxisPosition;

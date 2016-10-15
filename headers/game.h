@@ -23,7 +23,7 @@ public:
     ~Game();
     void update();
     void draw();
-    void loadMap();
+    void loadMap(const char* fileName);
     bool end();
     GLFWwindow* getWindow();
 private:
@@ -65,7 +65,8 @@ private:
     Shaders _shaders[2];
 
     int _level = 0;
-    std::vector<const char*> _levelMapNames;
+    std::vector<const char*> _levelFileNames;
+    std::vector<const char*> _levelNames;
     bool _end = false;
 
     GLuint _vao[2];

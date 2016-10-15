@@ -139,9 +139,9 @@ Menu::Menu(Shaders* shader) {
     }));
     _chars['S'] = loadLetter(std::move((bool[25]){
         1, 1, 1, 1, 1,
-        1, 0, 0, 0, 1,
-        1, 0, 0, 0, 1, 
-        1, 0, 0, 0, 1,
+        1, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 
+        0, 0, 0, 0, 1,
         1, 1, 1, 1, 1
     }));
     _chars['T'] = loadLetter(std::move((bool[25]){
@@ -366,6 +366,30 @@ Menu::Menu(Shaders* shader) {
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 
 
+    glGenVertexArrays(1, &_goalVAO);
+    glBindVertexArray(_goalVAO);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+
+    for (int i = 0; i < 8; i++) {
+        vertices[i*6+3] = GLOBAL::VICTORY_COLOR.r;
+        vertices[i*6+4] = GLOBAL::VICTORY_COLOR.g;
+        vertices[i*6+5] = GLOBAL::VICTORY_COLOR.b;
+    }
+
+    glGenBuffers(1, &vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, vertices, GL_STATIC_DRAW);
+
+    attrib = _shader->getAttributeLocation("position");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
+
+    attrib = _shader->getAttributeLocation("color");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+
+
     glGenVertexArrays(1, &_floorVAO);
     glBindVertexArray(_floorVAO);
 
@@ -497,17 +521,146 @@ Menu::Menu(Shaders* shader) {
 
     attrib = _shader->getAttributeLocation("color");
     glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));}
+
+void Menu::move(int direction) {
+    if (!_isCameraTransition && !_isTransition && !_isEndTransition && !_isBeginning) {
+        _currentPeice += direction;
+        if (_currentPeice < 0) {
+            _currentPeice = _options.size() - 1;
+        } else if (_currentPeice >= _options.size()) {
+            _currentPeice = 0;
+        }
+
+        _oldCameraPos = _cameraPos;
+        _oldCameraDistance = _cameraDistance;
+        setCamera();
+        _newCameraPos = _cameraPos;
+        _newCameraDistance = _cameraDistance;
+
+        _isCameraTransition = true;
+    }
 }
 
-void Menu::setOptions(std::string* options, int numOptions) {
-    for (int n = 0; n < numOptions; n++) {
+void Menu::select() {
+    if (!_isCameraTransition && !_isTransition && !_isEndTransition && !_isBeginning) {
+        _isTransition = true;
+
+        _oldCameraPos = _cameraPos;
+        _oldCameraDistance = _cameraDistance;
+        setCamera();
+        _cameraPos.x = 2.5f;
+        _cameraPos.y = 0;
+        _newCameraPos = _cameraPos;
+        _newCameraDistance = _cameraDistance;
+    }
+}
+
+void Menu::update() {
+    if (_wait) {
+        _frame += 1;
+        if (_frame >= GLOBAL::FRAMES) {
+            _wait = false;
+            _frame = 0;
+        }
+    } else if (_isTransition) {
+        _frame += 1;
+
+        float mu = (float)_frame/GLOBAL::FRAMES;
+        mu = (mu * mu);
+        _angle = 90.0f*(1-mu);
+        _height = mu*(-GLOBAL::GAP*4);
+        
+        mu = (float)_frame/GLOBAL::FRAMES;
+        mu = (mu * mu * (3 - 2 * (mu)));
+        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+
+        if (_frame >= GLOBAL::FRAMES) {
+            _isTransition = false;
+            _wait = true;
+            _isEndTransition = true;
+            _oldCameraDistance = _newCameraDistance;
+            _oldCameraPos = _newCameraPos;
+            _newCameraPos.y = -GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+            _frame = 0;
+        }
+    } else if (_isCameraTransition) {
+        _frame += 1;
+        float mu = (float)_frame/GLOBAL::FRAMES;
+        mu = (mu * mu * (3 - 2 * (mu)));
+        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+        if (_frame >= GLOBAL::FRAMES) {
+            _isCameraTransition = false;
+            _oldCameraDistance = _newCameraDistance;
+            _oldCameraPos = _newCameraPos;
+            _frame = 0;
+        }
+    } else if (_isEndTransition) {
+        _frame += 1;
+        float mu = (float)_frame/GLOBAL::FRAMES;
+        mu = (mu * mu);
+        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+        if (_frame >= GLOBAL::FRAMES) {
+            _isCameraTransition = false;
+            _done = true;
+            _oldCameraDistance = _newCameraDistance;
+            _oldCameraPos = _newCameraPos;
+            _frame = 0;
+        }
+    } else if (_isBeginning) {
+        _frame += 1;
+        float mu = (float)_frame/GLOBAL::FRAMES;
+        mu = (mu * mu);
+        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+        if (_frame >= GLOBAL::FRAMES) {
+            _isBeginning = false;
+            _oldCameraDistance = _newCameraDistance;
+            _oldCameraPos = _newCameraPos;
+            _frame = 0;
+        }
+    }
+}
+
+int Menu::result() {
+    if (_done) {
+        return _currentPeice;
+    }
+    return -1;
+}
+
+void Menu::setOptions(std::vector<const char*> options) {
+    _options.clear();
+    _done = false;
+    _isBeginning = true;
+    _isEndTransition = false;
+    _isCameraTransition = false;
+    _isTransition = false;
+    _wait = false;
+    _frame = 0;
+    _currentPeice = 0;
+    _angle = 90.0f;
+    _height = 0;
+
+    for (int n = 0; n < options.size(); n++) {
         std::vector<unsigned int> v;
         _options.push_back(v);
-        for (int c = 0; c < options[n].length(); c++) {
+        for (int c = 0; c < std::string(options[n]).length(); c++) {
             _options[n].push_back(_chars[options[n][c]]);
         }
     }
+
+    setCamera();
+    _newCameraPos = _cameraPos;
+    _newCameraDistance = _cameraDistance;
+    _oldCameraPos = _cameraPos;
+    _oldCameraPos.y += GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+    _oldCameraDistance = _cameraDistance;
+
+    update();
 }
 
 unsigned int Menu::loadLetter(bool bits[25]) {
@@ -522,37 +675,86 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
     _shader->use();
     int count = -1;
     glm::mat4 transformMatrix;
-    for (auto word: _options) {
-        for (int n = 0; n < word.size(); n++) {
-            int letter = word[n];
+    for (int m = 0; m < _options.size(); m++) {
+        for (int n = 0; n < _options[m].size(); n++) {
+            int letter = _options[m][n];
             for (int i = 0; i < 25; i++) {
                 if (letter & (unsigned int)(1 << i)) {
-                    transformMatrix = (
-                        viewProjectionMatrix
-                        // * glm::translate(glm::mat4(1.0f), -_rotationAxisPosition)
-                        // * glm::rotate(glm::mat4(1.0f), glm::radians(_angleSign*_angle), _rotationAxis)
-                        // * glm::translate(glm::mat4(1.0f), _rotationAxisPosition)
-                        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
-                        * glm::translate(
-                            glm::mat4(1.0f), 
-                            glm::vec3(
-                                0,
-                                (4 - (int)(i/5) + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                                (i % 5 + count + 1.0f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                    if (m == _currentPeice) {
+                        if (!_isEndTransition) {
+                            transformMatrix = (
+                                viewProjectionMatrix
+                                * glm::translate(glm::mat4(1.0f), -glm::vec3(-0.5f, 0, 0))
+                                * glm::rotate(glm::mat4(1.0f), glm::radians(_angle), glm::vec3(0, 0, 1))
+                                * glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0, 0))
+                                * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
+                                * glm::translate(
+                                    glm::mat4(1.0f), 
+                                    glm::vec3(
+                                        (5 - (int)(i/5)) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                                        (_height+0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                                        (i % 5 + count + 1.0f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                                    )
+                                )
+                            );
+                            glUniformMatrix4fv(
+                                _shader->getUniformLocation("transformMatrix"), 
+                                1, 
+                                GL_FALSE, 
+                                glm::value_ptr(transformMatrix)
+                            );
+                            glBindVertexArray(_selectedVAO);
+                            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+                            glBindVertexArray(_selectedLineVAO);
+                            glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+                        } else {
+                            transformMatrix = (
+                                viewProjectionMatrix
+                                * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
+                                * glm::translate(
+                                    glm::mat4(1.0f), 
+                                    glm::vec3(
+                                        (5 - (int)(i/5)) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                                        (_height+0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                                        (i % 5 + count + 1.0f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                                    )
+                                )
+                            );
+                            glUniformMatrix4fv(
+                                _shader->getUniformLocation("transformMatrix"), 
+                                1, 
+                                GL_FALSE, 
+                                glm::value_ptr(transformMatrix)
+                            );
+                            glBindVertexArray(_goalVAO);
+                            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+                            glBindVertexArray(_selectedLineVAO);
+                            glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+                        }
+                    } else {
+                        transformMatrix = (
+                            viewProjectionMatrix
+                            * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
+                            * glm::translate(
+                                glm::mat4(1.0f), 
+                                glm::vec3(
+                                    0,
+                                    (4 - (int)(i/5) + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                                    (i % 5 + count + 1.0f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                                )
                             )
-                        )
-                    );
-                    glUniformMatrix4fv(
-                        _shader->getUniformLocation("transformMatrix"), 
-                        1, 
-                        GL_FALSE, 
-                        glm::value_ptr(transformMatrix)
-                    );
-                    glBindVertexArray(_selectedVAO);
-                    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-                    glBindVertexArray(_selectedLineVAO);
-                    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
-
+                        );
+                        glUniformMatrix4fv(
+                            _shader->getUniformLocation("transformMatrix"), 
+                            1, 
+                            GL_FALSE, 
+                            glm::value_ptr(transformMatrix)
+                        );
+                        glBindVertexArray(_unselectedVAO);
+                        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+                        glBindVertexArray(_unselectedLineVAO);
+                        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+                    }
 
                     transformMatrix = viewProjectionMatrix
                     * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 1, GLOBAL::BLOCK_WIDTH))
@@ -689,4 +891,31 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
         }
         count += 2;
     }
+}
+
+void Menu::setCamera() {
+    float minZ = -1.0f;
+    float maxZ = -1.0f;
+
+    for (int i = 0; i <= _currentPeice; i++) {
+        minZ = maxZ + 1.0f;
+        maxZ += _options[i].size()*6.0f + 1.0f;
+    }
+
+    _cameraPos = glm::vec3(
+        0,
+        2.5f,
+        (minZ+maxZ)/2.0f
+    );
+
+    _cameraDistance.x = maxZ - minZ;
+    _cameraDistance.y = 2.5f + 3.0f;
+}
+
+glm::vec3 Menu::getCameraPos() {
+    return _cameraPos;
+}
+
+glm::vec2 Menu::getCameraDistance() {
+    return _cameraDistance;
 }

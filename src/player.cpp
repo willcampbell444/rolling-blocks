@@ -180,16 +180,34 @@ void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> sta
     _cameraDistance.y = _maxY - _minY + 3;
 
     _group = 0;
+
+    _isBeginning = true;
+
+    _newCameraPos = _cameraPos;
+    _newCameraDistance = _cameraDistance;
+    _oldCameraPos = _cameraPos;
+    _oldCameraPos.y += GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+    _oldCameraDistance = _cameraDistance;
+
+    _finished = false;
+    _isEnding = false;
+    _wait = false;
 }
 
 bool Player::win() {
-    if (_playerPeices.size() == 0 || _won) {
+    if ((_playerPeices.size() == 0 || _won) && !_isEnding) {
         _isTransition = false;
         _isCameraTransition = false;
-        _endTimer += 1;
-        if (_endTimer == 150) {
-            return true;
-        }
+        _wait = true;
+        _isEnding = true;
+        _newCameraPos = _cameraPos;
+        _newCameraPos.y = -GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+        _newCameraDistance = _cameraDistance;
+        _oldCameraPos = _cameraPos;
+        _oldCameraDistance = _cameraDistance;
+    }
+    if (_finished) {
+        return true;
     }
     return false;
 }
@@ -252,7 +270,7 @@ void Player::setMinMax() {
 }
 
 void Player::move(int x, int z, unsigned char* map) {
-    if (!_isTransition && _playerPeices.size() && !_isCameraTransition) {
+    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_wait) {
         fillHeightMap();
         _isTransition = true;
         _angle = 90.0f;
@@ -456,7 +474,13 @@ void Player::onBlock(int x, int z) {
 }
 
 void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles) {
-    if (_isTransition) {
+    if (_wait) {
+        _frame += 1;
+        if (_frame >= GLOBAL::FRAMES) {
+            _wait = false;
+            _frame = 0;
+        }
+    } else if (_isTransition) {
         _frame += 1;
         float mu = _frame/50.0f;
         mu = (mu * mu);
@@ -542,6 +566,31 @@ void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles) {
             _oldCameraPos = _newCameraPos;
             _frame = 0;
         }
+    } else if (_isBeginning) {
+        _frame += 1;
+        float mu = (float)_frame/GLOBAL::FRAMES;
+        mu = (mu * mu);
+        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+        if (_frame >= GLOBAL::FRAMES) {
+            _isBeginning = false;
+            _oldCameraDistance = _newCameraDistance;
+            _oldCameraPos = _newCameraPos;
+            _frame = 0;
+        }
+    } else if (_isEnding) {
+        _frame += 1;
+        float mu = (float)_frame/GLOBAL::FRAMES;
+        mu = (mu * mu);
+        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+        if (_frame >= GLOBAL::FRAMES) {
+            _isEnding = false;
+            _finished = true;
+            _oldCameraDistance = _newCameraDistance;
+            _oldCameraPos = _newCameraPos;
+            _frame = 0;
+        }
     }
     for (int i = 0; i < _falling.size(); i++) {
         _falling[i][3] += 1;
@@ -552,7 +601,7 @@ void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles) {
 }
 
 void Player::changeGroup(int direction) {
-    if (!_isTransition && !_isCameraTransition){
+    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_wait){
         _group += direction;
         if (_group < 0) {
             _group = _groups.size() - 1;
