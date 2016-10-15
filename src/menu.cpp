@@ -297,6 +297,18 @@ Menu::Menu(Shaders* shader) {
          0.5f,  GLOBAL::BOTTOM+GLOBAL::GAP, -0.5f, GLOBAL::FLOOR_BOTTOM.r, GLOBAL::FLOOR_BOTTOM.g, GLOBAL::FLOOR_BOTTOM.b,
     };
 
+    float floorGoalVertecies[48] = {
+        -0.5f, -GLOBAL::GAP*5, -0.5f, GLOBAL::VICTORY_COLOR.r, GLOBAL::VICTORY_COLOR.g, GLOBAL::VICTORY_COLOR.b,
+        -0.5f, -GLOBAL::GAP*5,  0.5f, GLOBAL::VICTORY_COLOR.r, GLOBAL::VICTORY_COLOR.g, GLOBAL::VICTORY_COLOR.b,
+         0.5f, -GLOBAL::GAP*5,  0.5f, GLOBAL::VICTORY_COLOR.r, GLOBAL::VICTORY_COLOR.g, GLOBAL::VICTORY_COLOR.b,
+         0.5f, -GLOBAL::GAP*5, -0.5f, GLOBAL::VICTORY_COLOR.r, GLOBAL::VICTORY_COLOR.g, GLOBAL::VICTORY_COLOR.b,
+
+        -0.5f,  GLOBAL::BOTTOM+GLOBAL::GAP, -0.5f, GLOBAL::FLOOR_BOTTOM.r, GLOBAL::FLOOR_BOTTOM.g, GLOBAL::FLOOR_BOTTOM.b,
+        -0.5f,  GLOBAL::BOTTOM+GLOBAL::GAP,  0.5f, GLOBAL::FLOOR_BOTTOM.r, GLOBAL::FLOOR_BOTTOM.g, GLOBAL::FLOOR_BOTTOM.b,
+         0.5f,  GLOBAL::BOTTOM+GLOBAL::GAP,  0.5f, GLOBAL::FLOOR_BOTTOM.r, GLOBAL::FLOOR_BOTTOM.g, GLOBAL::FLOOR_BOTTOM.b,
+         0.5f,  GLOBAL::BOTTOM+GLOBAL::GAP, -0.5f, GLOBAL::FLOOR_BOTTOM.r, GLOBAL::FLOOR_BOTTOM.g, GLOBAL::FLOOR_BOTTOM.b,
+    };
+
     GLuint elements[36] = {
         0, 1, 2, 2, 3, 0,
         4, 5, 6, 6, 7, 4,
@@ -362,6 +374,24 @@ Menu::Menu(Shaders* shader) {
     glGenBuffers(1, &vertexBufferObject);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, floorVertecies, GL_STATIC_DRAW);
+
+    attrib = _shader->getAttributeLocation("position");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
+
+    attrib = _shader->getAttributeLocation("color");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+
+
+    glGenVertexArrays(1, &_floorGoalVAO);
+    glBindVertexArray(_floorGoalVAO);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+
+    glGenBuffers(1, &vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, floorGoalVertecies, GL_STATIC_DRAW);
 
     attrib = _shader->getAttributeLocation("position");
     glEnableVertexAttribArray(attrib);
@@ -444,6 +474,30 @@ Menu::Menu(Shaders* shader) {
     attrib = _shader->getAttributeLocation("color");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+
+
+    glGenVertexArrays(1, &_floorGoalLineVAO);
+    glBindVertexArray(_floorGoalLineVAO);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+
+    for (int i = 0; i < 4; i++) {
+        floorGoalVertecies[i*6+3] = 1;
+        floorGoalVertecies[i*6+4] = 1;
+        floorGoalVertecies[i*6+5] = 1;
+    }
+
+    glGenBuffers(1, &vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, floorGoalVertecies, GL_STATIC_DRAW);
+
+    attrib = _shader->getAttributeLocation("position");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
+
+    attrib = _shader->getAttributeLocation("color");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 }
 
 void Menu::setOptions(std::string* options, int numOptions) {
@@ -466,7 +520,7 @@ unsigned int Menu::loadLetter(bool bits[25]) {
 
 void Menu::draw(glm::mat4 viewProjectionMatrix) {
     _shader->use();
-    int count = 0;
+    int count = -1;
     glm::mat4 transformMatrix;
     for (auto word: _options) {
         for (int n = 0; n < word.size(); n++) {
@@ -484,7 +538,7 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                             glm::vec3(
                                 0,
                                 (4 - (int)(i/5) + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                                (i % 5 + count) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                                (i % 5 + count + 1.0f) * (1.0/(GLOBAL::BLOCK_WIDTH))
                             )
                         )
                     );
@@ -498,8 +552,74 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
                     glBindVertexArray(_selectedLineVAO);
                     glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+
+
+                    transformMatrix = viewProjectionMatrix
+                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 1, GLOBAL::BLOCK_WIDTH))
+                    * glm::translate(
+                        glm::mat4(1.0f),
+                        glm::vec3(
+                            (5 - (int)(i/5)) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                            0,
+                            (i % 5 + count + 1.0f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                        )
+                    );
+                    glUniformMatrix4fv(
+                        _shader->getUniformLocation("transformMatrix"), 
+                        1, 
+                        GL_FALSE, 
+                        glm::value_ptr(transformMatrix)
+                    );
+                    glBindVertexArray(_floorGoalVAO);
+                    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+                    glBindVertexArray(_floorGoalLineVAO);
+                    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+                } else {
+                    transformMatrix = viewProjectionMatrix
+                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 1, GLOBAL::BLOCK_WIDTH))
+                    * glm::translate(
+                        glm::mat4(1.0f),
+                        glm::vec3(
+                            (5 - (int)(i/5)) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                            0,
+                            (i % 5 + count + 1.0f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                        )
+                    );
+                    glUniformMatrix4fv(
+                        _shader->getUniformLocation("transformMatrix"), 
+                        1, 
+                        GL_FALSE, 
+                        glm::value_ptr(transformMatrix)
+                    );
+                    glBindVertexArray(_floorVAO);
+                    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+                    glBindVertexArray(_floorLineVAO);
+                    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
                 }
             }
+            for (int i = 0; i < 7; i++) {
+                transformMatrix = viewProjectionMatrix
+                * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 1, GLOBAL::BLOCK_WIDTH))
+                * glm::translate(
+                    glm::mat4(1.0f),
+                    glm::vec3(
+                        (i) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                        0,
+                        (count) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                    )
+                );
+                glUniformMatrix4fv(
+                    _shader->getUniformLocation("transformMatrix"), 
+                    1, 
+                    GL_FALSE, 
+                    glm::value_ptr(transformMatrix)
+                );
+                glBindVertexArray(_floorVAO);
+                glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+                glBindVertexArray(_floorLineVAO);
+                glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+            }
+            count += 1;
             for (int i = 0; i < 5; i++) {
                 transformMatrix = viewProjectionMatrix
                 * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 1, GLOBAL::BLOCK_WIDTH))
@@ -521,17 +641,15 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                 glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
                 glBindVertexArray(_floorLineVAO);
                 glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
-            }
-            count += 5;
-            if (n < word.size()-1) {
+
                 transformMatrix = viewProjectionMatrix
                 * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 1, GLOBAL::BLOCK_WIDTH))
                 * glm::translate(
                     glm::mat4(1.0f),
                     glm::vec3(
+                        (6) * (1.0/(GLOBAL::BLOCK_WIDTH)),
                         0,
-                        0,
-                        (count) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                        (count+i) * (1.0/(GLOBAL::BLOCK_WIDTH))
                     )
                 );
                 glUniformMatrix4fv(
@@ -544,8 +662,30 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                 glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
                 glBindVertexArray(_floorLineVAO);
                 glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
-                count += 1;
             }
+            count += 5;
+        }
+        for (int i = 0; i < 7; i++) {
+            transformMatrix = viewProjectionMatrix
+            * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 1, GLOBAL::BLOCK_WIDTH))
+            * glm::translate(
+                glm::mat4(1.0f),
+                glm::vec3(
+                    (i) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                    0,
+                    (count) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                )
+            );
+            glUniformMatrix4fv(
+                _shader->getUniformLocation("transformMatrix"), 
+                1, 
+                GL_FALSE, 
+                glm::value_ptr(transformMatrix)
+            );
+            glBindVertexArray(_floorVAO);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+            glBindVertexArray(_floorLineVAO);
+            glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
         }
         count += 2;
     }

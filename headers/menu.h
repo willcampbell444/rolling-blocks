@@ -20,7 +20,7 @@ public:
 	Menu(Shaders* shader);
 	void setOptions(std::string* options, int numOptions);
 	void draw(glm::mat4 viewProjectionMatrix);
-	glm::vec3 getCameraPos() {return glm::vec3(-10, 3, 20);};
+	glm::vec3 getCameraPos() {return glm::vec3(-10, 3, 10);};
 	glm::vec2 getCameraDistance() {return glm::vec2(1, 1);};
 	void update();
 private:
@@ -31,9 +31,11 @@ private:
 	std::vector<std::vector<unsigned int>> _options;
 
 	GLuint _floorVAO;
+	GLuint _floorGoalVAO;
 	GLuint _selectedVAO;
 	GLuint _unselectedVAO;
 	GLuint _floorLineVAO;
+	GLuint _floorGoalLineVAO;
 	GLuint _selectedLineVAO;
 	GLuint _unselectedLineVAO;
 
