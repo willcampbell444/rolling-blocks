@@ -15,6 +15,7 @@
 #include <map.h>
 #include <vector>
 #include <globals.h>
+#include <menu.h>
 
 class Game {
 public:
@@ -75,11 +76,14 @@ private:
     glm::mat4 _projectionMatrix;
     glm::mat4 _projectionViewMatrix;
 
+    int _state;
+
     glm::vec3 _gray;
     glm::vec3 _blue;
 
     Floor* _floor;
     Player* _player;
+    Menu* _menu;
 
     Map _map;
 

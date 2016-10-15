@@ -1,5 +1,5 @@
 CC=g++
-FILES=src/main.cpp src/shaders.cpp src/game.cpp src/floor.cpp src/player.cpp src/map.cpp src/heightMap.cpp
+FILES=src/main.cpp src/shaders.cpp src/game.cpp src/floor.cpp src/player.cpp src/map.cpp src/heightMap.cpp src/menu.cpp
 LINK=-lGL -lglfw -lGLEW -lSOIL
 OPTIONS=-DGLEW_STATIC -Iheaders -g
 

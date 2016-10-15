@@ -16,8 +16,13 @@ namespace GLOBAL {
 
 	const float GAP = 0.05f;
 	const float BLOCK_WIDTH = 1.0f-(GAP*2.0f);
+	const float BOTTOM = -2.0f;
 
 	const float FRAMES = 200.0f;
+
+	const int STATE_PLAY = 0;
+	const int STATE_MENU = 1;
+	const int STATE_PAUSE = 2;
 }
 
 #endif

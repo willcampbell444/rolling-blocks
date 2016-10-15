@@ -25,8 +25,6 @@ Game::Game() {
     // glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // glEnable(GL_POLYGON_STIPPLE);
 
-    _gray = glm::vec3(0.752941, 0.772549, 0.8078431);
-
     if (!_shaders[0].loadShader(GL_VERTEX_SHADER, "shaders/vertex.glsl")) {
         std::cout << "Vertex Shader Failed To Compile";
     }
@@ -43,6 +41,15 @@ Game::Game() {
 
     _floor = new Floor(&_shaders[0]);
     _player = new Player(&_shaders[0]);
+
+    _menu = new Menu(&_shaders[0]);
+    std::string* options = new std::string[3];
+    options[0] = "THE";
+    options[1] = "567";
+    options[2] = "TEST";
+    _menu->setOptions(options, 3);
+
+    _state = GLOBAL::STATE_MENU;
 
     _levelMapNames.push_back("maps/test2.map");
     _levelMapNames.push_back("maps/level001.map");
@@ -72,7 +79,7 @@ bool Game::end() {
 
 void Game::loadMap() {
     if (_level == _levelMapNames.size()) {
-        _end = true;
+        _state = GLOBAL::STATE_MENU;
         return;
     }
     _map.read(_levelMapNames[_level]);
@@ -92,58 +99,78 @@ void Game::update() {
         glfwSetWindowShouldClose(_window, GL_TRUE);
     }
 
-    if (_cameraAngle > 315 || _cameraAngle < 45) {
-        if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
-            _player->move(1, 0, _map.getTiles());
+    glm::vec3 cameraPos;
+    glm::vec2 cameraDistance;
+
+    if (_state == GLOBAL::STATE_PLAY) {
+        if (_cameraAngle > 315 || _cameraAngle < 45) {
+            if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
+                _player->move(1, 0, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
+                _player->move(0, -1, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
+                _player->move(-1, 0, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
+                _player->move(0, 1, _map.getTiles());
+            }
+        } else if (_cameraAngle > 45 && _cameraAngle < 135) {
+            if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
+                _player->move(0, 1, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
+                _player->move(1, 0, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
+                _player->move(0, -1, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
+                _player->move(-1, 0, _map.getTiles());
+            }
+        } else if (_cameraAngle > 135 && _cameraAngle < 225) {
+            if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
+                _player->move(-1, 0, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
+                _player->move(0, 1, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
+                _player->move(1, 0, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
+                _player->move(0, -1, _map.getTiles());
+            }
+        } else {
+            if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
+                _player->move(0, -1, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
+                _player->move(-1, 0, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
+                _player->move(0, 1, _map.getTiles());
+            }
+            if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
+                _player->move(1, 0, _map.getTiles());
+            }
         }
-        if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
-            _player->move(0, -1, _map.getTiles());
+
+        _player->update(_map.getTiles(), _map.getVictoryTiles());
+
+        cameraPos = _player->getCameraPos();
+        cameraDistance = _player->getCameraDistance();
+    
+        if (_player->win()) {
+            loadMap();
+            if (_end) {
+                return;
+            }
         }
-        if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
-            _player->move(-1, 0, _map.getTiles());
-        }
-        if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
-            _player->move(0, 1, _map.getTiles());
-        }
-    } else if (_cameraAngle > 45 && _cameraAngle < 135) {
-        if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
-            _player->move(0, 1, _map.getTiles());
-        }
-        if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
-            _player->move(1, 0, _map.getTiles());
-        }
-        if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
-            _player->move(0, -1, _map.getTiles());
-        }
-        if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
-            _player->move(-1, 0, _map.getTiles());
-        }
-    } else if (_cameraAngle > 135 && _cameraAngle < 225) {
-        if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
-            _player->move(-1, 0, _map.getTiles());
-        }
-        if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
-            _player->move(0, 1, _map.getTiles());
-        }
-        if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
-            _player->move(1, 0, _map.getTiles());
-        }
-        if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
-            _player->move(0, -1, _map.getTiles());
-        }
-    } else {
-        if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
-            _player->move(0, -1, _map.getTiles());
-        }
-        if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
-            _player->move(-1, 0, _map.getTiles());
-        }
-        if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
-            _player->move(0, 1, _map.getTiles());
-        }
-        if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
-            _player->move(1, 0, _map.getTiles());
-        }
+    } else if (_state == GLOBAL::STATE_MENU) {
+        cameraPos = _menu->getCameraPos();
+        cameraDistance = _menu->getCameraDistance();
     }
 
     if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
@@ -172,11 +199,6 @@ void Game::update() {
         _cameraAngle = 360;
     }
 
-    _player->update(_map.getTiles(), _map.getVictoryTiles());
-
-    glm::vec3 cameraPos = _player->getCameraPos();
-    glm::vec2 cameraDistance = _player->getCameraDistance();
-
     _viewMatrix = glm::lookAt(
         glm::vec3(
             cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*cameraDistance.x,
@@ -188,21 +210,17 @@ void Game::update() {
     );
 
     _projectionViewMatrix = _projectionMatrix * _viewMatrix;
-    
-    if (_player->win()) {
-        loadMap();
-        if (_end) {
-            return;
-        }
-    }
 }
 
 void Game::draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    _shaders[0].use();
-    _floor->draw(_projectionViewMatrix);
-    _player->draw(_projectionViewMatrix);
+    if (_state == GLOBAL::STATE_PLAY) {
+        _floor->draw(_projectionViewMatrix);
+        _player->draw(_projectionViewMatrix);
+    } else if (_state == GLOBAL::STATE_MENU) {
+        _menu->draw(_projectionViewMatrix);
+    }
 
     glfwSwapBuffers(_window);
 }

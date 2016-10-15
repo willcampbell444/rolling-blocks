@@ -1,7 +1,7 @@
 #include <floor.h>
 
 const float GAP = GLOBAL::GAP;
-const float BOTTOM = -2.0f;
+const float BOTTOM = GLOBAL::BOTTOM;
 
 Floor::Floor(Shaders* shader) {
     glGenVertexArrays(1, &_vertexArrayObject);
