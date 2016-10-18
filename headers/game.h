@@ -15,6 +15,7 @@
 #include <map.h>
 #include <vector>
 #include <globals.h>
+#include <pugixml.hpp>
 #include <menu.h>
 
 class Game {
@@ -76,6 +77,9 @@ private:
     glm::mat4 _viewMatrix;
     glm::mat4 _projectionMatrix;
     glm::mat4 _projectionViewMatrix;
+
+    pugi::xml_node _gameOrder;
+    pugi::xml_document _document;
 
     int _state;
 

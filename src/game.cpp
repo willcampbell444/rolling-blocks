@@ -45,14 +45,14 @@ Game::Game() {
 
     _state = GLOBAL::STATE_MENU;
 
-    _levelFileNames.push_back("maps/test2.map");
-    _levelNames.push_back("TEST");
+    if (!_document.load_file("maps/gameOrder.xml")) {
+        std::cout << "Game order failed to load!" << std::endl;
+    }
+    _gameOrder = _document.child("option");
 
-    _levelFileNames.push_back("maps/level001.map");
-    _levelNames.push_back("L 1");
-
-    _levelFileNames.push_back("maps/level002.map");
-    _levelNames.push_back("L 2");
+    for (pugi::xml_node i: _gameOrder.children()) {
+        _levelNames.push_back(i.attribute("name").value());
+    }
 
     _menu->setOptions(_levelNames);
 }
@@ -183,7 +183,13 @@ void Game::update() {
 
         _menu->update();
         if (_menu->result() != -1) {
-            loadMap(_levelFileNames[_menu->result()]);
+            int count = 0;
+            pugi::xml_node child = _gameOrder.child("level");
+            while (count < _menu->result()) {
+                count += 1;
+                child = child.next_sibling();
+            }
+            loadMap(child.attribute("fileName").value());
             _state = GLOBAL::STATE_PLAY;
         }
     }
