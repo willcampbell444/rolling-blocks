@@ -18,11 +18,13 @@
 class Menu {
 public:
 	Menu(Shaders* shader);
-	void setOptions(std::vector<const char*> options);
+	void setOptions(std::vector<const char*> options, int dir);
 	void draw(glm::mat4 viewProjectionMatrix);
 	glm::vec3 getCameraPos();
 	glm::vec2 getCameraDistance();
 	void update();
+	bool isStill();
+	void end();
 	void select();
 	int result();
 	void move(int direction);
@@ -40,6 +42,7 @@ private:
 	bool _isEndTransition = false;
 	bool _wait = false;
 	bool _done = false;
+	bool _forcedEnd = false;
 	int _frame = 0;
 
 	float _angle = 90.0f;

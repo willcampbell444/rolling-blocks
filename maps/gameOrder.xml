@@ -2,4 +2,12 @@
 	<level name="1" fileName="maps/level001.map"/>
 	<level name="2" fileName="maps/level002.map"/>
 	<level name="WOO" fileName="maps/test2.map"/>
+	<option name="DOGGO">
+		<level name="2" fileName="maps/level002.map"/>
+		<option name="CATS">
+			<level name="2" fileName="maps/level002.map"/>
+			<level name="1" fileName="maps/level001.map"/>
+		</option>
+		<level name="1" fileName="maps/level001.map"/>
+	</option>
 </option>

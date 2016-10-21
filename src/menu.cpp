@@ -542,6 +542,20 @@ void Menu::move(int direction) {
     }
 }
 
+bool Menu::isStill() {
+    return (!_isCameraTransition && !_isTransition && !_isEndTransition && !_isBeginning);
+}
+
+void Menu::end() {
+    _oldCameraDistance = _cameraDistance;
+    _oldCameraPos = _cameraPos;
+    _newCameraPos = _cameraPos;
+    _newCameraDistance = _cameraDistance;
+    _newCameraPos.y += GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+    _isEndTransition = true;
+    _forcedEnd = true;
+}
+
 void Menu::select() {
     if (!_isCameraTransition && !_isTransition && !_isEndTransition && !_isBeginning) {
         _isTransition = true;
@@ -582,7 +596,7 @@ void Menu::update() {
             _isEndTransition = true;
             _oldCameraDistance = _newCameraDistance;
             _oldCameraPos = _newCameraPos;
-            _newCameraPos.y = -GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+            _newCameraPos.y += -GLOBAL::FALL_HEIGHT*_cameraDistance.y;
             _frame = 0;
         }
     } else if (_isCameraTransition) {
@@ -627,12 +641,15 @@ void Menu::update() {
 
 int Menu::result() {
     if (_done) {
+        if (_forcedEnd) {
+            return -2;
+        }
         return _currentPeice;
     }
     return -1;
 }
 
-void Menu::setOptions(std::vector<const char*> options) {
+void Menu::setOptions(std::vector<const char*> options, int dir) {
     _options.clear();
     _done = false;
     _isBeginning = true;
@@ -640,6 +657,7 @@ void Menu::setOptions(std::vector<const char*> options) {
     _isCameraTransition = false;
     _isTransition = false;
     _wait = false;
+    _forcedEnd = false;
     _frame = 0;
     _currentPeice = 0;
     _angle = 90.0f;
@@ -657,7 +675,7 @@ void Menu::setOptions(std::vector<const char*> options) {
     _newCameraPos = _cameraPos;
     _newCameraDistance = _cameraDistance;
     _oldCameraPos = _cameraPos;
-    _oldCameraPos.y += GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+    _oldCameraPos.y += GLOBAL::FALL_HEIGHT*_cameraDistance.y*dir;
     _oldCameraDistance = _cameraDistance;
 
     update();
@@ -681,7 +699,7 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
             for (int i = 0; i < 25; i++) {
                 if (letter & (unsigned int)(1 << i)) {
                     if (m == _currentPeice) {
-                        if (!_isEndTransition) {
+                        if (!_isEndTransition || _forcedEnd) {
                             transformMatrix = (
                                 viewProjectionMatrix
                                 * glm::translate(glm::mat4(1.0f), -glm::vec3(-0.5f, 0, 0))

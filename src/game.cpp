@@ -48,13 +48,13 @@ Game::Game() {
     if (!_document.load_file("maps/gameOrder.xml")) {
         std::cout << "Game order failed to load!" << std::endl;
     }
-    _gameOrder = _document.child("option");
+    _currentLayer = _document.first_child();
 
-    for (pugi::xml_node i: _gameOrder.children()) {
+    for (pugi::xml_node i: _currentLayer.children()) {
         _levelNames.push_back(i.attribute("name").value());
     }
 
-    _menu->setOptions(_levelNames);
+    _menu->setOptions(_levelNames, 1);
 }
 
 Game::~Game() {
@@ -66,6 +66,44 @@ Game::~Game() {
     delete _player;
 
     glfwTerminate();
+}
+
+void Game::selectOption(int optionNum) {
+    if (optionNum == -2) {
+        _menu->setOptions(_levelNames, -1);
+    } else {
+        int count = 0;
+        pugi::xml_node child = _currentLayer.first_child();
+        while (count < optionNum) {
+            count += 1;
+            child = child.next_sibling();
+        }
+        if (strcmp(child.name(), "level") == 0) {
+            loadMap(child.attribute("fileName").value());
+            _state = GLOBAL::STATE_PLAY;
+        } else if (strcmp(child.name(), "option") == 0) {
+            _levelNames.clear();
+            _currentLayer = child;
+            for (pugi::xml_node i: _currentLayer.children()) {
+                _levelNames.push_back(i.attribute("name").value());
+            }
+            _menu->setOptions(_levelNames, 1);
+        }
+    }
+}
+
+void Game::previousOption() {
+    if (_currentLayer != _document.child("option")) {
+        _currentLayer = _currentLayer.parent();
+
+        _levelNames.clear();
+
+        for (pugi::xml_node i: _currentLayer.children()) {
+            _levelNames.push_back(i.attribute("name").value());
+        }
+
+        _menu->end();
+    }
 }
 
 GLFWwindow* Game::getWindow() {
@@ -158,7 +196,7 @@ void Game::update() {
         cameraDistance = _player->getCameraDistance();
     
         if (_player->win()) {
-            _menu->setOptions(_levelNames);
+            _menu->setOptions(_levelNames, 1);
             _state = GLOBAL::STATE_MENU;
         }
     } else if (_state == GLOBAL::STATE_MENU) {
@@ -181,16 +219,13 @@ void Game::update() {
             _menu->select();
         }
 
+        if (glfwGetKey(_window, GLFW_KEY_F) && _menu->isStill()) {
+            previousOption();
+        }
+
         _menu->update();
         if (_menu->result() != -1) {
-            int count = 0;
-            pugi::xml_node child = _gameOrder.child("level");
-            while (count < _menu->result()) {
-                count += 1;
-                child = child.next_sibling();
-            }
-            loadMap(child.attribute("fileName").value());
-            _state = GLOBAL::STATE_PLAY;
+            selectOption(_menu->result());
         }
     }
 

@@ -1,6 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+// #define PUGIXML_WCHAR_MODE UTF-8
+
 #include <shaders.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -17,6 +19,7 @@
 #include <globals.h>
 #include <pugixml.hpp>
 #include <menu.h>
+#include <cstring>
 
 class Game {
 public:
@@ -28,6 +31,9 @@ public:
     bool end();
     GLFWwindow* getWindow();
 private:
+    void selectOption(int optionNum);
+    void previousOption();
+
     GLfloat _vertices[56] = {
         //side
         -100, -0.01, -100, 1, 1, 1, 0.5,
@@ -78,7 +84,7 @@ private:
     glm::mat4 _projectionMatrix;
     glm::mat4 _projectionViewMatrix;
 
-    pugi::xml_node _gameOrder;
+    pugi::xml_node _currentLayer;
     pugi::xml_document _document;
 
     int _state;
