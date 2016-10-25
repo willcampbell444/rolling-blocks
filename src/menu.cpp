@@ -664,7 +664,7 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                                 (i % 5 + count + 1.0f)
                             )
                         )
-                        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 2-(GLOBAL::GAP*6), GLOBAL::BLOCK_WIDTH))
+                        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*6), GLOBAL::BLOCK_WIDTH))
                         * glm::translate(
                             glm::mat4(1.0f),
                             glm::vec3(0, -0.5, 0)
@@ -700,7 +700,7 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                                 (i % 5 + count + 1.0f)
                             )
                         )
-                        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 2-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
+                        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
                     );
                     glUniformMatrix4fv(
                         _shader->getUniformLocation("transformMatrix"), 
@@ -734,7 +734,7 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                             count
                         )
                     )
-                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 2-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
+                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
                 );
                 glUniformMatrix4fv(
                     _shader->getUniformLocation("transformMatrix"), 
@@ -768,7 +768,7 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                             count+i
                         )
                     )
-                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 2-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
+                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
                 );
                 glUniformMatrix4fv(
                     _shader->getUniformLocation("transformMatrix"), 
@@ -800,7 +800,7 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                             count+i
                         )
                     )
-                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 2-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
+                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
                 );
                 glUniformMatrix4fv(
                     _shader->getUniformLocation("transformMatrix"), 
@@ -835,7 +835,7 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                         count
                     )
                 )
-                * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, 2-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
+                * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
             );
             glUniformMatrix4fv(
                 _shader->getUniformLocation("transformMatrix"), 

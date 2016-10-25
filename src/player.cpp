@@ -3,136 +3,91 @@
 Player::Player(Shaders* shader) {
     _shader = shader;
 
-    float vertices[48] = {
-        -0.5,  0.5,  -0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
-        -0.5,  0.5,   0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
-         0.5,  0.5,   0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
-         0.5,  0.5,  -0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
+    float vertices[36*6] = {
+        -0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
+        -0.5,  0.5f,   0.5, 0.0f, 1.0f, 0.0f,
+         0.5,  0.5f,   0.5, 0.0f, 1.0f, 0.0f,
+         0.5,  0.5f,   0.5, 0.0f, 1.0f, 0.0f,
+         0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
+        -0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
 
-        -0.5,  -0.5,  -0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
-        -0.5,  -0.5,   0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
-         0.5,  -0.5,   0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
-         0.5,  -0.5,  -0.5, GLOBAL::PLAYER_COLOR.r, GLOBAL::PLAYER_COLOR.g, GLOBAL::PLAYER_COLOR.b,
+        -0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
+        -0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
+         0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
+         0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
+         0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
+        -0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
+
+        -0.5, -0.5f,  -0.5, -1.0f, 0.0f, 0.0f,
+        -0.5, -0.5f,   0.5, -1.0f, 0.0f, 0.0f,
+        -0.5,  0.5f,   0.5, -1.0f, 0.0f, 0.0f,
+        -0.5,  0.5f,   0.5, -1.0f, 0.0f, 0.0f,
+        -0.5,  0.5f,  -0.5, -1.0f, 0.0f, 0.0f,
+        -0.5, -0.5f,  -0.5, -1.0f, 0.0f, 0.0f,
+
+         0.5, -0.5f,   0.5, 1.0f, 0.0f, 0.0f,
+         0.5, -0.5f,  -0.5, 1.0f, 0.0f, 0.0f,
+         0.5,  0.5f,  -0.5, 1.0f, 0.0f, 0.0f,
+         0.5,  0.5f,  -0.5, 1.0f, 0.0f, 0.0f,
+         0.5,  0.5f,   0.5, 1.0f, 0.0f, 0.0f,
+         0.5, -0.5f,   0.5, 1.0f, 0.0f, 0.0f,
+
+        -0.5, -0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
+        -0.5,  0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
+         0.5,  0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
+         0.5,  0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
+         0.5, -0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
+        -0.5, -0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
+
+        -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f,
+        -0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
+         0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
+         0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
+         0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f,
+        -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f
     };
 
-    float doneVertices[48] = {
-        -0.5,  0.5,  -0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
-        -0.5,  0.5,   0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
-         0.5,  0.5,   0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
-         0.5,  0.5,  -0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
-
-        -0.5,  -0.5,  -0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
-        -0.5,  -0.5,   0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
-         0.5,  -0.5,   0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
-         0.5,  -0.5,  -0.5, GLOBAL::DONE_PLAYER_COLOR.r, GLOBAL::DONE_PLAYER_COLOR.g, GLOBAL::DONE_PLAYER_COLOR.b,
-    };
-
-    GLuint elements[36] = {
-        0, 1, 2, 2, 3, 0,
-        4, 5, 6, 6, 7, 4,
-        4, 5, 1, 1, 0, 4,
-        6, 7, 3, 3, 2, 6,
-        4, 0, 3, 3, 7, 4,
-        5, 1, 2, 2, 6, 5
-    };
-
-    GLuint lineElements[24] = {
-        0, 1, 1, 2, 2, 3, 3, 0,
-        4, 5, 5, 6, 6, 7, 7, 4,
-        0, 4, 1, 5, 2, 6, 3, 7
-    };
-
-    GLuint elementBufferObject;
     GLuint vertexBufferObject;
 
     glGenVertexArrays(1, &_vertexArrayObject);
     glBindVertexArray(_vertexArrayObject);
 
-    glGenBuffers(1, &elementBufferObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*36, elements, GL_STATIC_DRAW);
-
     glGenBuffers(1, &vertexBufferObject);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*36*6, vertices, GL_STATIC_DRAW);
 
     GLuint attrib = _shader->getAttributeLocation("position");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
 
-    attrib = _shader->getAttributeLocation("color");
+    attrib = _shader->getAttributeLocation("normal");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 
+    // glGenVertexArrays(1, &_lineVertexArrayObject);
+    // glBindVertexArray(_lineVertexArrayObject);
 
+    // glGenBuffers(1, &elementBufferObject);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*36, lineElements, GL_STATIC_DRAW);
 
-    glGenVertexArrays(1, &_doneVertexArrayObject);
-    glBindVertexArray(_doneVertexArrayObject);
+    // for (int i = 0; i < 8; i++) {
+    //     vertices[i*6+3] = 0;
+    //     vertices[i*6+4] = 0;
+    //     vertices[i*6+5] = 0;
+    // }
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+    // glGenBuffers(1, &vertexBufferObject);
+    // glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, vertices, GL_STATIC_DRAW);
 
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, doneVertices, GL_STATIC_DRAW);
+    // attrib = _shader->getAttributeLocation("position");
+    // glEnableVertexAttribArray(attrib);
+    // glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
 
-    attrib = _shader->getAttributeLocation("position");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
-
-    attrib = _shader->getAttributeLocation("color");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
-
-
-
-    glGenVertexArrays(1, &_lineVertexArrayObject);
-    glBindVertexArray(_lineVertexArrayObject);
-
-    glGenBuffers(1, &elementBufferObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*36, lineElements, GL_STATIC_DRAW);
-
-    for (int i = 0; i < 8; i++) {
-        vertices[i*6+3] = 0;
-        vertices[i*6+4] = 0;
-        vertices[i*6+5] = 0;
-    }
-
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, vertices, GL_STATIC_DRAW);
-
-    attrib = _shader->getAttributeLocation("position");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
-
-    attrib = _shader->getAttributeLocation("color");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
-
-
-    glGenVertexArrays(1, &_staticLineVertexArrayObject);
-    glBindVertexArray(_staticLineVertexArrayObject);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-
-    for (int i = 0; i < 8; i++) {
-        vertices[i*6+3] = 1;
-        vertices[i*6+4] = 1;
-        vertices[i*6+5] = 1;
-    }
-
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, vertices, GL_STATIC_DRAW);
-
-    attrib = _shader->getAttributeLocation("position");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
-
-    attrib = _shader->getAttributeLocation("color");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+    // attrib = _shader->getAttributeLocation("color");
+    // glEnableVertexAttribArray(attrib);
+    // glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 }
 
 void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> startPosition) {
@@ -944,96 +899,125 @@ void Player::attach() {
 
 void Player::draw(glm::mat4 viewProjectionMatrix) {
     _shader->use();
+    glm::mat4 model;
     for (glm::vec3 peice: _playerPeices) {
-        _transformMatrix = viewProjectionMatrix
-        * glm::translate(glm::mat4(1.0f), -_rotationAxisPosition)
-        * glm::rotate(glm::mat4(1.0f), glm::radians(_angleSign*_angle), _rotationAxis)
-        * glm::translate(glm::mat4(1.0f), _rotationAxisPosition)
-        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
-        * glm::translate(
-            glm::mat4(1.0f), 
-            glm::vec3(
-                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+        model = (
+            glm::translate(glm::mat4(1.0f), -_rotationAxisPosition)
+            * glm::rotate(glm::mat4(1.0f), glm::radians(_angleSign*_angle), _rotationAxis)
+            * glm::translate(glm::mat4(1.0f), _rotationAxisPosition)
+            * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
+            * glm::translate(
+                glm::mat4(1.0f), 
+                glm::vec3(
+                    (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                    (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                    (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                )
             )
         );
         glUniformMatrix4fv(
             _shader->getUniformLocation("transformMatrix"), 
             1, 
             GL_FALSE, 
-            glm::value_ptr(_transformMatrix)
+            glm::value_ptr(viewProjectionMatrix*model)
         );
+        glUniformMatrix4fv(
+            _shader->getUniformLocation("model"), 
+            1, 
+            GL_FALSE, 
+            glm::value_ptr(model)
+        );
+        glUniform1i(_shader->getUniformLocation("useLighting"), true);
+        glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_COLOR.x, GLOBAL::PLAYER_COLOR.y, GLOBAL::PLAYER_COLOR.z);
         glBindVertexArray(_vertexArrayObject);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(_lineVertexArrayObject);
-        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
     }
     for (glm::vec4 peice: _falling) {
-        _transformMatrix = viewProjectionMatrix
-        * glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
-        * glm::translate(
-            glm::mat4(1.0f), 
-            glm::vec3(
-                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                (0.5f + peice.y - peice[3]*peice[3]*0.005) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+        model = (
+            glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
+            * glm::translate(
+                glm::mat4(1.0f), 
+                glm::vec3(
+                    (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                    (0.5f + peice.y - peice[3]*peice[3]*0.005) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                    (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                )
             )
         );
         glUniformMatrix4fv(
             _shader->getUniformLocation("transformMatrix"), 
             1, 
             GL_FALSE, 
-            glm::value_ptr(_transformMatrix)
+            glm::value_ptr(viewProjectionMatrix*model)
         );
+        glUniformMatrix4fv(
+            _shader->getUniformLocation("model"), 
+            1, 
+            GL_FALSE, 
+            glm::value_ptr(model)
+        );
+        glUniform1i(_shader->getUniformLocation("useLighting"), true);
+        glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_COLOR.x, GLOBAL::PLAYER_COLOR.y, GLOBAL::PLAYER_COLOR.z);
         glBindVertexArray(_vertexArrayObject);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(_lineVertexArrayObject);
-        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
     }
     for (glm::vec3 peice: _static) {
-        _transformMatrix = viewProjectionMatrix
-        * glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
-        * glm::translate(
-            glm::mat4(1.0f), 
-            glm::vec3(
-                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+        model = (
+            glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
+            * glm::translate(
+                glm::mat4(1.0f), 
+                glm::vec3(
+                    (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                    (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                    (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                )
             )
         );
         glUniformMatrix4fv(
             _shader->getUniformLocation("transformMatrix"), 
             1, 
             GL_FALSE, 
-            glm::value_ptr(_transformMatrix)
+            glm::value_ptr(viewProjectionMatrix*model)
         );
+        glUniformMatrix4fv(
+            _shader->getUniformLocation("model"), 
+            1, 
+            GL_FALSE, 
+            glm::value_ptr(model)
+        );
+        glUniform1i(_shader->getUniformLocation("useLighting"), true);
+        glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_COLOR.x, GLOBAL::PLAYER_COLOR.y, GLOBAL::PLAYER_COLOR.z);
         glBindVertexArray(_vertexArrayObject);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(_staticLineVertexArrayObject);
-        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
     }
     for (glm::vec3 peice: _done) {
-        _transformMatrix = viewProjectionMatrix
-        * glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
-        * glm::translate(
-            glm::mat4(1.0f), 
-            glm::vec3(
-                (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+        model = (
+            glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
+            * glm::translate(
+                glm::mat4(1.0f), 
+                glm::vec3(
+                    (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                    (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
+                    (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
+                )
             )
         );
         glUniformMatrix4fv(
             _shader->getUniformLocation("transformMatrix"), 
             1, 
             GL_FALSE, 
-            glm::value_ptr(_transformMatrix)
+            glm::value_ptr(viewProjectionMatrix*model)
         );
-        glBindVertexArray(_doneVertexArrayObject);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(_lineVertexArrayObject);
-        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+        glUniformMatrix4fv(
+            _shader->getUniformLocation("model"), 
+            1, 
+            GL_FALSE, 
+            glm::value_ptr(model)
+        );
+        glUniform1i(_shader->getUniformLocation("useLighting"), true);
+        glUniform3f(_shader->getUniformLocation("color"), GLOBAL::VICTORY_COLOR.x, GLOBAL::VICTORY_COLOR.y, GLOBAL::VICTORY_COLOR.z);
+        glBindVertexArray(_vertexArrayObject);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
     }
 }
 

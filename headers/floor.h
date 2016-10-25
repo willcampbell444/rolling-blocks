@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <shaders.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <globals.h>
@@ -21,12 +22,6 @@ private:
     unsigned char* _map;
 
     GLuint _vertexArrayObject;
-    GLuint _vertexBufferObject;
-    GLuint _elementBufferObject;
-
-    GLuint _lineVertexArrayObject;
-    GLuint _lineElementBufferObject;
-    GLuint _lineVertexBufferObject;
 
     Shaders* _shader;
 };

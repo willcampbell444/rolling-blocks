@@ -17,7 +17,7 @@ namespace GLOBAL {
 
 	const float GAP = 0.05f;
 	const float BLOCK_WIDTH = 1.0f-(GAP*2.0f);
-	const float BOTTOM = -2.0f;
+	const float FLOOR_HEIGHT = 2.0f;
 
 	const float FALL_HEIGHT = 7;
 
