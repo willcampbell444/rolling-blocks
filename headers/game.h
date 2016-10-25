@@ -84,6 +84,8 @@ private:
     glm::mat4 _projectionMatrix;
     glm::mat4 _projectionViewMatrix;
 
+    glm::vec3 _cameraPos;
+
     pugi::xml_node _currentLayer;
     pugi::xml_document _document;
 

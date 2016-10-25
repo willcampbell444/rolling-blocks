@@ -48,16 +48,8 @@ private:
 	float _angle = 90.0f;
 	float _height = 0;
 
-	GLuint _floorVAO;
-	GLuint _floorGoalVAO;
-	GLuint _selectedVAO;
-	GLuint _unselectedVAO;
-	GLuint _goalVAO;
-
-	GLuint _floorLineVAO;
-	GLuint _floorGoalLineVAO;
-	GLuint _selectedLineVAO;
-	GLuint _unselectedLineVAO;
+	GLuint _blockVAO;
+	GLuint _lineVAO;
 
 	Shaders* _shader;
 

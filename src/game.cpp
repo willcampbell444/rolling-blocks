@@ -26,10 +26,10 @@ Game::Game() {
     // glEnable(GL_POLYGON_STIPPLE);
 
     if (!_shaders[0].loadShader(GL_VERTEX_SHADER, "shaders/vertex.glsl")) {
-        std::cout << "Vertex Shader Failed To Compile";
+        std::cout << "Vertex Shader Failed To Compile" << std::endl;
     }
     if (!_shaders[0].loadShader(GL_FRAGMENT_SHADER, "shaders/fragment.glsl")) {
-        std::cout << "Fragment Shader Failed To Compile";
+        std::cout << "Fragment Shader Failed To Compile" << std::endl;
     }
     _shaders[0].createProgram();
 
@@ -255,12 +255,14 @@ void Game::update() {
         _cameraAngle = 360;
     }
 
+    _cameraPos = glm::vec3(
+        cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*cameraDistance.x,
+        cameraPos.y + cameraDistance.y + _cameraHeight,
+        cameraPos.z - std::sin(_cameraAngle*(3.14159/180))*cameraDistance.x
+    );
+
     _viewMatrix = glm::lookAt(
-        glm::vec3(
-            cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*cameraDistance.x,
-            cameraPos.y + cameraDistance.y + _cameraHeight,
-            cameraPos.z - std::sin(_cameraAngle*(3.14159/180))*cameraDistance.x
-        ),
+        _cameraPos,
         cameraPos,
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
@@ -270,6 +272,15 @@ void Game::update() {
 
 void Game::draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    _shaders[0].use();
+
+    glUniform3f(
+        _shaders[0].getUniformLocation("cameraPosition"), 
+        _cameraPos.x,
+        _cameraPos.y,
+        _cameraPos.z
+    );
 
     if (_state == GLOBAL::STATE_PLAY) {
         _floor->draw(_projectionViewMatrix);
