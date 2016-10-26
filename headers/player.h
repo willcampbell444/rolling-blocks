@@ -14,10 +14,11 @@
 #include <heightMap.h>
 #include <math.h>
 #include <vector>
+#include <renderer.h>
 
 class Player {
 public:
-    Player(Shaders* shader);
+    Player(Renderer* renderer);
     void create(int x, int y, unsigned char* map, std::vector<glm::vec3> startPosition);
     void draw(glm::mat4 viewProjectionMatrix);
     void move(int x, int z, unsigned char* map);
@@ -72,7 +73,7 @@ private:
     HeightMap _heightMap;
     glm::mat4 _transformMatrix;
 
-    Shaders* _shader;
+    Renderer* _renderer;
 
     GLuint _vertexArrayObject;
     GLuint _doneVertexArrayObject;

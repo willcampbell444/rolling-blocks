@@ -19,6 +19,7 @@
 #include <globals.h>
 #include <pugixml.hpp>
 #include <menu.h>
+#include <renderer.h>
 #include <cstring>
 
 class Game {
@@ -79,6 +80,8 @@ private:
     GLuint _vao[2];
     GLuint _vbo[2];
     GLuint _ebo[2];
+
+    Renderer* _renderer;
 
     glm::mat4 _viewMatrix;
     glm::mat4 _projectionMatrix;

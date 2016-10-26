@@ -8,11 +8,11 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <globals.h>
+#include <renderer.h>
 
 class Floor {
 public:
-    Floor(Shaders* shader);
-    ~Floor();
+    Floor(Renderer* renderer);
     void create(int width, int length, unsigned char* tiles);
     void draw(glm::mat4 viewProjectionMatrix);
     unsigned char* getMap();
@@ -21,9 +21,7 @@ private:
 
     unsigned char* _map;
 
-    GLuint _vertexArrayObject;
-
-    Shaders* _shader;
+    Renderer* _renderer;
 };
 
 #endif

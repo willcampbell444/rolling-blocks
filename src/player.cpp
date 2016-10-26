@@ -1,93 +1,7 @@
 #include <player.h>
 
-Player::Player(Shaders* shader) {
-    _shader = shader;
-
-    float vertices[36*6] = {
-        -0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
-        -0.5,  0.5f,   0.5, 0.0f, 1.0f, 0.0f,
-         0.5,  0.5f,   0.5, 0.0f, 1.0f, 0.0f,
-         0.5,  0.5f,   0.5, 0.0f, 1.0f, 0.0f,
-         0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
-        -0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
-
-        -0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
-        -0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
-         0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
-         0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
-         0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
-        -0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
-
-        -0.5, -0.5f,  -0.5, -1.0f, 0.0f, 0.0f,
-        -0.5, -0.5f,   0.5, -1.0f, 0.0f, 0.0f,
-        -0.5,  0.5f,   0.5, -1.0f, 0.0f, 0.0f,
-        -0.5,  0.5f,   0.5, -1.0f, 0.0f, 0.0f,
-        -0.5,  0.5f,  -0.5, -1.0f, 0.0f, 0.0f,
-        -0.5, -0.5f,  -0.5, -1.0f, 0.0f, 0.0f,
-
-         0.5, -0.5f,   0.5, 1.0f, 0.0f, 0.0f,
-         0.5, -0.5f,  -0.5, 1.0f, 0.0f, 0.0f,
-         0.5,  0.5f,  -0.5, 1.0f, 0.0f, 0.0f,
-         0.5,  0.5f,  -0.5, 1.0f, 0.0f, 0.0f,
-         0.5,  0.5f,   0.5, 1.0f, 0.0f, 0.0f,
-         0.5, -0.5f,   0.5, 1.0f, 0.0f, 0.0f,
-
-        -0.5, -0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
-        -0.5,  0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
-         0.5,  0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
-         0.5,  0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
-         0.5, -0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
-        -0.5, -0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
-
-        -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-        -0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-         0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-         0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-         0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-        -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f
-    };
-
-    GLuint vertexBufferObject;
-
-    glGenVertexArrays(1, &_vertexArrayObject);
-    glBindVertexArray(_vertexArrayObject);
-
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*36*6, vertices, GL_STATIC_DRAW);
-
-    GLuint attrib = _shader->getAttributeLocation("position");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
-
-    attrib = _shader->getAttributeLocation("normal");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
-
-    // glGenVertexArrays(1, &_lineVertexArrayObject);
-    // glBindVertexArray(_lineVertexArrayObject);
-
-    // glGenBuffers(1, &elementBufferObject);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*36, lineElements, GL_STATIC_DRAW);
-
-    // for (int i = 0; i < 8; i++) {
-    //     vertices[i*6+3] = 0;
-    //     vertices[i*6+4] = 0;
-    //     vertices[i*6+5] = 0;
-    // }
-
-    // glGenBuffers(1, &vertexBufferObject);
-    // glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*6, vertices, GL_STATIC_DRAW);
-
-    // attrib = _shader->getAttributeLocation("position");
-    // glEnableVertexAttribArray(attrib);
-    // glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
-
-    // attrib = _shader->getAttributeLocation("color");
-    // glEnableVertexAttribArray(attrib);
-    // glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+Player::Player(Renderer* renderer) {
+    _renderer = renderer;
 }
 
 void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> startPosition) {
@@ -122,9 +36,9 @@ void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> sta
     setMinMax();
 
     _cameraPos = glm::vec3(
-        -(_floorWidth/2.0f)+(_minX+_maxX+1)/2.0f,
+        (_minX+_maxX)/2.0f,
         (_minY+_maxY+1)/2.0f,
-        -(_floorLength/2.0f)+(_minZ+_maxZ+1)/2.0f
+        (_minZ+_maxZ)/2.0f
     );
 
     if (_maxX - _minX > _maxZ - _minZ) {
@@ -243,14 +157,14 @@ void Player::move(int x, int z, unsigned char* map) {
                 _newPeices[i].y = _maxX-_playerPeices[i].x;
             }
             _angleSign = 1;
-            _rotationAxisPosition = glm::vec3(_floorWidth/2.0f - _maxX - 1, 0, 0);
+            _rotationAxisPosition = glm::vec3(_maxX+1-0.5f, 0, 0);
         } else if (x == -1) {
             for (int i = 0; i < _newPeices.size(); i++) {
                 _newPeices[i].x = _minX-_playerPeices[i].y-1;
                 _newPeices[i].y = _playerPeices[i].x-_minX;
             }
             _angleSign = 1;
-            _rotationAxisPosition = glm::vec3(_floorWidth/2.0f - _minX, 0, 0);
+            _rotationAxisPosition = glm::vec3(_minX-0.5f, 0, 0);
         }
         if (z == 1) {
             for (int i = 0; i < _newPeices.size(); i++) {
@@ -258,14 +172,14 @@ void Player::move(int x, int z, unsigned char* map) {
                 _newPeices[i].y = _maxZ-_playerPeices[i].z;
             }
             _angleSign = -1;
-            _rotationAxisPosition = glm::vec3(0, 0, _floorLength/2.0f - _maxZ - 1);
+            _rotationAxisPosition = glm::vec3(0, 0, _maxZ+1-0.5f);
         } else if (z == -1) {
             for (int i = 0; i < _newPeices.size(); i++) {
                 _newPeices[i].z = _minZ-_playerPeices[i].y-1;
                 _newPeices[i].y = _playerPeices[i].z-_minZ;
             }
             _angleSign = -1;
-            _rotationAxisPosition = glm::vec3(0, 0, _floorLength/2.0f - _minZ);
+            _rotationAxisPosition = glm::vec3(0, 0, _minZ-0.5f);
         }
 
         _oldPeices = _playerPeices;
@@ -280,9 +194,9 @@ void Player::move(int x, int z, unsigned char* map) {
         setMinMax();
 
         _newCameraPos = glm::vec3(
-            -(_floorWidth/2.0f)+(_minX+_maxX+1)/2.0f,
+            (_minX+_maxX)/2.0f,
             (_minY+_maxY+1)/2.0f,
-            -(_floorLength/2.0f)+(_minZ+_maxZ+1)/2.0f
+            (_minZ+_maxZ)/2.0f
         );
 
         if (_maxX - _minX > _maxZ - _minZ) {
@@ -291,6 +205,10 @@ void Player::move(int x, int z, unsigned char* map) {
             _newCameraDistance.x = _maxZ - _minZ + 5;
         }
         _newCameraDistance.y = _maxY - _minY + 3;
+
+std::cout << _rotationAxisPosition.x << ", " << _rotationAxisPosition.z << std::endl;
+std::cout << _minX << ", " << _maxX << std::endl;
+std::cout << _minZ << ", " << _maxZ << std::endl << std::endl;
     }
 }
 
@@ -491,9 +409,9 @@ void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles) {
             setMinMax();
 
             _newCameraPos = glm::vec3(
-                -(_floorWidth/2.0f)+(_minX+_maxX+1)/2.0f,
+                (_minX+_maxX)/2.0f,
                 (_minY+_maxY+1)/2.0f,
-                -(_floorLength/2.0f)+(_minZ+_maxZ+1)/2.0f
+                (_minZ+_maxZ)/2.0f
             );
 
             if (_maxX - _minX > _maxZ - _minZ) {
@@ -593,9 +511,9 @@ void Player::changeGroup(int direction) {
             setMinMax();
 
             _newCameraPos = glm::vec3(
-                -(_floorWidth/2.0f)+(_minX+_maxX+1)/2.0f,
+                (_minX+_maxX)/2.0f,
                 (_minY+_maxY+1)/2.0f,
-                -(_floorLength/2.0f)+(_minZ+_maxZ+1)/2.0f
+                (_minZ+_maxZ)/2.0f
             );
 
             if (_maxX - _minX > _maxZ - _minZ) {
@@ -898,126 +816,26 @@ void Player::attach() {
 }
 
 void Player::draw(glm::mat4 viewProjectionMatrix) {
-    _shader->use();
-    glm::mat4 model;
     for (glm::vec3 peice: _playerPeices) {
-        model = (
-            glm::translate(glm::mat4(1.0f), -_rotationAxisPosition)
-            * glm::rotate(glm::mat4(1.0f), glm::radians(_angleSign*_angle), _rotationAxis)
-            * glm::translate(glm::mat4(1.0f), _rotationAxisPosition)
-            * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
-            * glm::translate(
-                glm::mat4(1.0f), 
-                glm::vec3(
-                    (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                    (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                    (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
-                )
-            )
+        _renderer->drawRotatedBox(
+            viewProjectionMatrix, 
+            peice.x, 
+            peice.y, 
+            peice.z, 
+            _angleSign*_angle, 
+            _rotationAxisPosition, 
+            _rotationAxis, 
+            GLOBAL::PLAYER_COLOR
         );
-        glUniformMatrix4fv(
-            _shader->getUniformLocation("transformMatrix"), 
-            1, 
-            GL_FALSE, 
-            glm::value_ptr(viewProjectionMatrix*model)
-        );
-        glUniformMatrix4fv(
-            _shader->getUniformLocation("model"), 
-            1, 
-            GL_FALSE, 
-            glm::value_ptr(model)
-        );
-        glUniform1i(_shader->getUniformLocation("useLighting"), true);
-        glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_COLOR.x, GLOBAL::PLAYER_COLOR.y, GLOBAL::PLAYER_COLOR.z);
-        glBindVertexArray(_vertexArrayObject);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
     }
     for (glm::vec4 peice: _falling) {
-        model = (
-            glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
-            * glm::translate(
-                glm::mat4(1.0f), 
-                glm::vec3(
-                    (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                    (0.5f + peice.y - peice[3]*peice[3]*0.005) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                    (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
-                )
-            )
-        );
-        glUniformMatrix4fv(
-            _shader->getUniformLocation("transformMatrix"), 
-            1, 
-            GL_FALSE, 
-            glm::value_ptr(viewProjectionMatrix*model)
-        );
-        glUniformMatrix4fv(
-            _shader->getUniformLocation("model"), 
-            1, 
-            GL_FALSE, 
-            glm::value_ptr(model)
-        );
-        glUniform1i(_shader->getUniformLocation("useLighting"), true);
-        glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_COLOR.x, GLOBAL::PLAYER_COLOR.y, GLOBAL::PLAYER_COLOR.z);
-        glBindVertexArray(_vertexArrayObject);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        _renderer->drawBox(viewProjectionMatrix, peice.x, peice.y - peice[3]*peice[3]*0.005, peice.z, GLOBAL::PLAYER_COLOR);
     }
     for (glm::vec3 peice: _static) {
-        model = (
-            glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
-            * glm::translate(
-                glm::mat4(1.0f), 
-                glm::vec3(
-                    (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                    (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                    (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
-                )
-            )
-        );
-        glUniformMatrix4fv(
-            _shader->getUniformLocation("transformMatrix"), 
-            1, 
-            GL_FALSE, 
-            glm::value_ptr(viewProjectionMatrix*model)
-        );
-        glUniformMatrix4fv(
-            _shader->getUniformLocation("model"), 
-            1, 
-            GL_FALSE, 
-            glm::value_ptr(model)
-        );
-        glUniform1i(_shader->getUniformLocation("useLighting"), true);
-        glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_COLOR.x, GLOBAL::PLAYER_COLOR.y, GLOBAL::PLAYER_COLOR.z);
-        glBindVertexArray(_vertexArrayObject);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        _renderer->drawBox(viewProjectionMatrix, peice.x, peice.y, peice.z, GLOBAL::PLAYER_COLOR);
     }
     for (glm::vec3 peice: _done) {
-        model = (
-            glm::scale(glm::mat4(1.0f), glm::vec3((GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH), (GLOBAL::BLOCK_WIDTH)))
-            * glm::translate(
-                glm::mat4(1.0f), 
-                glm::vec3(
-                    (-(_floorWidth/2.0f) + peice.x + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                    (0.5f + peice.y) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                    (-(_floorLength/2.0f) + peice.z + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH))
-                )
-            )
-        );
-        glUniformMatrix4fv(
-            _shader->getUniformLocation("transformMatrix"), 
-            1, 
-            GL_FALSE, 
-            glm::value_ptr(viewProjectionMatrix*model)
-        );
-        glUniformMatrix4fv(
-            _shader->getUniformLocation("model"), 
-            1, 
-            GL_FALSE, 
-            glm::value_ptr(model)
-        );
-        glUniform1i(_shader->getUniformLocation("useLighting"), true);
-        glUniform3f(_shader->getUniformLocation("color"), GLOBAL::VICTORY_COLOR.x, GLOBAL::VICTORY_COLOR.y, GLOBAL::VICTORY_COLOR.z);
-        glBindVertexArray(_vertexArrayObject);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        _renderer->drawBox(viewProjectionMatrix, peice.x, peice.y, peice.z, GLOBAL::VICTORY_COLOR);
     }
 }
 

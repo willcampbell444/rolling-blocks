@@ -39,8 +39,9 @@ Game::Game() {
 
     glClearColor(GLOBAL::BACKGROUND.r, GLOBAL::BACKGROUND.g, GLOBAL::BACKGROUND.b, 1.0f);
 
-    _floor = new Floor(&_shaders[0]);
-    _player = new Player(&_shaders[0]);
+    _renderer = new Renderer(&_shaders[0]);
+    _floor = new Floor(_renderer);
+    _player = new Player(_renderer);
     _menu = new Menu(&_shaders[0]);
 
     _state = GLOBAL::STATE_MENU;
