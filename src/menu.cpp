@@ -7,8 +7,8 @@
 // 15 16 17 18 19
 // 20 21 22 23 24
 
-Menu::Menu(Shaders* shader) {
-    _shader = shader;
+Menu::Menu(Renderer* renderer) {
+    _renderer = renderer;
 
     // http://www.dafont.com/visitor.font
     _chars['A'] = loadLetter(std::move((bool[25]){
@@ -345,36 +345,6 @@ Menu::Menu(Shaders* shader) {
          0.5,  0.5f,  -0.5,
          0.5, -0.5f,  -0.5
     };
-
-    GLuint vertexBufferObject;
-
-    glGenVertexArrays(1, &_blockVAO);
-    glBindVertexArray(_blockVAO);
-
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*36*6, vertices, GL_STATIC_DRAW);
-
-    GLuint attrib;
-    attrib = _shader->getAttributeLocation("position");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
-
-    attrib = _shader->getAttributeLocation("normal");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
-
-
-    glGenVertexArrays(1, &_lineVAO);
-    glBindVertexArray(_lineVAO);
-
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*8*3*3, lineVertecies, GL_STATIC_DRAW);
-
-    attrib = _shader->getAttributeLocation("position");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), 0);
 }
 
 void Menu::move(int direction) {
@@ -544,7 +514,7 @@ unsigned int Menu::loadLetter(bool bits[25]) {
 }
 
 void Menu::draw(glm::mat4 viewProjectionMatrix) {
-    _shader->use();
+    // _shader->use();
     int count = -1;
     glm::mat4 model;
     for (int m = 0; m < _options.size(); m++) {
@@ -554,309 +524,30 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                 if (letter & (unsigned int)(1 << i)) {
                     if (m == _currentPeice) {
                         if (!_isEndTransition || _forcedEnd) {
-                            model = (
-                                glm::translate(glm::mat4(1.0f), -glm::vec3(-0.5f, 0, 0))
-                                * glm::rotate(glm::mat4(1.0f), glm::radians(_angle), glm::vec3(0, 0, 1))
-                                * glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0, 0))
-                                * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
-                                * glm::translate(
-                                    glm::mat4(1.0f), 
-                                    glm::vec3(
-                                        (5 - (int)(i/5)) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                                        (_height+0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                                        (i % 5 + count + 1.0f) * (1.0/(GLOBAL::BLOCK_WIDTH))
-                                    )
-                                )
-                            );
-                            glUniformMatrix4fv(
-                                _shader->getUniformLocation("transformMatrix"), 
-                                1, 
-                                GL_FALSE, 
-                                glm::value_ptr(viewProjectionMatrix*model)
-                            );
-                            glUniformMatrix4fv(
-                                _shader->getUniformLocation("model"), 
-                                1, 
-                                GL_FALSE, 
-                                glm::value_ptr(model)
-                            );
-                            glUniform1i(_shader->getUniformLocation("useLighting"), true);
-                            glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_COLOR.x, GLOBAL::PLAYER_COLOR.y, GLOBAL::PLAYER_COLOR.z);
-                            glBindVertexArray(_blockVAO);
-                            glDrawArrays(GL_TRIANGLES, 0, 36);
-                            // glUniform1i(_shader->getUniformLocation("useLighting"), false);
-                            // glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_BORDER.x, GLOBAL::PLAYER_BORDER.y, GLOBAL::PLAYER_BORDER.z);
-                            // glBindVertexArray(_lineVAO);
-                            // glDrawArrays(GL_LINES, 0, 24);
+                            _renderer->drawRotatedBox(viewProjectionMatrix, 5 - (int)(i/5), _height, i % 5 + count + 1.0f, _angle, glm::vec3(0.5, 0, 0), glm::vec3(0, 0, 1), GLOBAL::PLAYER_COLOR);
                         } else {
-                            model = (
-                                glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
-                                * glm::translate(
-                                    glm::mat4(1.0f), 
-                                    glm::vec3(
-                                        (5 - (int)(i/5)) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                                        (_height+0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                                        (i % 5 + count + 1.0f) * (1.0/(GLOBAL::BLOCK_WIDTH))
-                                    )
-                                )
-                            );
-                            glUniformMatrix4fv(
-                                _shader->getUniformLocation("transformMatrix"), 
-                                1, 
-                                GL_FALSE, 
-                                glm::value_ptr(viewProjectionMatrix*model)
-                            );
-                            glUniformMatrix4fv(
-                                _shader->getUniformLocation("model"), 
-                                1, 
-                                GL_FALSE, 
-                                glm::value_ptr(model)
-                            );
-                            glUniform1i(_shader->getUniformLocation("useLighting"), true);
-                            glUniform3f(_shader->getUniformLocation("color"), GLOBAL::VICTORY_COLOR.x, GLOBAL::VICTORY_COLOR.y, GLOBAL::VICTORY_COLOR.z);
-                            glBindVertexArray(_blockVAO);
-                            glDrawArrays(GL_TRIANGLES, 0, 36);
-                            // glUniform1i(_shader->getUniformLocation("useLighting"), false);
-                            // glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_BORDER.x, GLOBAL::PLAYER_BORDER.y, GLOBAL::PLAYER_BORDER.z);
-                            // glBindVertexArray(_lineVAO);
-                            // glDrawArrays(GL_LINES, 0, 24);
+                            _renderer->drawBox(viewProjectionMatrix, 5 - (int)(i/5), _height, i % 5 + count + 1.0f, GLOBAL::VICTORY_COLOR);
                         }
                     } else {
-                        model = (
-                            glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH, GLOBAL::BLOCK_WIDTH))
-                            * glm::translate(
-                                glm::mat4(1.0f), 
-                                glm::vec3(
-                                    0,
-                                    (4 - (int)(i/5) + 0.5f) * (1.0/(GLOBAL::BLOCK_WIDTH)),
-                                    (i % 5 + count + 1.0f) * (1.0/(GLOBAL::BLOCK_WIDTH))
-                                )
-                            )
-                        );
-                        glUniformMatrix4fv(
-                            _shader->getUniformLocation("transformMatrix"), 
-                            1, 
-                            GL_FALSE, 
-                            glm::value_ptr(viewProjectionMatrix*model)
-                        );
-                        glUniformMatrix4fv(
-                            _shader->getUniformLocation("model"), 
-                            1, 
-                            GL_FALSE, 
-                            glm::value_ptr(model)
-                        );
-                        glUniform1i(_shader->getUniformLocation("useLighting"), true);
-                        glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_COLOR.x, GLOBAL::PLAYER_COLOR.y, GLOBAL::PLAYER_COLOR.z);
-                        glBindVertexArray(_blockVAO);
-                        glDrawArrays(GL_TRIANGLES, 0, 36);
-                        // glUniform1i(_shader->getUniformLocation("useLighting"), false);
-                        // glUniform3f(_shader->getUniformLocation("color"), GLOBAL::STATIC_BORDER.x, GLOBAL::STATIC_BORDER.y, GLOBAL::STATIC_BORDER.z);
-                        // glBindVertexArray(_lineVAO);
-                        // glDrawArrays(GL_LINES, 0, 24);
+                        _renderer->drawBox(viewProjectionMatrix, 0, 4 - (int)(i/5), i % 5 + count + 1.0f, GLOBAL::PLAYER_COLOR);
                     }
-
-                    model = (
-                        glm::translate(
-                            glm::mat4(1.0f),
-                            glm::vec3(
-                                (5 - (int)(i/5)),
-                                -GLOBAL::GAP*5,
-                                (i % 5 + count + 1.0f)
-                            )
-                        )
-                        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*6), GLOBAL::BLOCK_WIDTH))
-                        * glm::translate(
-                            glm::mat4(1.0f),
-                            glm::vec3(0, -0.5, 0)
-                        )
-                    );
-                    glUniformMatrix4fv(
-                        _shader->getUniformLocation("transformMatrix"), 
-                        1, 
-                        GL_FALSE, 
-                        glm::value_ptr(viewProjectionMatrix*model)
-                    );
-                    glUniformMatrix4fv(
-                        _shader->getUniformLocation("model"), 
-                        1, 
-                        GL_FALSE, 
-                        glm::value_ptr(model)
-                    );
-                    glUniform1i(_shader->getUniformLocation("useLighting"), true);
-                    glUniform3f(_shader->getUniformLocation("color"), GLOBAL::VICTORY_COLOR.x, GLOBAL::VICTORY_COLOR.y, GLOBAL::VICTORY_COLOR.z);
-                    glBindVertexArray(_blockVAO);
-                    glDrawArrays(GL_TRIANGLES, 0, 36);
-                    // glUniform1i(_shader->getUniformLocation("useLighting"), false);
-                    // glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_BORDER.x, GLOBAL::FLOOR_BORDER.y, GLOBAL::FLOOR_BORDER.z);
-                    // glBindVertexArray(_lineVAO);
-                    // glDrawArrays(GL_LINES, 0, 24);
+                    _renderer->drawVictoryTile(viewProjectionMatrix, 5 - (int)(i/5), i % 5 + count + 1.0f);
                 } else {
-                    model = (
-                        glm::translate(
-                            glm::mat4(1.0f),
-                            glm::vec3(
-                                (5 - (int)(i/5)),
-                                -1,
-                                (i % 5 + count + 1.0f)
-                            )
-                        )
-                        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
-                    );
-                    glUniformMatrix4fv(
-                        _shader->getUniformLocation("transformMatrix"), 
-                        1, 
-                        GL_FALSE, 
-                        glm::value_ptr(viewProjectionMatrix*model)
-                    );
-                    glUniformMatrix4fv(
-                        _shader->getUniformLocation("model"), 
-                        1, 
-                        GL_FALSE, 
-                        glm::value_ptr(model)
-                    );
-                    glUniform1i(_shader->getUniformLocation("useLighting"), true);
-                    glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_COLOR.x, GLOBAL::FLOOR_COLOR.y, GLOBAL::FLOOR_COLOR.z);
-                    glBindVertexArray(_blockVAO);
-                    glDrawArrays(GL_TRIANGLES, 0, 36);
-                    // glUniform1i(_shader->getUniformLocation("useLighting"), false);
-                    // glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_BORDER.x, GLOBAL::FLOOR_BORDER.y, GLOBAL::FLOOR_BORDER.z);
-                    // glBindVertexArray(_lineVAO);
-                    // glDrawArrays(GL_LINES, 0, 24);
+                    _renderer->drawFloorTile(viewProjectionMatrix, 5 - (int)(i/5), i % 5 + count + 1.0f);
                 }
             }
             for (int i = 0; i < 7; i++) {
-                model = (
-                    glm::translate(
-                        glm::mat4(1.0f),
-                        glm::vec3(
-                            i,
-                            -1,
-                            count
-                        )
-                    )
-                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
-                );
-                glUniformMatrix4fv(
-                    _shader->getUniformLocation("transformMatrix"), 
-                    1, 
-                    GL_FALSE, 
-                    glm::value_ptr(viewProjectionMatrix*model)
-                );
-                glUniformMatrix4fv(
-                    _shader->getUniformLocation("model"), 
-                    1, 
-                    GL_FALSE, 
-                    glm::value_ptr(model)
-                );
-                glUniform1i(_shader->getUniformLocation("useLighting"), true);
-                glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_COLOR.x, GLOBAL::FLOOR_COLOR.y, GLOBAL::FLOOR_COLOR.z);
-                glBindVertexArray(_blockVAO);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-                // glUniform1i(_shader->getUniformLocation("useLighting"), false);
-                // glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_BORDER.x, GLOBAL::FLOOR_BORDER.y, GLOBAL::FLOOR_BORDER.z);
-                // glBindVertexArray(_lineVAO);
-                // glDrawArrays(GL_LINES, 0, 24);
+                _renderer->drawFloorTile(viewProjectionMatrix, i, count);
             }
             count += 1;
             for (int i = 0; i < 5; i++) {
-                model = (
-                    glm::translate(
-                        glm::mat4(1.0f),
-                        glm::vec3(
-                            0,
-                            -1,
-                            count+i
-                        )
-                    )
-                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
-                );
-                glUniformMatrix4fv(
-                    _shader->getUniformLocation("transformMatrix"), 
-                    1, 
-                    GL_FALSE, 
-                    glm::value_ptr(viewProjectionMatrix*model)
-                );
-                glUniformMatrix4fv(
-                    _shader->getUniformLocation("model"), 
-                    1, 
-                    GL_FALSE, 
-                    glm::value_ptr(model)
-                );
-                glUniform1i(_shader->getUniformLocation("useLighting"), true);
-                glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_COLOR.x, GLOBAL::FLOOR_COLOR.y, GLOBAL::FLOOR_COLOR.z);
-                glBindVertexArray(_blockVAO);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-                // glUniform1i(_shader->getUniformLocation("useLighting"), false);
-                // glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_BORDER.x, GLOBAL::FLOOR_BORDER.y, GLOBAL::FLOOR_BORDER.z);
-                // glBindVertexArray(_lineVAO);
-                // glDrawArrays(GL_LINES, 0, 24);
-
-                model = (
-                    glm::translate(
-                        glm::mat4(1.0f),
-                        glm::vec3(
-                            6,
-                            -1,
-                            count+i
-                        )
-                    )
-                    * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
-                );
-                glUniformMatrix4fv(
-                    _shader->getUniformLocation("transformMatrix"), 
-                    1, 
-                    GL_FALSE, 
-                    glm::value_ptr(viewProjectionMatrix*model)
-                );
-                glUniformMatrix4fv(
-                    _shader->getUniformLocation("model"), 
-                    1, 
-                    GL_FALSE, 
-                    glm::value_ptr(model)
-                );
-                glUniform1i(_shader->getUniformLocation("useLighting"), true);
-                glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_COLOR.x, GLOBAL::FLOOR_COLOR.y, GLOBAL::FLOOR_COLOR.z);
-                glBindVertexArray(_blockVAO);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-                // glUniform1i(_shader->getUniformLocation("useLighting"), false);
-                // glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_BORDER.x, GLOBAL::FLOOR_BORDER.y, GLOBAL::FLOOR_BORDER.z);
-                // glBindVertexArray(_lineVAO);
-                // glDrawArrays(GL_LINES, 0, 24);
+                _renderer->drawFloorTile(viewProjectionMatrix, 0, count+i);
+                _renderer->drawFloorTile(viewProjectionMatrix, 6, count+i);
             }
             count += 5;
         }
         for (int i = 0; i < 7; i++) {
-            model = (
-                glm::translate(
-                    glm::mat4(1.0f),
-                    glm::vec3(
-                        i,
-                        -1,
-                        count
-                    )
-                )
-                * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH, GLOBAL::FLOOR_HEIGHT-(GLOBAL::GAP*2), GLOBAL::BLOCK_WIDTH))
-            );
-            glUniformMatrix4fv(
-                _shader->getUniformLocation("transformMatrix"), 
-                1, 
-                GL_FALSE, 
-                glm::value_ptr(viewProjectionMatrix*model)
-            );
-            glUniformMatrix4fv(
-                _shader->getUniformLocation("model"), 
-                1, 
-                GL_FALSE, 
-                glm::value_ptr(model)
-            );
-            glUniform1i(_shader->getUniformLocation("useLighting"), true);
-            glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_COLOR.x, GLOBAL::FLOOR_COLOR.y, GLOBAL::FLOOR_COLOR.z);
-            glBindVertexArray(_blockVAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            // glUniform1i(_shader->getUniformLocation("useLighting"), false);
-            // glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FLOOR_BORDER.x, GLOBAL::FLOOR_BORDER.y, GLOBAL::FLOOR_BORDER.z);
-            // glBindVertexArray(_lineVAO);
-            // glDrawArrays(GL_LINES, 0, 24);
+            _renderer->drawFloorTile(viewProjectionMatrix, i, count);
         }
         count += 2;
     }

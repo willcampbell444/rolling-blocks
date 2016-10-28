@@ -47,9 +47,11 @@ Renderer::Renderer(Shaders* shader) {
         -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f
     };
 
+    glGenVertexArrays(1, &_vertexArrayObject);
     glBindVertexArray(_vertexArrayObject);
 
     GLuint vertexBufferObject;
+    glGenBuffers(1, &vertexBufferObject);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*36*6, vertices, GL_STATIC_DRAW);
 
@@ -63,6 +65,7 @@ Renderer::Renderer(Shaders* shader) {
 }
 
 void Renderer::drawBox(glm::mat4 viewProjectionMatrix, float x, float y, float z, glm::vec3 color) {
+    _shader->use();
     model = (
         glm::translate(glm::mat4(1.0f), glm::vec3(x, y+0.5f, z))
         * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH))
@@ -86,6 +89,7 @@ void Renderer::drawBox(glm::mat4 viewProjectionMatrix, float x, float y, float z
 }
 
 void Renderer::drawRotatedBox(glm::mat4 viewProjectionMatrix, float x, float y, float z, float angle, glm::vec3 center, glm::vec3 axis, glm::vec3 color) {
+    _shader->use();
     model = (
         glm::translate(glm::mat4(1.0f), center)
         * glm::rotate(glm::mat4(1.0f), glm::radians(angle), axis)
@@ -112,6 +116,7 @@ void Renderer::drawRotatedBox(glm::mat4 viewProjectionMatrix, float x, float y, 
 }
 
 void Renderer::drawFloorTile(glm::mat4 viewProjectionMatrix, float x, float z) {
+    _shader->use();
     model = (
         glm::translate(glm::mat4(1.0f), glm::vec3(x, -GLOBAL::GAP, z))
         * glm::scale(glm::mat4(1.0f), glm::vec3(
@@ -148,6 +153,7 @@ void Renderer::drawFloorTile(glm::mat4 viewProjectionMatrix, float x, float z) {
 }
 
 void Renderer::drawVictoryTile(glm::mat4 viewProjectionMatrix, float x, float z) {
+    _shader->use();
     model = (
         glm::translate(glm::mat4(1.0f), glm::vec3(x, -GLOBAL::GAP*5, z))
         * glm::scale(glm::mat4(1.0f), glm::vec3(

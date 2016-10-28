@@ -42,7 +42,7 @@ Game::Game() {
     _renderer = new Renderer(&_shaders[0]);
     _floor = new Floor(_renderer);
     _player = new Player(_renderer);
-    _menu = new Menu(&_shaders[0]);
+    _menu = new Menu(_renderer);
 
     _state = GLOBAL::STATE_MENU;
 

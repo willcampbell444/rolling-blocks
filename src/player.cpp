@@ -205,10 +205,6 @@ void Player::move(int x, int z, unsigned char* map) {
             _newCameraDistance.x = _maxZ - _minZ + 5;
         }
         _newCameraDistance.y = _maxY - _minY + 3;
-
-std::cout << _rotationAxisPosition.x << ", " << _rotationAxisPosition.z << std::endl;
-std::cout << _minX << ", " << _maxX << std::endl;
-std::cout << _minZ << ", " << _maxZ << std::endl << std::endl;
     }
 }
 

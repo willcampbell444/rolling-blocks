@@ -14,10 +14,11 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <renderer.h>
 
 class Menu {
 public:
-	Menu(Shaders* shader);
+	Menu(Renderer* renderer);
 	void setOptions(std::vector<const char*> options, int dir);
 	void draw(glm::mat4 viewProjectionMatrix);
 	glm::vec3 getCameraPos();
@@ -48,10 +49,7 @@ private:
 	float _angle = 90.0f;
 	float _height = 0;
 
-	GLuint _blockVAO;
-	GLuint _lineVAO;
-
-	Shaders* _shader;
+	Renderer* _renderer;
 
 	glm::vec3 _cameraPos;
 	glm::vec2 _cameraDistance;
