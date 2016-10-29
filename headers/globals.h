@@ -27,6 +27,9 @@ namespace GLOBAL {
 	const int STATE_PLAY = 0;
 	const int STATE_MENU = 1;
 	const int STATE_PAUSE = 2;
+
+	const int WINDOW_WIDTH = 800;
+	const int WINDOW_HEIGHT = 600;
 }
 
 #endif

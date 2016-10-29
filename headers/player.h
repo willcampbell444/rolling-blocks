@@ -1,13 +1,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <GL/glew.h>
-#include <shaders.h>
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <shaders.h>
 #include <cmath>
 #include <iostream>
 #include <globals.h>

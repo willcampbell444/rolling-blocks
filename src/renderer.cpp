@@ -1,7 +1,17 @@
 #include <renderer.h>
 
-Renderer::Renderer(Shaders* shader) {
-	_shader = shader;
+Renderer::Renderer() {
+    _shader = new Shaders();
+
+    if (!_shader->loadShader(GL_VERTEX_SHADER, "shaders/vertex.glsl")) {
+        std::cout << "Vertex Shader Failed To Compile" << std::endl;
+    }
+    if (!_shader->loadShader(GL_FRAGMENT_SHADER, "shaders/fragment.glsl")) {
+        std::cout << "Fragment Shader Failed To Compile" << std::endl;
+    }
+    _shader->createProgram();
+
+    _shader->use();
 
     float vertices[36*6] = {
         -0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
@@ -62,6 +72,10 @@ Renderer::Renderer(Shaders* shader) {
     attrib = _shader->getAttributeLocation("normal");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+}
+
+Shaders* Renderer::getShader() {
+    return _shader;
 }
 
 void Renderer::drawBox(glm::mat4 viewProjectionMatrix, float x, float y, float z, glm::vec3 color) {

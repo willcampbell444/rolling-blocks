@@ -1,9 +1,5 @@
 #include <shaders.h>
 
-Shaders::Shaders() {
-
-}
-
 Shaders::~Shaders() {
     glDeleteProgram(_program);
     for (GLuint shader: _shaders) {

@@ -21,21 +21,11 @@ Game::Game() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
 
-    if (!_shaders[0].loadShader(GL_VERTEX_SHADER, "shaders/vertex.glsl")) {
-        std::cout << "Vertex Shader Failed To Compile" << std::endl;
-    }
-    if (!_shaders[0].loadShader(GL_FRAGMENT_SHADER, "shaders/fragment.glsl")) {
-        std::cout << "Fragment Shader Failed To Compile" << std::endl;
-    }
-    _shaders[0].createProgram();
-
-    _shaders[0].use();
-
     _projectionMatrix = glm::perspective(glm::radians(50.0f), 800.0f / 600.0f, 1.0f, 50.0f);
 
     glClearColor(GLOBAL::BACKGROUND.r, GLOBAL::BACKGROUND.g, GLOBAL::BACKGROUND.b, 1.0f);
 
-    _renderer = new Renderer(&_shaders[0]);
+    _renderer = new Renderer();
     _floor = new Floor(_renderer);
     _player = new Player(_renderer);
     _menu = new Menu(_renderer);
@@ -57,10 +47,6 @@ Game::Game() {
 }
 
 Game::~Game() {
-    glDeleteBuffers(2, _vbo);
-    glDeleteBuffers(1, _ebo);
-    glDeleteVertexArrays(2, _vao);
-
     delete _floor;
     delete _player;
 
@@ -275,10 +261,10 @@ void Game::update() {
 void Game::draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    _shaders[0].use();
+    _renderer->getShader()->use();
 
     glUniform3f(
-        _shaders[0].getUniformLocation("cameraPosition"), 
+        _renderer->getShader()->getUniformLocation("cameraPosition"), 
         _cameraPos.x,
         _cameraPos.y,
         _cameraPos.z
