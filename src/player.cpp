@@ -281,12 +281,12 @@ void Player::onBlock(int x, int z) {
             + pow(
                 (
                     _newPeices[i].x 
-                    - (_minX*abs((x/2.0f-0.5f)) + _maxX*abs((x/2.0f+0.5f)))
+                    - (_minX*std::abs((x/2.0f-0.5f)) + _maxX*std::abs((x/2.0f+0.5f)))
                 ) * x, 2)
             + pow(
                 (
                     _newPeices[i].z
-                    - (_minZ*abs((z/2.0f-0.5f)) + _maxZ*abs((z/2.0f+0.5f)))
+                    - (_minZ*std::abs((z/2.0f-0.5f)) + _maxZ*std::abs((z/2.0f+0.5f)))
                 ) * z, 2)
         );
         for (int j = 1; (
@@ -300,12 +300,12 @@ void Player::onBlock(int x, int z) {
                 + pow(
                     (
                         (_oldPeices[i].x + j*x)
-                        - (_minX*abs((x/2.0f-0.5f)) + _maxX*abs((x/2.0f+0.5f)))
+                        - (_minX*std::abs((x/2.0f-0.5f)) + _maxX*std::abs((x/2.0f+0.5f)))
                     ) * x, 2)
                 + pow(
                     (
                         (_oldPeices[i].z + j*z)
-                        - (_minZ*abs((z/2.0f-0.5f)) + _maxZ*abs((z/2.0f+0.5f)))
+                        - (_minZ*std::abs((z/2.0f-0.5f)) + _maxZ*std::abs((z/2.0f+0.5f)))
                     ) * z, 2)
             );
             if (targetDistance >= maxDistance) {
