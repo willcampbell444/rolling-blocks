@@ -21,10 +21,6 @@ Game::Game() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
 
-    // glEnable (GL_BLEND);
-    // glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // glEnable(GL_POLYGON_STIPPLE);
-
     if (!_shaders[0].loadShader(GL_VERTEX_SHADER, "shaders/vertex.glsl")) {
         std::cout << "Vertex Shader Failed To Compile" << std::endl;
     }
@@ -56,6 +52,8 @@ Game::Game() {
     }
 
     _menu->setOptions(_levelNames, 1);
+
+    _lastFrameTime = glfwGetTime();
 }
 
 Game::~Game() {
@@ -129,6 +127,9 @@ void Game::loadMap(const char* fileName) {
 void Game::update() {
     glfwPollEvents();
 
+    _deltaTime = glfwGetTime() - _lastFrameTime;
+    _lastFrameTime = glfwGetTime();
+
     if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(_window, GL_TRUE);
     }
@@ -191,7 +192,7 @@ void Game::update() {
             }
         }
 
-        _player->update(_map.getTiles(), _map.getVictoryTiles());
+        _player->update(_map.getTiles(), _map.getVictoryTiles(), _deltaTime);
 
         cameraPos = _player->getCameraPos();
         cameraDistance = _player->getCameraDistance();
@@ -224,23 +225,23 @@ void Game::update() {
             previousOption();
         }
 
-        _menu->update();
+        _menu->update(_deltaTime);
         if (_menu->result() != -1) {
             selectOption(_menu->result());
         }
     }
 
     if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        _cameraAngle += 1.0f;
+        _cameraAngle += 90.0f * _deltaTime;
     }
     if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        _cameraAngle -= 1.0f;
+        _cameraAngle -= 90.0f * _deltaTime;
     }
     if (glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) {
-        _cameraHeight += 0.1f;
+        _cameraHeight += 10.0f * _deltaTime;
     }
     if (glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        _cameraHeight -= 0.1f;
+        _cameraHeight -= 10.0f * _deltaTime;
     }
 
     if (glfwGetKey(_window, GLFW_KEY_Z) == GLFW_PRESS) {

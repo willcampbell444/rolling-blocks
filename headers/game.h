@@ -105,6 +105,9 @@ private:
 
     float _cameraAngle = 0.0f;
     float _cameraHeight = 0.0f;
+
+    GLfloat _lastFrameTime;
+    GLfloat _deltaTime;
 };
 
 #endif

@@ -23,7 +23,7 @@ public:
 	void draw(glm::mat4 viewProjectionMatrix);
 	glm::vec3 getCameraPos();
 	glm::vec2 getCameraDistance();
-	void update();
+	void update(GLfloat deltaTime);
 	bool isStill();
 	void end();
 	void select();
@@ -44,7 +44,8 @@ private:
 	bool _wait = false;
 	bool _done = false;
 	bool _forcedEnd = false;
-	int _frame = 0;
+
+	float _timeSinceTransition = 0;
 
 	float _angle = 90.0f;
 	float _height = 0;

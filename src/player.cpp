@@ -144,7 +144,7 @@ void Player::move(int x, int z, unsigned char* map) {
         _isTransition = true;
         _angle = 90.0f;
         _rotationAxis = glm::vec3(z, 0, x);
-        _frame = 0;
+        _timeSinceTransition = 0;
         _oldCameraPos = _cameraPos;
         _oldCameraDistance = _cameraDistance;
         _newPeices = _playerPeices;
@@ -342,127 +342,131 @@ void Player::onBlock(int x, int z) {
     }
 }
 
-void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles) {
-    if (_wait) {
-        _frame += 1;
-        if (_frame >= GLOBAL::FRAMES) {
-            _wait = false;
-            _frame = 0;
-        }
-    } else if (_isTransition) {
-        _frame += 1;
-        float mu = _frame/50.0f;
-        mu = (mu * mu);
-        _angle = 90.0f*(1-mu);
-        for (int i = 0; i < _playerPeices.size(); i++) {
-            _playerPeices[i].y = _oldPeices[i].y*(1-mu) + _newPeices[i].y*mu;
-            _playerPeices[i].z = _oldPeices[i].z*(1-mu) + _newPeices[i].z*mu;
-            _playerPeices[i].x = _oldPeices[i].x*(1-mu) + _newPeices[i].x*mu;
-        }
-        mu = _frame/50.0f;
-        mu = (mu * mu * (3 - 2 * (mu)));
-        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
-        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
-        if (_frame >= 50) {
-            _isTransition = false;
-            _frame = 0;
-            _angle = 0.0f;
-            _playerPeices = _newPeices;
+void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles, GLfloat deltaTime) {
+    if (
+        _wait
+        || _isTransition
+        || _isCameraTransition
+        || _isBeginning
+        || _isEnding
+    ) {
+        _timeSinceTransition += deltaTime;
+        float mu = _timeSinceTransition/GLOBAL::TRANSITION_LENGTH;
+
+        if (_wait) {
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                _wait = false;
+                _timeSinceTransition = 0;
+            }
+        } else if (_isTransition) {
+            mu = (mu * mu);
+            _angle = 90.0f*(1-mu);
             for (int i = 0; i < _playerPeices.size(); i++) {
-                if (_playerPeices[i].x < 0 
-                    || _playerPeices[i].x > _floorWidth-1 
-                    || _playerPeices[i].z < 0 
-                    || _playerPeices[i].z > _floorLength-1
-                    || map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 0
-                ) {
-                    _falling.push_back(glm::vec4(
-                        _playerPeices[i].x,
-                        _playerPeices[i].y,
-                        _playerPeices[i].z,
-                        2
-                    ));
-                    _playerPeices.erase(_playerPeices.begin() + i);
-                    i -= 1;
+                _playerPeices[i].y = _oldPeices[i].y*(1-mu) + _newPeices[i].y*mu;
+                _playerPeices[i].z = _oldPeices[i].z*(1-mu) + _newPeices[i].z*mu;
+                _playerPeices[i].x = _oldPeices[i].x*(1-mu) + _newPeices[i].x*mu;
+            }
+            mu = _timeSinceTransition/GLOBAL::TRANSITION_LENGTH;
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+            _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                _isTransition = false;
+                _timeSinceTransition = 0;
+                _angle = 0.0f;
+                _playerPeices = _newPeices;
+                for (int i = 0; i < _playerPeices.size(); i++) {
+                    if (_playerPeices[i].x < 0 
+                        || _playerPeices[i].x > _floorWidth-1 
+                        || _playerPeices[i].z < 0 
+                        || _playerPeices[i].z > _floorLength-1
+                        || map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 0
+                    ) {
+                        _falling.push_back(glm::vec4(
+                            _playerPeices[i].x,
+                            _playerPeices[i].y,
+                            _playerPeices[i].z,
+                            2
+                        ));
+                        _playerPeices.erase(_playerPeices.begin() + i);
+                        i -= 1;
+                    }
+                    if (map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 2) {
+                        _done.push_back(glm::vec4(
+                            _playerPeices[i].x,
+                            _playerPeices[i].y,
+                            _playerPeices[i].z,
+                            2
+                        ));
+                        _playerPeices.erase(_playerPeices.begin() + i);
+                        i -= 1;
+                    }
                 }
-                if (map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 2) {
-                    _done.push_back(glm::vec4(
-                        _playerPeices[i].x,
-                        _playerPeices[i].y,
-                        _playerPeices[i].z,
-                        2
-                    ));
-                    _playerPeices.erase(_playerPeices.begin() + i);
-                    i -= 1;
+
+                attach();
+                sever();
+
+                _oldCameraDistance = _newCameraDistance;
+                _oldCameraPos = _newCameraPos;
+
+                setMinMax();
+
+                _newCameraPos = glm::vec3(
+                    (_minX+_maxX)/2.0f,
+                    (_minY+_maxY+1)/2.0f,
+                    (_minZ+_maxZ)/2.0f
+                );
+
+                if (_maxX - _minX > _maxZ - _minZ) {
+                    _newCameraDistance.x = _maxX - _minX + 5;
+                } else {
+                    _newCameraDistance.x = _maxZ - _minZ + 5;
                 }
+                _newCameraDistance.y = _maxY - _minY + 3;
+
+                if (_oldCameraPos != _newCameraPos) {
+                    _isCameraTransition = true;
+                }
+
+                checkVictory(victoryTiles);
             }
-
-            attach();
-            sever();
-
-            _oldCameraDistance = _newCameraDistance;
-            _oldCameraPos = _newCameraPos;
-
-            setMinMax();
-
-            _newCameraPos = glm::vec3(
-                (_minX+_maxX)/2.0f,
-                (_minY+_maxY+1)/2.0f,
-                (_minZ+_maxZ)/2.0f
-            );
-
-            if (_maxX - _minX > _maxZ - _minZ) {
-                _newCameraDistance.x = _maxX - _minX + 5;
-            } else {
-                _newCameraDistance.x = _maxZ - _minZ + 5;
+        } else if (_isCameraTransition) {
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+            _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                _isCameraTransition = false;
+                _oldCameraDistance = _newCameraDistance;
+                _oldCameraPos = _newCameraPos;
+                _timeSinceTransition = 0;
             }
-            _newCameraDistance.y = _maxY - _minY + 3;
-
-            if (_oldCameraPos != _newCameraPos) {
-                _isCameraTransition = true;
+        } else if (_isBeginning) {
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+            _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                _isBeginning = false;
+                _oldCameraDistance = _newCameraDistance;
+                _oldCameraPos = _newCameraPos;
+                _cameraDistance = _newCameraDistance;
+                _cameraPos = _newCameraPos;
+                _timeSinceTransition = 0;
             }
-
-            checkVictory(victoryTiles);
-        }
-    } else if (_isCameraTransition) {
-        _frame += 1;
-        float mu = _frame/50.0f;
-        mu = (mu * mu * (3 - 2 * (mu)));
-        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
-        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
-        if (_frame >= 50) {
-            _isCameraTransition = false;
-            _oldCameraDistance = _newCameraDistance;
-            _oldCameraPos = _newCameraPos;
-            _frame = 0;
-        }
-    } else if (_isBeginning) {
-        _frame += 1;
-        float mu = (float)_frame/GLOBAL::FRAMES;
-        mu = (mu * mu);
-        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
-        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
-        if (_frame >= GLOBAL::FRAMES) {
-            _isBeginning = false;
-            _oldCameraDistance = _newCameraDistance;
-            _oldCameraPos = _newCameraPos;
-            _frame = 0;
-        }
-    } else if (_isEnding) {
-        _frame += 1;
-        float mu = (float)_frame/GLOBAL::FRAMES;
-        mu = (mu * mu);
-        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
-        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
-        if (_frame >= GLOBAL::FRAMES) {
-            _isEnding = false;
-            _finished = true;
-            _oldCameraDistance = _newCameraDistance;
-            _oldCameraPos = _newCameraPos;
-            _frame = 0;
+        } else if (_isEnding) {
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+            _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                _isEnding = false;
+                _finished = true;
+                _oldCameraDistance = _newCameraDistance;
+                _oldCameraPos = _newCameraPos;
+                _timeSinceTransition = 0;
+            }
         }
     }
     for (int i = 0; i < _falling.size(); i++) {
-        _falling[i][3] += 1;
+        _falling[i][3] += 60*deltaTime;
         if (_falling[i][3] > 1000) {
             _falling.erase(_falling.begin() + i);
         }

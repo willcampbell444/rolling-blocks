@@ -23,7 +23,7 @@ public:
     void draw(glm::mat4 viewProjectionMatrix);
     void move(int x, int z, unsigned char* map);
     void changeGroup(int direction);
-    void update(unsigned char* map, std::vector<glm::vec2> victoryTiles);
+    void update(unsigned char* map, std::vector<glm::vec2> victoryTiles, GLfloat deltaTime);
     bool win();
     glm::vec3 getCameraPos();
     glm::vec2 getCameraDistance();
@@ -54,7 +54,7 @@ private:
     glm::vec2 _oldCameraDistance;
     glm::vec2 _newCameraDistance;
     float _angle = 0.0f;
-    int _frame = 0;
+    float _timeSinceTransition = 0;
     int _endTimer = 0;
     int _angleSign = 1;
     int _minX, _maxX;

@@ -21,7 +21,8 @@ namespace GLOBAL {
 
 	const float FALL_HEIGHT = 7;
 
-	const float FRAMES = 50.0f;
+	const float TRANSITION_LENGTH = 0.75f;
+	const int FRAMES = 50.0f;
 
 	const int STATE_PLAY = 0;
 	const int STATE_MENU = 1;

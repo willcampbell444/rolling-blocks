@@ -394,71 +394,76 @@ void Menu::select() {
     }
 }
 
-void Menu::update() {
-    if (_wait) {
-        _frame += 1;
-        if (_frame >= GLOBAL::FRAMES) {
-            _wait = false;
-            _frame = 0;
-        }
-    } else if (_isTransition) {
-        _frame += 1;
+void Menu::update(GLfloat deltaTime) {
+    if (
+        _wait
+        || _isTransition
+        || _isCameraTransition
+        || _isEndTransition
+        || _isBeginning
+    ) {
+        _timeSinceTransition += deltaTime;
+        float mu = _timeSinceTransition/GLOBAL::TRANSITION_LENGTH;
 
-        float mu = (float)_frame/GLOBAL::FRAMES;
-        mu = (mu * mu);
-        _angle = 90.0f*(1-mu);
-        _height = mu*(-GLOBAL::GAP*4);
-        
-        mu = (float)_frame/GLOBAL::FRAMES;
-        mu = (mu * mu * (3 - 2 * (mu)));
-        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
-        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+        if (_wait) {
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                _wait = false;
+                _timeSinceTransition = 0;
+            }
+        } else if (_isTransition) {
+            mu = (mu * mu);
+            _angle = 90.0f*(1-mu);
+            _height = mu*(-GLOBAL::GAP*4);
+            
+            mu = _timeSinceTransition/GLOBAL::TRANSITION_LENGTH;
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+            _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
 
-        if (_frame >= GLOBAL::FRAMES) {
-            _isTransition = false;
-            _wait = true;
-            _isEndTransition = true;
-            _oldCameraDistance = _newCameraDistance;
-            _oldCameraPos = _newCameraPos;
-            _newCameraPos.y += -GLOBAL::FALL_HEIGHT*_cameraDistance.y;
-            _frame = 0;
-        }
-    } else if (_isCameraTransition) {
-        _frame += 1;
-        float mu = (float)_frame/GLOBAL::FRAMES;
-        mu = (mu * mu * (3 - 2 * (mu)));
-        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
-        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
-        if (_frame >= GLOBAL::FRAMES) {
-            _isCameraTransition = false;
-            _oldCameraDistance = _newCameraDistance;
-            _oldCameraPos = _newCameraPos;
-            _frame = 0;
-        }
-    } else if (_isEndTransition) {
-        _frame += 1;
-        float mu = (float)_frame/GLOBAL::FRAMES;
-        mu = (mu * mu);
-        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
-        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
-        if (_frame >= GLOBAL::FRAMES) {
-            _isCameraTransition = false;
-            _done = true;
-            _oldCameraDistance = _newCameraDistance;
-            _oldCameraPos = _newCameraPos;
-            _frame = 0;
-        }
-    } else if (_isBeginning) {
-        _frame += 1;
-        float mu = (float)_frame/GLOBAL::FRAMES;
-        mu = (mu * mu);
-        _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
-        _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
-        if (_frame >= GLOBAL::FRAMES) {
-            _isBeginning = false;
-            _oldCameraDistance = _newCameraDistance;
-            _oldCameraPos = _newCameraPos;
-            _frame = 0;
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                _isTransition = false;
+                _wait = true;
+                _isEndTransition = true;
+                _oldCameraDistance = _newCameraDistance;
+                _oldCameraPos = _newCameraPos;
+                _newCameraPos.y += -GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+                _timeSinceTransition = 0;
+            }
+        } else if (_isCameraTransition) {
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+            _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                _isCameraTransition = false;
+                _oldCameraDistance = _newCameraDistance;
+                _oldCameraPos = _newCameraPos;
+                _cameraDistance = _newCameraDistance;
+                _cameraPos = _newCameraPos;
+                _timeSinceTransition = 0;
+            }
+        } else if (_isEndTransition) {
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+            _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                _isCameraTransition = false;
+                _done = true;
+                _oldCameraDistance = _newCameraDistance;
+                _oldCameraPos = _newCameraPos;
+                _timeSinceTransition = 0;
+            }
+        } else if (_isBeginning) {
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+            _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                _isBeginning = false;
+                _oldCameraDistance = _newCameraDistance;
+                _oldCameraPos = _newCameraPos;
+                _cameraDistance = _newCameraDistance;
+                _cameraPos = _newCameraPos;
+                _timeSinceTransition = 0;
+            }
         }
     }
 }
@@ -482,7 +487,7 @@ void Menu::setOptions(std::vector<const char*> options, int dir) {
     _isTransition = false;
     _wait = false;
     _forcedEnd = false;
-    _frame = 0;
+    _timeSinceTransition = 0;
     _currentPeice = 0;
     _angle = 90.0f;
     _height = 0;
@@ -502,7 +507,7 @@ void Menu::setOptions(std::vector<const char*> options, int dir) {
     _oldCameraPos.y += GLOBAL::FALL_HEIGHT*_cameraDistance.y*dir;
     _oldCameraDistance = _cameraDistance;
 
-    update();
+    update(0);
 }
 
 unsigned int Menu::loadLetter(bool bits[25]) {
@@ -514,9 +519,7 @@ unsigned int Menu::loadLetter(bool bits[25]) {
 }
 
 void Menu::draw(glm::mat4 viewProjectionMatrix) {
-    // _shader->use();
     int count = -1;
-    glm::mat4 model;
     for (int m = 0; m < _options.size(); m++) {
         for (int n = 0; n < _options[m].size(); n++) {
             int letter = _options[m][n];
