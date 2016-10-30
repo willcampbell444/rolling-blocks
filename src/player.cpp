@@ -20,10 +20,50 @@ void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> sta
     _playerPeices = startPosition;
     _newPeices = _playerPeices;
     gravity();
+    onWinTile(map);
+
+    _playerPeices = _newPeices;
+
+    for (int i = 0; i < _playerPeices.size(); i++) {
+        if (_playerPeices[i].x < 0 
+            || _playerPeices[i].x > _floorWidth-1 
+            || _playerPeices[i].z < 0 
+            || _playerPeices[i].z > _floorLength-1
+            || map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 0
+        ) {
+            _falling.push_back(glm::vec4(
+                _playerPeices[i].x,
+                _playerPeices[i].y,
+                _playerPeices[i].z,
+                2
+            ));
+            _playerPeices.erase(_playerPeices.begin() + i);
+            i -= 1;
+        }
+        if (map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 2) {
+            _done.push_back(glm::vec4(
+                _playerPeices[i].x,
+                _playerPeices[i].y,
+                _playerPeices[i].z,
+                2
+            ));
+            _playerPeices.erase(_playerPeices.begin() + i);
+            i -= 1;
+        }
+    }
+
+    attach();
     sever();
 
-    onWinTile(map);
-    _playerPeices = _newPeices;
+    for (int i = 0; i < _playerPeices.size(); i++) {
+        if (playerGroups[i] != _groups[_group]) {
+            _static.push_back(_playerPeices[i]);
+            staticGroups.push_back(playerGroups[i]);
+            _playerPeices.erase(_playerPeices.begin() + i);
+            playerGroups.erase(playerGroups.begin() + i);
+            i -= 1;
+        }
+    }
 
     for (int i = 0; i < _playerPeices.size(); i++) {
         if (map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 2) {

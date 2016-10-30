@@ -20,6 +20,12 @@ LevelEdit::LevelEdit(std::string fileName) {
         _player = map.getStartPosition();
     } else {
         std::cout << "Creating new map" << std::endl;
+
+        _width = 1;
+        _length = 1;
+
+        _tiles.push_back(std::vector<int>());
+        _tiles[0].push_back(1);
     }
 
     glfwInit();
@@ -95,6 +101,15 @@ void LevelEdit::update() {
         _viewAngle -= 2;
     }
 
+    if (glfwGetKey(_window, GLFW_KEY_O) == GLFW_PRESS) {
+        if (!_oclicked) {
+            save();
+        }
+        _oclicked = true;
+    } else {
+        _oclicked = false;
+    }
+
     _viewMatrix = glm::lookAt(
         _cameraPos,
         glm::vec3(_cameraPos.x+10*cos(glm::radians(_viewAngle)), _cameraPos.y-5, _cameraPos.z+10*sin(glm::radians(_viewAngle))),
@@ -117,84 +132,120 @@ void LevelEdit::update() {
         _selected = glm::vec3(-1);
         glm::vec3 projectedPosition;
         float dist = 9999999;
-        for (auto peice: _player) {
-            projectedPosition = _cameraPos - ((_cameraPos.y-peice.y-1+GLOBAL::GAP)/mouseDir.y)*mouseDir;
-            if (
-                projectedPosition.x < peice.x+0.5f-GLOBAL::GAP
-                && projectedPosition.x > peice.x-0.5f+GLOBAL::GAP
-                && projectedPosition.z < peice.z+0.5f-GLOBAL::GAP
-                && projectedPosition.z > peice.z-0.5f+GLOBAL::GAP
-                && dist > length(projectedPosition)
-            ) {
-                _selected.y = peice.y;
-                _selected.x = peice.x;
-                _selected.z = peice.z;
-                dist = length(projectedPosition);
-            }
-            projectedPosition = _cameraPos - ((_cameraPos.y-peice.y-GLOBAL::GAP)/mouseDir.y)*mouseDir;
-            if (
-                projectedPosition.x < peice.x+0.5f-GLOBAL::GAP
-                && projectedPosition.x > peice.x-0.5f+GLOBAL::GAP
-                && projectedPosition.z < peice.z+0.5f-GLOBAL::GAP
-                && projectedPosition.z > peice.z-0.5f+GLOBAL::GAP
-                && dist > length(projectedPosition)
-            ) {
-                _selected.y = peice.y;
-                _selected.x = peice.x;
-                _selected.z = peice.z;
-                dist = length(projectedPosition);
-            }
-            projectedPosition = _cameraPos - ((_cameraPos.x-peice.x+0.5f-GLOBAL::GAP)/mouseDir.x)*mouseDir;
-            if (
-                projectedPosition.y < peice.y+1.0f-GLOBAL::GAP
-                && projectedPosition.y > peice.y+GLOBAL::GAP
-                && projectedPosition.z < peice.z+0.5f-GLOBAL::GAP
-                && projectedPosition.z > peice.z-0.5f+GLOBAL::GAP
-                && dist > length(projectedPosition)
-            ) {
-                _selected.y = peice.y;
-                _selected.x = peice.x;
-                _selected.z = peice.z;
-                dist = length(projectedPosition);
-            }
-            projectedPosition = _cameraPos - ((_cameraPos.x-peice.x-0.5f+GLOBAL::GAP)/mouseDir.x)*mouseDir;
-            if (
-                projectedPosition.y < peice.y+1.0f-GLOBAL::GAP
-                && projectedPosition.y > peice.y+GLOBAL::GAP
-                && projectedPosition.z < peice.z+0.5f-GLOBAL::GAP
-                && projectedPosition.z > peice.z-0.5f+GLOBAL::GAP
-                && dist > length(projectedPosition)
-            ) {
-                _selected.y = peice.y;
-                _selected.x = peice.x;
-                _selected.z = peice.z;
-                dist = length(projectedPosition);
-            }
-            projectedPosition = _cameraPos - ((_cameraPos.z-peice.z-0.5f+GLOBAL::GAP)/mouseDir.z)*mouseDir;
-            if (
-                projectedPosition.x < peice.x+0.5f-GLOBAL::GAP
-                && projectedPosition.x > peice.x-0.5f+GLOBAL::GAP
-                && projectedPosition.y < peice.y+1.0f-GLOBAL::GAP
-                && projectedPosition.y > peice.y+GLOBAL::GAP
-                && dist > length(projectedPosition)
-            ) {
-                _selected.y = peice.y;
-                _selected.x = peice.x;
-                _selected.z = peice.z;
-                dist = length(projectedPosition);
-            }
-            projectedPosition = _cameraPos - ((_cameraPos.z-peice.z+0.5f-GLOBAL::GAP)/mouseDir.z)*mouseDir;
-            if (
-                projectedPosition.x < peice.x+0.5f-GLOBAL::GAP
-                && projectedPosition.x > peice.x-0.5f+GLOBAL::GAP
-                && projectedPosition.y < peice.y+1.0f-GLOBAL::GAP
-                && projectedPosition.y > peice.y+GLOBAL::GAP
-                && dist > length(projectedPosition)
-            ) {
-                _selected.y = peice.y;
-                _selected.x = peice.x;
-                _selected.z = peice.z;
-                dist = length(projectedPosition);
+        float currentDist, currentSideDist, sideDist;
+        glm::vec3 side;
+        if (!_floorMode) {
+            for (auto peice: _player) {
+                sideDist = 9999999;
+                currentDist = length(_cameraPos - peice);
+                projectedPosition = _cameraPos - ((_cameraPos.y-peice.y-1+GLOBAL::GAP)/mouseDir.y)*mouseDir;
+                currentSideDist = length(((_cameraPos.y-peice.y-1+GLOBAL::GAP)/mouseDir.y)*mouseDir);
+                if (
+                    projectedPosition.x < peice.x+0.5f-GLOBAL::GAP
+                    && projectedPosition.x > peice.x-0.5f+GLOBAL::GAP
+                    && projectedPosition.z < peice.z+0.5f-GLOBAL::GAP
+                    && projectedPosition.z > peice.z-0.5f+GLOBAL::GAP
+                    && dist >= currentDist
+                ) {
+                    _selected.y = peice.y;
+                    _selected.x = peice.x;
+                    _selected.z = peice.z;
+                    dist = currentDist;
+                    if (currentSideDist < sideDist) {
+                        side = glm::vec3(0, 1, 0);
+                        sideDist = currentSideDist;
+                    }
+                }
+                projectedPosition = _cameraPos - ((_cameraPos.y-peice.y-GLOBAL::GAP)/mouseDir.y)*mouseDir;
+                currentSideDist = length(((_cameraPos.y-peice.y-GLOBAL::GAP)/mouseDir.y)*mouseDir);
+                if (
+                    projectedPosition.x < peice.x+0.5f-GLOBAL::GAP
+                    && projectedPosition.x > peice.x-0.5f+GLOBAL::GAP
+                    && projectedPosition.z < peice.z+0.5f-GLOBAL::GAP
+                    && projectedPosition.z > peice.z-0.5f+GLOBAL::GAP
+                    && dist >= currentDist
+                ) {
+                    _selected.y = peice.y;
+                    _selected.x = peice.x;
+                    _selected.z = peice.z;
+                    dist = currentDist;
+                    if (currentSideDist < sideDist) {
+                        side = glm::vec3(0, -1, 0);
+                        sideDist = currentSideDist;
+                    }
+                }
+                projectedPosition = _cameraPos - ((_cameraPos.x-peice.x+0.5f-GLOBAL::GAP)/mouseDir.x)*mouseDir;
+                currentSideDist = length(((_cameraPos.x-peice.x+0.5f-GLOBAL::GAP)/mouseDir.x)*mouseDir);
+                if (
+                    projectedPosition.y < peice.y+1.0f-GLOBAL::GAP
+                    && projectedPosition.y > peice.y+GLOBAL::GAP
+                    && projectedPosition.z < peice.z+0.5f-GLOBAL::GAP
+                    && projectedPosition.z > peice.z-0.5f+GLOBAL::GAP
+                    && dist >= currentDist
+                ) {
+                    _selected.y = peice.y;
+                    _selected.x = peice.x;
+                    _selected.z = peice.z;
+                    dist = currentDist;
+                    if (currentSideDist < sideDist) {
+                        side = glm::vec3(-1, 0, 0);
+                        sideDist = currentSideDist;
+                    }
+                }
+                projectedPosition = _cameraPos - ((_cameraPos.x-peice.x-0.5f+GLOBAL::GAP)/mouseDir.x)*mouseDir;
+                currentSideDist = length(((_cameraPos.x-peice.x-0.5f+GLOBAL::GAP)/mouseDir.x)*mouseDir);
+                if (
+                    projectedPosition.y < peice.y+1.0f-GLOBAL::GAP
+                    && projectedPosition.y > peice.y+GLOBAL::GAP
+                    && projectedPosition.z < peice.z+0.5f-GLOBAL::GAP
+                    && projectedPosition.z > peice.z-0.5f+GLOBAL::GAP
+                    && dist >= currentDist
+                ) {
+                    _selected.y = peice.y;
+                    _selected.x = peice.x;
+                    _selected.z = peice.z;
+                    dist = currentDist;
+                    if (currentSideDist < sideDist) {
+                        side = glm::vec3(1, 0, 0);
+                        sideDist = currentSideDist;
+                    }
+                }
+                projectedPosition = _cameraPos - ((_cameraPos.z-peice.z-0.5f+GLOBAL::GAP)/mouseDir.z)*mouseDir;
+                currentSideDist = length(((_cameraPos.z-peice.z-0.5f+GLOBAL::GAP)/mouseDir.z)*mouseDir);
+                if (
+                    projectedPosition.x < peice.x+0.5f-GLOBAL::GAP
+                    && projectedPosition.x > peice.x-0.5f+GLOBAL::GAP
+                    && projectedPosition.y < peice.y+1.0f-GLOBAL::GAP
+                    && projectedPosition.y > peice.y+GLOBAL::GAP
+                    && dist >= currentDist
+                ) {
+                    _selected.y = peice.y;
+                    _selected.x = peice.x;
+                    _selected.z = peice.z;
+                    dist = currentDist;
+                    if (currentSideDist < sideDist) {
+                        side = glm::vec3(0, 0, 1);
+                        sideDist = currentSideDist;
+                    }
+                }
+                projectedPosition = _cameraPos - ((_cameraPos.z-peice.z+0.5f-GLOBAL::GAP)/mouseDir.z)*mouseDir;
+                currentSideDist = length(((_cameraPos.z-peice.z+0.5f-GLOBAL::GAP)/mouseDir.z)*mouseDir);
+                if (
+                    projectedPosition.x < peice.x+0.5f-GLOBAL::GAP
+                    && projectedPosition.x > peice.x-0.5f+GLOBAL::GAP
+                    && projectedPosition.y < peice.y+1.0f-GLOBAL::GAP
+                    && projectedPosition.y > peice.y+GLOBAL::GAP
+                    && dist >= currentDist
+                ) {
+                    _selected.y = peice.y;
+                    _selected.x = peice.x;
+                    _selected.z = peice.z;
+                    dist = currentDist;
+                    if (currentSideDist < sideDist) {
+                        side = glm::vec3(0, 0, -1);
+                        sideDist = currentSideDist;
+                    }
+                }
             }
         }
         if (_selected == glm::vec3(-1)) {
@@ -202,15 +253,70 @@ void LevelEdit::update() {
             _selected.x = round(_selected.x);
             _selected.y = -1;
             _selected.z = round(_selected.z);
-            if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-                setTile(_selected.x, _selected.z, 1);
+        }
+
+        if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+            if (!_leftclicked) {
+                if (_selected.y == -1) {
+                    if (_floorMode) {
+                        setTile(_selected.x, _selected.z);
+                    } else {
+                        glm::vec3 pos = glm::vec3(_selected.x, 0, _selected.z);
+                        bool distinct = true;
+                        for (auto peice: _player) {
+                            if (pos == peice) {
+                                distinct = false;
+                                break;
+                            }
+                        }
+                        if (distinct) {
+                            _player.push_back(pos);
+                        }
+                    }
+                } else {
+                    glm::vec3 pos = _selected + side;
+                    bool distinct = true;
+                    for (auto peice: _player) {
+                        if (pos == peice) {
+                            distinct = false;
+                            break;
+                        }
+                    }
+                    if (distinct && pos.y >= 0) {
+                        _player.push_back(pos);
+                    }
+                }
             }
-            if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-                setTile(_selected.x, _selected.z, 0);
+            _leftclicked = true;
+        } else {
+            _leftclicked = false;
+        }
+
+        if (glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+            if (!_rightclicked) {
+                if (_selected.y == -1) {
+                    if (_floorMode) {
+                        delTile(_selected.x, _selected.z);
+                    }
+                } else {
+                    for (int i = 0; i < _player.size(); i++) {
+                        if (_player[i] == _selected) {
+                            _player.erase(_player.begin()+i);
+                        }
+                    }
+                }
             }
-            if (glfwGetKey(_window, GLFW_KEY_V) == GLFW_PRESS) {
-                setTile(_selected.x, _selected.z, 2);
+            _rightclicked = true;
+        } else {
+            _rightclicked = false;
+        }
+        if (glfwGetKey(_window, GLFW_KEY_B) == GLFW_PRESS) {
+            if (!_bclicked) {
+                _floorMode = !_floorMode;
             }
+            _bclicked = true;
+        } else {
+            _bclicked = false;
         }
     } else {
         _mouseOn = false;
@@ -226,7 +332,25 @@ void LevelEdit::update() {
     _projectionViewMatrix = _projectionMatrix * _viewMatrix;
 }
 
-void LevelEdit::setTile(int x, int z, int type) {
+void LevelEdit::save() {
+    std::cout << "Saving..." << std::endl;
+    std::ofstream file;
+    file.open(_fileName);
+    file << _width << " " << _length << std::endl;
+    for (auto row: _tiles) {
+        file << std::endl;
+        for (auto tile: row) {
+            file << tile << " ";
+        }
+    }
+    file << std::endl << std::endl << std::endl << _player.size() << std::endl << std::endl;
+    for (auto peice: _player) {
+        file << peice.x << " " << peice.y << " " << peice.z << std::endl;
+    }
+    file.close();
+}
+
+void LevelEdit::setTile(int x, int z) {
     if (
         x <= GLOBAL::MAP_SIZE_LIMIT
         && z <= GLOBAL::MAP_SIZE_LIMIT
@@ -249,7 +373,7 @@ void LevelEdit::setTile(int x, int z, int type) {
                     _tiles[0].push_back(0);
                 }
             }
-            _width += -x;
+            _width -= x;
             _cameraPos.x -= x;
             for (int i = 0; i < _player.size(); i++) {
                 _player[i].x -= x;
@@ -259,7 +383,6 @@ void LevelEdit::setTile(int x, int z, int type) {
         }
         if (z >= _length) {
             for (int w = 0; w < _width; w++) {
-                _tiles.push_back(std::vector<int>());
                 for (int l = _length; l <= z; l++) {
                     _tiles[w].push_back(0);
                 }
@@ -272,7 +395,7 @@ void LevelEdit::setTile(int x, int z, int type) {
                     _tiles[w].insert(_tiles[w].begin(), 0);
                 }
             }
-            _length -= x;
+            _length -= z;
             _cameraPos.z -= z;
             for (int i = 0; i < _player.size(); i++) {
                 _player[i].z -= z;
@@ -281,10 +404,21 @@ void LevelEdit::setTile(int x, int z, int type) {
             _selected.z = 0;
         }
         if (x >= 0 && x < _tiles.size() && z >= 0 && z < _tiles[x].size()) {
-            _tiles[x][z] = type;
+            _tiles[x][z] = (_tiles[x][z]+1) % 3;
+            if (_tiles[x][z] == 0) {
+                _tiles[x][z] = 0;
+            }
         }
     } else {
         std::cout << "Out of bounds: " << x << ", " << z << std::endl;
+    }
+
+    std::cout << _tiles.size() << ", " << _tiles[0].size() << std::endl;
+}
+
+void LevelEdit::delTile(int x, int z) {
+    if (x >= 0 && x < _tiles.size() && z >= 0 && z < _tiles[x].size()) {
+        _tiles[x][z] = 0;
     }
 }
 
@@ -315,10 +449,18 @@ void LevelEdit::draw() {
     }
 
     if (_mouseOn) {
-        if (_selected.y > -1) {
-            _renderer->drawBoxFrame(_projectionViewMatrix, _selected.x, _selected.y, _selected.z);
+        if (_floorMode) {
+            if (_selected.y > -1) {
+                _renderer->drawBoxFrame(_projectionViewMatrix, _selected.x, _selected.y, _selected.z, GLOBAL::FRAME_COLOR);
+            } else {
+                _renderer->drawFloorTileFrame(_projectionViewMatrix, _selected.x, _selected.z, GLOBAL::FRAME_COLOR);
+            }
         } else {
-            _renderer->drawFloorTileFrame(_projectionViewMatrix, _selected.x, _selected.z);
+            if (_selected.y > -1) {
+                _renderer->drawBoxFrame(_projectionViewMatrix, _selected.x, _selected.y, _selected.z, GLOBAL::FRAME_COLOR_TWO);
+            } else {
+                _renderer->drawFloorTileFrame(_projectionViewMatrix, _selected.x, _selected.z, GLOBAL::FRAME_COLOR_TWO);
+            }
         }
     }
 

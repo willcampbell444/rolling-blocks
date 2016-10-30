@@ -21,8 +21,11 @@ public:
 	GLFWwindow* getWindow();
 	void draw();
 	void update();
-	void setTile(int x, int z, int type);
 private:
+	void setTile(int x, int z);
+	void delTile(int x, int z);
+	void save();
+
     GLFWwindow* _window;
 
     Renderer* _renderer;
@@ -37,7 +40,14 @@ private:
 
     int _width, _length;
 
+    bool _floorMode = true;
+
     bool _mouseOn = true;
+    bool _oclicked = false;
+    bool _leftclicked = false;
+    bool _rightclicked = false;
+    bool _bclicked = false;
+
     glm::vec3 _selected;
 
     std::string _fileName;

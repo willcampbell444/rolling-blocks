@@ -102,10 +102,10 @@ void Renderer::drawBox(glm::mat4 viewProjectionMatrix, float x, float y, float z
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
-void Renderer::drawBoxFrame(glm::mat4 viewProjectionMatrix, float x, float y, float z) {
+void Renderer::drawBoxFrame(glm::mat4 viewProjectionMatrix, float x, float y, float z, glm::vec3 color) {
     _shader->use();
     glUniform1i(_shader->getUniformLocation("useLighting"), true);
-    glUniform3f(_shader->getUniformLocation("color"), GLOBAL::FRAME_COLOR.r, GLOBAL::FRAME_COLOR.g, GLOBAL::FRAME_COLOR.b);
+    glUniform3f(_shader->getUniformLocation("color"), color.r, color.g, color.b);
     glBindVertexArray(_vertexArrayObject);
     float dif = 0.5f-GLOBAL::GAP;
 
@@ -274,14 +274,14 @@ void Renderer::drawFloorTile(glm::mat4 viewProjectionMatrix, float x, float z) {
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
-void Renderer::drawFloorTileFrame(glm::mat4 viewProjectionMatrix, float x, float z) {
+void Renderer::drawFloorTileFrame(glm::mat4 viewProjectionMatrix, float x, float z, glm::vec3 color) {
     _shader->use();
     glUniform1i(_shader->getUniformLocation("useLighting"), true);
     glUniform3f(
         _shader->getUniformLocation("color"), 
-        GLOBAL::FRAME_COLOR.r, 
-        GLOBAL::FRAME_COLOR.g, 
-        GLOBAL::FRAME_COLOR.b
+        color.r, 
+        color.g, 
+        color.b
     );
     glBindVertexArray(_vertexArrayObject);
 

@@ -12,6 +12,7 @@ namespace GLOBAL {
 	const glm::vec3 DONE_PLAYER_COLOR(1, 0.772549, 0.8078431);
 	const glm::vec3 PLAYER_BORDER(0, 0, 0);
 	const glm::vec3 FRAME_COLOR(0, 0.2, 1);
+	const glm::vec3 FRAME_COLOR_TWO(1, 0.2, 0);
 	const glm::vec3 STATIC_BORDER(1, 1, 1);
 	const glm::vec3 VICTORY_COLOR(1, 0.772549, 0.8078431);
 	const glm::vec3 VICTORY_BORDER(1, 1, 1);
