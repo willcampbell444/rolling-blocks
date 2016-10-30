@@ -14,8 +14,10 @@ public:
 	Renderer();
 	Shaders* getShader();
 	void drawBox(glm::mat4 viewProjectionMatrix, float x, float y, float z, glm::vec3 color);
+	void drawBoxFrame(glm::mat4 viewProjectionMatrix, float x, float y, float z);
 	void drawRotatedBox(glm::mat4 viewProjectionMatrix, float x, float y, float z, float angle, glm::vec3 center, glm::vec3 axis, glm::vec3 color);
 	void drawFloorTile(glm::mat4 viewProjectionMatrix, float x, float z);
+	void drawFloorTileFrame(glm::mat4 viewProjectionMatrix, float x, float z);
 	void drawVictoryTile(glm::mat4 viewProjectionMatrix, float x, float z);
 private:
     GLuint _vertexArrayObject;

@@ -21,6 +21,7 @@ public:
 	GLFWwindow* getWindow();
 	void draw();
 	void update();
+	void setTile(int x, int z, int type);
 private:
     GLFWwindow* _window;
 
@@ -33,6 +34,8 @@ private:
     glm::vec3 _cameraPos;
 
     float _viewAngle = 0;
+
+    int _width, _length;
 
     bool _mouseOn = true;
     glm::vec3 _selected;

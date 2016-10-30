@@ -11,6 +11,7 @@ namespace GLOBAL {
 	const glm::vec3 PLAYER_COLOR(0.752941, 0.772549, 0.8078431);
 	const glm::vec3 DONE_PLAYER_COLOR(1, 0.772549, 0.8078431);
 	const glm::vec3 PLAYER_BORDER(0, 0, 0);
+	const glm::vec3 FRAME_COLOR(0, 0.2, 1);
 	const glm::vec3 STATIC_BORDER(1, 1, 1);
 	const glm::vec3 VICTORY_COLOR(1, 0.772549, 0.8078431);
 	const glm::vec3 VICTORY_BORDER(1, 1, 1);
@@ -27,6 +28,8 @@ namespace GLOBAL {
 	const int STATE_PLAY = 0;
 	const int STATE_MENU = 1;
 	const int STATE_PAUSE = 2;
+
+	const int MAP_SIZE_LIMIT = 1000;
 
 	const int WINDOW_WIDTH = 800;
 	const int WINDOW_HEIGHT = 600;
