@@ -1,1 +1,13 @@
-a.out
+floor.o
+levelEdit.o
+game.o
+heightMap.o
+main.o
+lvledit.o
+map.o
+menu.o
+player.o
+renderer.o
+shaders.o
+play
+lvledit
