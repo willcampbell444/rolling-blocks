@@ -38,8 +38,11 @@ private:
     void loadSave();
     void previousOption();
     void setLevelNames(pugi::xml_node parent);
+    bool isWon(pugi::xml_node node);
 
     GLFWwindow* _window;
+
+    std::vector<int> _itemsSelected;
 
     std::vector<const char*> _levelFileNames;
     std::vector<MenuOption> _levelNames;

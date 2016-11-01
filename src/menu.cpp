@@ -478,7 +478,7 @@ int Menu::result() {
     return -1;
 }
 
-void Menu::setOptions(std::vector<MenuOption> options, int dir) {
+void Menu::setOptions(std::vector<MenuOption> options, int dir, int optionNum) {
     _options.clear();
     _done = false;
     _isBeginning = true;
@@ -488,7 +488,7 @@ void Menu::setOptions(std::vector<MenuOption> options, int dir) {
     _wait = false;
     _forcedEnd = false;
     _timeSinceTransition = 0;
-    _currentPeice = 0;
+    _currentPeice = optionNum;
     _angle = 90.0f;
     _height = 0;
     _menuOptions = options;

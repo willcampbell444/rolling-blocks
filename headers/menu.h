@@ -22,7 +22,7 @@ struct MenuOption {
 class Menu {
 public:
 	Menu(Renderer* renderer);
-	void setOptions(std::vector<MenuOption> options, int dir);
+	void setOptions(std::vector<MenuOption> options, int dir, int optionNum);
 	void draw(glm::mat4 viewProjectionMatrix);
 	glm::vec3 getCameraPos();
 	glm::vec2 getCameraDistance();

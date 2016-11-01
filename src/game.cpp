@@ -22,7 +22,7 @@ Game::Game() {
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_CULL_FACE); 
 
-    _projectionMatrix = glm::perspective(glm::radians(50.0f), 800.0f / 600.0f, 1.0f, 50.0f);
+    _projectionMatrix = glm::perspective(glm::radians(50.0f), 800.0f / 600.0f, 1.0f, 100.0f);
 
     glClearColor(GLOBAL::BACKGROUND.r, GLOBAL::BACKGROUND.g, GLOBAL::BACKGROUND.b, 1.0f);
 
@@ -42,7 +42,7 @@ Game::Game() {
 
     setLevelNames(_currentLayer);
 
-    _menu->setOptions(_levelNames, 1);
+    _menu->setOptions(_levelNames, 1, 0);
 
     _lastFrameTime = glfwGetTime();
     _lastFPSTime = glfwGetTime();
@@ -58,7 +58,8 @@ Game::~Game() {
 
 void Game::selectOption(int optionNum) {
     if (optionNum == -2) {
-        _menu->setOptions(_levelNames, -1);
+        _menu->setOptions(_levelNames, -1, _itemsSelected.back());
+        _itemsSelected.pop_back();
     } else {
         int count = 0;
         pugi::xml_node child = _currentLayer.first_child();
@@ -73,13 +74,13 @@ void Game::selectOption(int optionNum) {
         } else if (strcmp(child.name(), "option") == 0) {
             _currentLayer = child;
             setLevelNames(_currentLayer);
-            _menu->setOptions(_levelNames, 1);
+            _menu->setOptions(_levelNames, 1, 0);
         }
+        _itemsSelected.push_back(optionNum);
     }
 }
 
 void Game::previousOption() {
-    std::cout << "prev" << std::endl;
     if (_currentLayer != _document.child("option")) {
         _currentLayer = _currentLayer.parent();
 
@@ -109,17 +110,30 @@ void Game::loadMap(const char* fileName) {
 
 void Game::setLevelNames(pugi::xml_node parent) {
     _levelNames.clear();
-    bool beat;
 
     for (pugi::xml_node i: parent.children()) {
-        beat = false;
+        _levelNames.push_back(MenuOption(i.attribute("name").value(), isWon(i)));
+    }
+}
+
+bool Game::isWon(pugi::xml_node node) {
+    if (strcmp(node.name(), "option") == 0) {
+        bool allWon = true;
+        for (pugi::xml_node i: node.children()) {
+            if (!isWon(i)) {
+                allWon = false;
+            }
+        }
+        return allWon;
+    } else {
+        bool beat = false;
         for (auto j: _beatLevels) {
-            if (j == i.attribute("fileName").value()) {
+            if (j == node.attribute("fileName").value()) {
                 beat = true;
                 break;
             }
         }
-        _levelNames.push_back(MenuOption(i.attribute("name").value(), beat));
+        return beat;
     }
 }
 
@@ -210,8 +224,29 @@ void Game::update() {
 
         cameraPos = _player->getCameraPos();
         cameraDistance = _player->getCameraDistance();
+
+        if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+            _cameraAngle += 90.0f * _deltaTime;
+        }
+        if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            _cameraAngle -= 90.0f * _deltaTime;
+        }
+
+        if (_cameraAngle > 360) {
+            _cameraAngle = 0;
+        } else if (_cameraAngle < 0) {
+            _cameraAngle = 360;
+        }
+
+        if (glfwGetKey(_window, GLFW_KEY_Z) == GLFW_PRESS) {
+            _player->changeGroup(-1);
+        }
+        if (glfwGetKey(_window, GLFW_KEY_X) == GLFW_PRESS) {
+            _player->changeGroup(1);
+        }
     
         if (_player->win()) {
+            _cameraAngle = 0;
             if (_player->getWinStatus()) {
                 bool isNew = true;
                 for (auto level: _beatLevels) {
@@ -226,7 +261,8 @@ void Game::update() {
                 writeSave();
                 setLevelNames(_currentLayer);
             }
-            _menu->setOptions(_levelNames, -1);
+            _menu->setOptions(_levelNames, -1, _itemsSelected.back());
+            _itemsSelected.pop_back();
             _state = GLOBAL::STATE_MENU;
         }
     } else if (_state == GLOBAL::STATE_MENU) {
@@ -257,32 +293,6 @@ void Game::update() {
         if (_menu->result() != -1) {
             selectOption(_menu->result());
         }
-    }
-
-    if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        _cameraAngle += 90.0f * _deltaTime;
-    }
-    if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        _cameraAngle -= 90.0f * _deltaTime;
-    }
-    if (glfwGetKey(_window, GLFW_KEY_UP) == GLFW_PRESS) {
-        _cameraHeight += 10.0f * _deltaTime;
-    }
-    if (glfwGetKey(_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        _cameraHeight -= 10.0f * _deltaTime;
-    }
-
-    if (glfwGetKey(_window, GLFW_KEY_Z) == GLFW_PRESS) {
-        _player->changeGroup(-1);
-    }
-    if (glfwGetKey(_window, GLFW_KEY_X) == GLFW_PRESS) {
-        _player->changeGroup(1);
-    }
-
-    if (_cameraAngle > 360) {
-        _cameraAngle = 0;
-    } else if (_cameraAngle < 0) {
-        _cameraAngle = 360;
     }
 
     _cameraPos = glm::vec3(

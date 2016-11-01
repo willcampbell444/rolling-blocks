@@ -7,5 +7,17 @@
 	</option>
 	<option name="HARDER">
 		<level name="ONE" fileName="maps/tut1.map"/>
+		<option name="HER">
+			<level name="ONE" fileName="maps/tut1.map"/>
+		</option>
+		<option name="LION">
+			<level name="ONE" fileName="maps/tut1.map"/>
+			<level name="TWO" fileName="maps/tut2.map"/>
+			<level name="THREE" fileName="maps/tut3.map"/>
+			<level name="FOUR" fileName="maps/tut4.map"/>
+			<option name="HER">
+				<level name="ONE" fileName="maps/tut1.map"/>
+			</option>
+		</option>
 	</option>
 </option>
