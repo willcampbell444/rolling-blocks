@@ -202,6 +202,10 @@ void Game::update() {
             _player->restart();
         }
 
+        if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS) {
+            _player->end();
+        }
+
         _player->update(_map.getTiles(), _deltaTime);
 
         cameraPos = _player->getCameraPos();
@@ -222,7 +226,7 @@ void Game::update() {
                 writeSave();
                 setLevelNames(_currentLayer);
             }
-            _menu->setOptions(_levelNames, 1);
+            _menu->setOptions(_levelNames, -1);
             _state = GLOBAL::STATE_MENU;
         }
     } else if (_state == GLOBAL::STATE_MENU) {

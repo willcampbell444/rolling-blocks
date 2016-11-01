@@ -118,7 +118,7 @@ bool Player::win() {
         _wait = true;
         _isEnding = true;
         _newCameraPos = _cameraPos;
-        _newCameraPos.y = -GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+        _newCameraPos.y = GLOBAL::FALL_HEIGHT*_cameraDistance.y;
         _newCameraDistance = _cameraDistance;
         _oldCameraPos = _cameraPos;
         _oldCameraDistance = _cameraDistance;
@@ -132,6 +132,17 @@ bool Player::win() {
 void Player::restart() {
     if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_wait && !_isRestartTransition) {
         _isRestartTransition = true;
+        _newCameraPos = _cameraPos;
+        _newCameraPos.y = GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+        _newCameraDistance = _cameraDistance;
+        _oldCameraPos = _cameraPos;
+        _oldCameraDistance = _cameraDistance;
+    }
+}
+
+void Player::end() {
+    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_wait && !_isRestartTransition) {
+        _isEnding = true;
         _newCameraPos = _cameraPos;
         _newCameraPos.y = GLOBAL::FALL_HEIGHT*_cameraDistance.y;
         _newCameraDistance = _cameraDistance;

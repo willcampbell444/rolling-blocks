@@ -26,6 +26,7 @@ public:
     glm::vec3 getCameraPos();
     glm::vec2 getCameraDistance();
     void restart();
+    void end();
 private:
     void setMinMax();
     void gravity();
