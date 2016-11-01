@@ -13,10 +13,16 @@
 #include <iostream>
 #include <renderer.h>
 
+struct MenuOption {
+	bool completed;
+	const char* fileName;
+	MenuOption(const char* fileName, bool completed): fileName(fileName), completed(completed) {};
+};
+
 class Menu {
 public:
 	Menu(Renderer* renderer);
-	void setOptions(std::vector<const char*> options, int dir);
+	void setOptions(std::vector<MenuOption> options, int dir);
 	void draw(glm::mat4 viewProjectionMatrix);
 	glm::vec3 getCameraPos();
 	glm::vec2 getCameraDistance();
@@ -33,6 +39,7 @@ private:
 
 	int _currentPeice = 0;
 	std::vector<std::vector<unsigned int>> _options;
+	std::vector<MenuOption> _menuOptions;
 
 	bool _isBeginning = false;
 	bool _isCameraTransition = false;

@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <fstream>
 #include <floor.h>
 #include <player.h>
 #include <cmath>
@@ -20,6 +21,7 @@
 #include <menu.h>
 #include <renderer.h>
 #include <cstring>
+#include <string>
 
 class Game {
 public:
@@ -32,13 +34,16 @@ public:
     GLFWwindow* getWindow();
 private:
     void selectOption(int optionNum);
+    void writeSave();
+    void loadSave();
     void previousOption();
+    void setLevelNames(pugi::xml_node parent);
 
     GLFWwindow* _window;
 
-    int _level = 0;
     std::vector<const char*> _levelFileNames;
-    std::vector<const char*> _levelNames;
+    std::vector<MenuOption> _levelNames;
+    std::vector<std::string> _beatLevels;
     bool _end = false;
 
     Renderer* _renderer;
@@ -52,7 +57,12 @@ private:
     pugi::xml_node _currentLayer;
     pugi::xml_document _document;
 
+    double _lastFPSTime;
+    int _numFrames = 0;
+
     int _state;
+
+    std::string _levelFileName;
 
     Floor* _floor;
     Player* _player;

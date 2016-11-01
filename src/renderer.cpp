@@ -22,11 +22,11 @@ Renderer::Renderer() {
         -0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
 
         -0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
+         0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
         -0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
          0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
-         0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
-         0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
         -0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
+         0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
 
         -0.5, -0.5f,  -0.5, -1.0f, 0.0f, 0.0f,
         -0.5, -0.5f,   0.5, -1.0f, 0.0f, 0.0f,
@@ -50,11 +50,11 @@ Renderer::Renderer() {
         -0.5, -0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
 
         -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f,
+         0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
         -0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
          0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-         0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-         0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-        -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f
+        -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f,
+         0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f
     };
 
     glGenVertexArrays(1, &_vertexArrayObject);
@@ -232,7 +232,12 @@ void Renderer::drawRotatedBox(glm::mat4 viewProjectionMatrix, float x, float y, 
         glm::value_ptr(model)
     );
     glUniform1i(_shader->getUniformLocation("useLighting"), true);
-    glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_COLOR.x, GLOBAL::PLAYER_COLOR.y, GLOBAL::PLAYER_COLOR.z);
+    glUniform3f(
+        _shader->getUniformLocation("color"), 
+        color.r, 
+        color.g, 
+        color.b
+    );
     glBindVertexArray(_vertexArrayObject);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
