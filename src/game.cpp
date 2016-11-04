@@ -145,7 +145,8 @@ void Game::update() {
     _numFrames += 1;
 
     if (_lastFPSTime < glfwGetTime()-1) {
-        std::cout << _numFrames << std::endl;
+        // Print Framerate:
+        // std::cout << _numFrames << std::endl;
         _lastFPSTime = glfwGetTime();
         _numFrames = 0;
     }
@@ -324,7 +325,6 @@ void Game::loadSave() {
             std::string fileName;
             file >> fileName;
             _beatLevels.push_back(fileName);
-            std::cout << fileName << std::endl;
         }
         _beatLevels.pop_back();
     }

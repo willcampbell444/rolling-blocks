@@ -26,6 +26,10 @@ void main() {
 		vec3 specular = 0.5*pow(max(dot(viewDir, reflectDir), 0), 256)*vec3(1);
 
 		outColor = vec4((ambient + diffuse + specular)*color, 1);
+
+		if (FragPos.y < -0.05) {
+			outColor = mix(outColor, vec4(0.168627, 0.188235, 0.23137, 1), clamp(-(FragPos.y+0.05)/1.9, 0.0, 1.0));
+		}
 	} else {
 		outColor = vec4(color, 1.0);
 	}
