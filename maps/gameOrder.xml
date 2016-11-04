@@ -5,19 +5,16 @@
 		<level name="THREE" fileName="maps/tut3.map"/>
 		<level name="FOUR" fileName="maps/tut4.map"/>
 	</option>
-	<option name="HARDER">
-		<level name="ONE" fileName="maps/tut1.map"/>
-		<option name="HER">
-			<level name="ONE" fileName="maps/tut1.map"/>
-		</option>
-		<option name="LION">
-			<level name="ONE" fileName="maps/tut1.map"/>
-			<level name="TWO" fileName="maps/tut2.map"/>
-			<level name="THREE" fileName="maps/tut3.map"/>
-			<level name="FOUR" fileName="maps/tut4.map"/>
-			<option name="HER">
-				<level name="ONE" fileName="maps/tut1.map"/>
-			</option>
-		</option>
+	<option name="BASICS">
+		<level name="ONE" fileName="maps/basic1.map"/>
+		<level name="TWO" fileName="maps/basic2.map"/>
+		<level name="THREE" fileName="maps/basic3.map"/>
+		<level name="FOUR" fileName="maps/basic4.map"/>
+	</option>
+	<option name="MEDIUM">
+		<level name="ONE" fileName="maps/med1.map"/>
+		<level name="TWO" fileName="maps/med2.map"/>
+		<level name="THREE" fileName="maps/med3.map"/>
+		<level name="FOUR" fileName="maps/med4.map"/>
 	</option>
 </option>

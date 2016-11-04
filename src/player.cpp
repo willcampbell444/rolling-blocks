@@ -115,6 +115,7 @@ bool Player::win() {
     if (_won && !_isEnding) {
         _isTransition = false;
         _isCameraTransition = false;
+        _timeSinceTransition = 0;
         _wait = true;
         _isEnding = true;
         _newCameraPos = _cameraPos;
@@ -130,7 +131,7 @@ bool Player::win() {
 }
 
 void Player::restart() {
-    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_wait && !_isRestartTransition) {
+    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_isRestartTransition) {
         _isRestartTransition = true;
         _newCameraPos = _cameraPos;
         _newCameraPos.y = GLOBAL::FALL_HEIGHT*_cameraDistance.y;
@@ -568,6 +569,7 @@ void Player::update(unsigned char* map, GLfloat deltaTime) {
     }
     if (_playerPeices.size() == 0 && !_won && !_isRestartTransition) {
         restart();
+        _isCameraTransition = false;
         _wait = true;
     }
 }

@@ -29,13 +29,13 @@ void Map::read(const char* filename) {
 	_startPosition.clear();
 
 	int playerBlockCount;
-	unsigned char x, y, z;
+	int x, y, z;
 	file >> playerBlockCount;
 	for (int i = 0; i < playerBlockCount; i++) {
 		file >> x;
 		file >> y;
 		file >> z;
-		_startPosition.push_back(glm::vec3(x-'0', y-'0', z-'0'));
+		_startPosition.push_back(glm::vec3(x, y, z));
 	}
 }
 
