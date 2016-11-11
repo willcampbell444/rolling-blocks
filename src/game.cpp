@@ -20,7 +20,10 @@ Game::Game() {
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
-    glEnable(GL_CULL_FACE); 
+    glEnable(GL_CULL_FACE);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 
     _projectionMatrix = glm::perspective(glm::radians(50.0f), 800.0f / 600.0f, 1.0f, 100.0f);
 
@@ -112,8 +115,26 @@ void Game::setLevelNames(pugi::xml_node parent) {
     _levelNames.clear();
 
     for (pugi::xml_node i: parent.children()) {
-        _levelNames.push_back(MenuOption(i.attribute("name").value(), isWon(i)));
+        _levelNames.push_back(MenuOption(i.attribute("name").value(), isWon(i), moveCount(i)));
     }
+}
+
+int Game::moveCount(pugi::xml_node node) {
+    if (strcmp(node.name(), "option") == 0) {
+        return -1;
+    }
+    bool beat = false;
+    int count;
+    for (count = 0; count < _beatLevels.size(); count++) {
+        if (_beatLevels[count] == node.attribute("fileName").value()) {
+            beat = true;
+            break;
+        }
+    }
+    if (beat) {
+        return _moveCounts[count];
+    }
+    return -1;
 }
 
 bool Game::isWon(pugi::xml_node node) {
@@ -250,14 +271,19 @@ void Game::update() {
             _cameraAngle = 0;
             if (_player->getWinStatus()) {
                 bool isNew = true;
+                int count = 0;
                 for (auto level: _beatLevels) {
                     if (level == _levelFileName) {
                         isNew = false;
                         break;
                     }
+                    count += 1;
                 }
                 if (isNew) {
                     _beatLevels.push_back(_levelFileName);
+                    _moveCounts.push_back(_player->getMoveCount());
+                } else if (_moveCounts[count] > _player->getMoveCount()) {
+                    _moveCounts[count] = _player->getMoveCount();
                 }
                 writeSave();
                 setLevelNames(_currentLayer);
@@ -313,8 +339,8 @@ void Game::update() {
 
 void Game::writeSave() {
     std::ofstream file("save");
-    for (auto fileName: _beatLevels) {
-        file << fileName << std::endl;
+    for (int i = 0; i < _beatLevels.size(); i++) {
+        file << _beatLevels[i] << " " << _moveCounts[i] << std::endl;
     }
 }
 
@@ -325,8 +351,12 @@ void Game::loadSave() {
             std::string fileName;
             file >> fileName;
             _beatLevels.push_back(fileName);
+            int m;
+            file >> m;
+            _moveCounts.push_back(m);
         }
         _beatLevels.pop_back();
+        _moveCounts.pop_back();
     }
 }
 

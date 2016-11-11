@@ -7,6 +7,8 @@ Player::Player(Renderer* renderer) {
 void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> startPosition) {
     _floorWidth = x;
     _floorLength = y;
+
+    _moveCount = 0;
     
     _heightMap.create(_floorWidth, _floorLength);
 
@@ -130,6 +132,10 @@ bool Player::win() {
     return false;
 }
 
+int Player::getMoveCount() {
+    return _moveCount;
+}
+
 void Player::restart() {
     if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_isRestartTransition) {
         _isRestartTransition = true;
@@ -228,6 +234,7 @@ void Player::move(int x, int z, unsigned char* map) {
         _oldCameraPos = _cameraPos;
         _oldCameraDistance = _cameraDistance;
         _newPeices = _playerPeices;
+        _moveCount += 1;
 
         setMinMax();
 
@@ -917,6 +924,8 @@ void Player::attach() {
 }
 
 void Player::draw(glm::mat4 viewProjectionMatrix) {
+    _renderer->drawText("MOVE "+std::to_string(_moveCount), 20, GLOBAL::WINDOW_HEIGHT-55, 1);
+
     for (glm::vec3 peice: _playerPeices) {
         _renderer->drawRotatedBox(
             viewProjectionMatrix, 

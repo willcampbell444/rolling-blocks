@@ -22,8 +22,8 @@ void main() {
 		vec3 diffuse = 0.35*max(dot(norm, -lightDirection), 0.0) * vec3(1);
 
 		vec3 reflectDir = reflect(lightDirection, norm);
-		vec3 viewDir = normalize(cameraPosition);
-		vec3 specular = 0.5*pow(max(dot(viewDir, reflectDir), 0), 256)*vec3(1);
+		vec3 viewDir = normalize(cameraPosition - FragPos);
+		vec3 specular = 0.2*pow(max(dot(viewDir, reflectDir), 0), 256)*vec3(1);
 
 		outColor = vec4((ambient + diffuse + specular)*color, 1);
 

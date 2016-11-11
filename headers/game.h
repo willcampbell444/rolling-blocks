@@ -39,12 +39,14 @@ private:
     void previousOption();
     void setLevelNames(pugi::xml_node parent);
     bool isWon(pugi::xml_node node);
+    int moveCount(pugi::xml_node node);
 
     GLFWwindow* _window;
 
     std::vector<int> _itemsSelected;
 
     std::vector<const char*> _levelFileNames;
+    std::vector<int> _moveCounts;
     std::vector<MenuOption> _levelNames;
     std::vector<std::string> _beatLevels;
     bool _end = false;

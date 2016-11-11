@@ -12,11 +12,14 @@
 #include <algorithm>
 #include <iostream>
 #include <renderer.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H  
 
 struct MenuOption {
 	bool completed;
+	int moves;
 	const char* fileName;
-	MenuOption(const char* fileName, bool completed): fileName(fileName), completed(completed) {};
+	MenuOption(const char* fileName, bool completed, int moves): fileName(fileName), completed(completed), moves(moves) {};
 };
 
 class Menu {
