@@ -36,6 +36,7 @@ private:
     void selectOption(int optionNum);
     void writeSave();
     void loadSave();
+    void resize();
     void previousOption();
     void setLevelNames(pugi::xml_node parent);
     bool isWon(pugi::xml_node node);
@@ -80,6 +81,8 @@ private:
 
     GLfloat _lastFrameTime;
     GLfloat _deltaTime;
+
+    int _screenWidth, _screenHeight;
 };
 
 #endif

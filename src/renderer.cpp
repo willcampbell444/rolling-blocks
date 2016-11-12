@@ -176,8 +176,7 @@ Renderer::Renderer() {
     FT_Done_FreeType(_freetype);
 
     _textShader->use();
-    _textProjection = glm::ortho(0.0f, (float)GLOBAL::WINDOW_WIDTH, 0.0f, (float)GLOBAL::WINDOW_HEIGHT);
-    // _textProjection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
+    _textProjection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
     glUniformMatrix4fv(
         _textShader->getUniformLocation("projection"), 
         1,
@@ -199,6 +198,20 @@ Renderer::Renderer() {
     attrib = _textShader->getAttributeLocation("texCoord");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+}
+
+void Renderer::resize(int w, int h) {
+    _screenWidth = w;
+    _screenHeight = h;
+
+    _textProjection = glm::ortho(0.0f, (float)_screenWidth, 0.0f, (float)_screenHeight, -1.0f, 1.0f);
+    _textShader->use();
+    glUniformMatrix4fv(
+        _textShader->getUniformLocation("projection"), 
+        1,
+        GL_FALSE,
+        glm::value_ptr(_textProjection)
+    );
 }
 
 void Renderer::drawText(std::string text, float x, float y, float scale, glm::vec3 color) {
@@ -306,6 +319,7 @@ void Renderer::drawTextRight(std::string text, float x, float y, float scale, gl
     if (small) {
         scale = 1;
     }
+    x = _screenWidth-x;
 
     for (char c: text) {
         if (small) {
@@ -336,11 +350,25 @@ void Renderer::drawTextCenter(std::string text, float x, float y, float scale, g
         }
     }
     if (small) {
-        drawText(text, x - (w/2.0f), y, -1, GLOBAL::TEXT_COLOR);
+        drawText(text, x + _screenWidth/2.0f - (w/2.0f), y, -1, GLOBAL::TEXT_COLOR);
     } else {
-        drawText(text, x - (w/2.0f), y, scale, GLOBAL::TEXT_COLOR);
+        drawText(text, x + _screenWidth/2.0f - (w/2.0f), y, scale, GLOBAL::TEXT_COLOR);
     }
 }
+
+
+void Renderer::drawTextTop(std::string text, float x, float y, float scale, glm::vec3 color) {
+    drawText(text, x, _screenHeight-y, scale, color);
+}
+
+void Renderer::drawTextRightTop(std::string text, float x, float y, float scale, glm::vec3 color) {
+    drawTextRight(text, x, _screenHeight-y, scale, color);
+}
+
+void Renderer::drawTextCenterTop(std::string text, float x, float y, float scale, glm::vec3 color) {
+    drawTextCenter(text, x, _screenHeight-y, scale, color);
+}
+
 
 Shaders* Renderer::getShader() {
     return _shader;

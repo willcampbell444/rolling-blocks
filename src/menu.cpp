@@ -445,7 +445,7 @@ unsigned int Menu::loadLetter(bool bits[25]) {
 }
 
 void Menu::draw(glm::mat4 viewProjectionMatrix) {
-    int count = -1;
+    int count = 0;
     for (int m = 0; m < _options.size(); m++) {
         for (int n = 0; n < _options[m].size(); n++) {
             int letter = _options[m][n];
@@ -494,23 +494,23 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
     }
 
     if (_menuOptions[_currentPeice].moves != -1) {
-        _renderer->drawText(std::to_string(_menuOptions[_currentPeice].moves)+" MOVES", 20, GLOBAL::WINDOW_HEIGHT-55, 1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextTop(std::to_string(_menuOptions[_currentPeice].moves)+" MOVES", 20, 55, 1, GLOBAL::TEXT_COLOR);
     }
 }
 
 void Menu::setCamera() {
-    float minZ = -1.0f;
-    float maxZ = -1.0f;
+    float minZ;
+    float maxZ = -1;
 
     for (int i = 0; i <= _currentPeice; i++) {
         minZ = maxZ + 1.0f;
-        maxZ += _options[i].size()*6.0f + 1.0f;
+        maxZ += _options[i].size()*6.0f + 2.0f;
     }
 
     _cameraPos = glm::vec3(
         0,
         2.5f,
-        (minZ+maxZ)/2.0f
+        (minZ+maxZ-1.0f)/2.0f
     );
 
     _cameraDistance.x = maxZ - minZ;

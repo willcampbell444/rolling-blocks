@@ -8,7 +8,7 @@ Game::Game() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     glfwWindowHint(GLFW_SAMPLES, 8);
 
     _window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr);
@@ -25,7 +25,10 @@ Game::Game() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 
-    _projectionMatrix = glm::perspective(glm::radians(50.0f), 800.0f / 600.0f, 1.0f, 100.0f);
+    _screenWidth = 800;
+    _screenHeight = 600;
+
+    _projectionMatrix = glm::perspective(glm::radians(50.0f), 800.0f / 600.0f, 1.0f, 1000.0f);
 
     glClearColor(GLOBAL::BACKGROUND.r, GLOBAL::BACKGROUND.g, GLOBAL::BACKGROUND.b, 1.0f);
 
@@ -57,6 +60,13 @@ Game::~Game() {
     delete _player;
 
     glfwTerminate();
+}
+
+void Game::resize() {
+    // float change = (_screenHeight/600.0f);
+    _projectionMatrix = glm::perspective(glm::radians(50.0f), (float)_screenWidth/_screenHeight, 1.0f, 1000.0f);
+    glViewport(0, 0, _screenWidth, _screenHeight);
+    _renderer->resize(_screenWidth, _screenHeight);
 }
 
 void Game::selectOption(int optionNum) {
@@ -160,6 +170,14 @@ bool Game::isWon(pugi::xml_node node) {
 
 void Game::update() {
     glfwPollEvents();
+
+    int w, h;
+    glfwGetFramebufferSize(_window, &w, &h);
+    if (w != _screenWidth || h != _screenHeight) {
+        _screenWidth = w;
+        _screenHeight = h;
+        resize();
+    }
 
     _deltaTime = glfwGetTime() - _lastFrameTime;
     _lastFrameTime = glfwGetTime();
@@ -317,6 +335,7 @@ void Game::update() {
             selectOption(_menu->result());
         }
     }
+    cameraDistance = cameraDistance*std::max(std::max((800.0f/_screenWidth), (600.0f/_screenHeight)*0.5f), 0.6f)*std::max(_screenHeight/600.0f, 0.6f);
 
     _cameraPos = glm::vec3(
         cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*cameraDistance.x,
@@ -372,16 +391,16 @@ void Game::draw() {
         _floor->draw(_projectionViewMatrix);
         _player->draw(_projectionViewMatrix);
         _renderer->drawText("ZX: SELECT BLOCK", 20, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextCenter("WASD: MOVE", GLOBAL::WINDOW_WIDTH/2.0f, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextRight("QE: ROTATE CAMERA", GLOBAL::WINDOW_WIDTH - 20, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextRight("ESC: BACK", GLOBAL::WINDOW_WIDTH - 20, GLOBAL::WINDOW_HEIGHT - 38, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextRight("R: RESTART", GLOBAL::WINDOW_WIDTH - 20, GLOBAL::WINDOW_HEIGHT - 75, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextCenter("WASD: MOVE", 0, 20, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextRight("QE: ROTATE CAMERA", 20, 20, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextRightTop("ESC: BACK", 20, 38, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextRightTop("R: RESTART", 20, 75, -1, GLOBAL::TEXT_COLOR);
     } else if (_state == GLOBAL::STATE_MENU) {
         _menu->draw(_projectionViewMatrix);
         _renderer->drawText("A: LEFT", 20, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextCenter("W: SELECT", GLOBAL::WINDOW_WIDTH/2.0f, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextRight("D: RIGHT", GLOBAL::WINDOW_WIDTH - 20, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextRight("ESC: BACK", GLOBAL::WINDOW_WIDTH - 20, GLOBAL::WINDOW_HEIGHT - 38, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextCenter("W: SELECT", 0, 20, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextRight("D: RIGHT", 20, 20, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextRightTop("ESC: BACK", 20, 38, -1, GLOBAL::TEXT_COLOR);
     }
 
     glfwSwapBuffers(_window);

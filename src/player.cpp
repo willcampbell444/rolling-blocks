@@ -949,7 +949,7 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
             _renderer->drawBox(viewProjectionMatrix, peice.x, peice.y-(peice.w*peice.x), peice.z, GLOBAL::VICTORY_COLOR);
         }
     }
-    _renderer->drawText("MOVE "+std::to_string(_moveCount), 20, GLOBAL::WINDOW_HEIGHT-55, 1, GLOBAL::TEXT_COLOR);
+    _renderer->drawTextTop("MOVE "+std::to_string(_moveCount), 20, 55, 1, GLOBAL::TEXT_COLOR);
 }
 
 glm::vec3 Player::getCameraPos() {

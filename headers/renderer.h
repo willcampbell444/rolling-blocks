@@ -33,7 +33,11 @@ public:
     void drawText(std::string text, float x, float y, float scale, glm::vec3 color);
     void drawTextRight(std::string text, float x, float y, float scale, glm::vec3 color);
     void drawTextCenter(std::string text, float x, float y, float scale, glm::vec3 color);
+    void drawTextTop(std::string text, float x, float y, float scale, glm::vec3 color);
+    void drawTextRightTop(std::string text, float x, float y, float scale, glm::vec3 color);
+    void drawTextCenterTop(std::string text, float x, float y, float scale, glm::vec3 color);
     void drawTextShadow(std::string text, float x, float y, float scale, glm::vec3 color);
+    void resize(int w, int h);
 private:
     GLuint _vertexArrayObject;
     GLuint _textVBO, _textVAO;
@@ -42,6 +46,9 @@ private:
     Shaders* _textShader;
     FT_Library _freetype;
     FT_Face _font;
+
+    int _screenWidth = 800;
+    int _screenHeight = 600;
 
     std::unordered_map<char, Character> _characters;
     std::unordered_map<char, Character> _smallCharacters;
