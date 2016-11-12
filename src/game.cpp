@@ -172,10 +172,6 @@ void Game::update() {
         _numFrames = 0;
     }
 
-    if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(_window, GL_TRUE);
-    }
-
     glm::vec3 cameraPos;
     glm::vec2 cameraDistance;
 
@@ -238,7 +234,7 @@ void Game::update() {
             _player->restart();
         }
 
-        if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS) {
+        if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             _player->end();
         }
 
@@ -312,7 +308,7 @@ void Game::update() {
             _menu->select();
         }
 
-        if (glfwGetKey(_window, GLFW_KEY_F) && _menu->isStill()) {
+        if (glfwGetKey(_window, GLFW_KEY_ESCAPE) && _menu->isStill()) {
             previousOption();
         }
 
@@ -375,8 +371,17 @@ void Game::draw() {
     if (_state == GLOBAL::STATE_PLAY) {
         _floor->draw(_projectionViewMatrix);
         _player->draw(_projectionViewMatrix);
+        _renderer->drawText("ZX: SELECT BLOCK", 20, 20, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextCenter("WASD: MOVE", GLOBAL::WINDOW_WIDTH/2.0f, 20, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextRight("QE: ROTATE CAMERA", GLOBAL::WINDOW_WIDTH - 20, 20, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextRight("ESC: BACK", GLOBAL::WINDOW_WIDTH - 20, GLOBAL::WINDOW_HEIGHT - 38, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextRight("R: RESTART", GLOBAL::WINDOW_WIDTH - 20, GLOBAL::WINDOW_HEIGHT - 75, -1, GLOBAL::TEXT_COLOR);
     } else if (_state == GLOBAL::STATE_MENU) {
         _menu->draw(_projectionViewMatrix);
+        _renderer->drawText("A: LEFT", 20, 20, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextCenter("W: SELECT", GLOBAL::WINDOW_WIDTH/2.0f, 20, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextRight("D: RIGHT", GLOBAL::WINDOW_WIDTH - 20, 20, -1, GLOBAL::TEXT_COLOR);
+        _renderer->drawTextRight("ESC: BACK", GLOBAL::WINDOW_WIDTH - 20, GLOBAL::WINDOW_HEIGHT - 38, -1, GLOBAL::TEXT_COLOR);
     }
 
     glfwSwapBuffers(_window);

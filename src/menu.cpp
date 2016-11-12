@@ -445,10 +445,6 @@ unsigned int Menu::loadLetter(bool bits[25]) {
 }
 
 void Menu::draw(glm::mat4 viewProjectionMatrix) {
-    if (_menuOptions[_currentPeice].moves != -1) {
-        _renderer->drawText(std::to_string(_menuOptions[_currentPeice].moves)+" MOVES", 20, GLOBAL::WINDOW_HEIGHT-55, 1);
-    }
-
     int count = -1;
     for (int m = 0; m < _options.size(); m++) {
         for (int n = 0; n < _options[m].size(); n++) {
@@ -495,6 +491,10 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
             _renderer->drawFloorTile(viewProjectionMatrix, i, count);
         }
         count += 2;
+    }
+
+    if (_menuOptions[_currentPeice].moves != -1) {
+        _renderer->drawText(std::to_string(_menuOptions[_currentPeice].moves)+" MOVES", 20, GLOBAL::WINDOW_HEIGHT-55, 1, GLOBAL::TEXT_COLOR);
     }
 }
 

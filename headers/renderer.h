@@ -30,7 +30,10 @@ public:
 	void drawFloorTile(glm::mat4 viewProjectionMatrix, float x, float z);
 	void drawFloorTileFrame(glm::mat4 viewProjectionMatrix, float x, float z, glm::vec3 color);
 	void drawVictoryTile(glm::mat4 viewProjectionMatrix, float x, float z);
-	void drawText(std::string text, float x, float y, float scale);
+    void drawText(std::string text, float x, float y, float scale, glm::vec3 color);
+    void drawTextRight(std::string text, float x, float y, float scale, glm::vec3 color);
+    void drawTextCenter(std::string text, float x, float y, float scale, glm::vec3 color);
+    void drawTextShadow(std::string text, float x, float y, float scale, glm::vec3 color);
 private:
     GLuint _vertexArrayObject;
     GLuint _textVBO, _textVAO;
@@ -41,6 +44,7 @@ private:
     FT_Face _font;
 
     std::unordered_map<char, Character> _characters;
+    std::unordered_map<char, Character> _smallCharacters;
 };
 
 #endif

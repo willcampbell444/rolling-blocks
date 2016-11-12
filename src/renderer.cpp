@@ -23,6 +23,8 @@ Renderer::Renderer() {
     if (!_textShader->createProgram()) {
         std::cout << "Text Shader Failed To Link" << std::endl;
     }
+    _textShader->use();
+    glUniform1i(_textShader->getUniformLocation("character"), 0);
 
     _shader->use();
 
@@ -132,6 +134,44 @@ Renderer::Renderer() {
         _characters[i] = character;
     }
 
+    // small text
+    FT_Set_Pixel_Sizes(_font, 0, 32);
+
+    for (GLubyte i = 0; i < 128; i++) {
+        if (FT_Load_Char(_font, i, FT_LOAD_RENDER)) {
+            std::cout << "Failed loading small char " << i << std::endl;
+            continue;
+        }
+
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            (GLuint)_font->glyph->bitmap.width,
+            (GLuint)_font->glyph->bitmap.rows,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            _font->glyph->bitmap.buffer
+        );
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        Character character = {
+            texture,
+            glm::ivec2(_font->glyph->bitmap.width, _font->glyph->bitmap.rows),
+            glm::ivec2(_font->glyph->bitmap_left, _font->glyph->bitmap_top),
+            (GLuint)_font->glyph->advance.x
+        };
+        _smallCharacters[i] = character;
+    }
+
     FT_Done_Face(_font);
     FT_Done_FreeType(_freetype);
 
@@ -150,40 +190,54 @@ Renderer::Renderer() {
 
     glGenBuffers(1, &_textVBO);
     glBindBuffer(GL_ARRAY_BUFFER, _textVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*6*2*2, NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*6*3*2, NULL, GL_DYNAMIC_DRAW);
 
     attrib = _textShader->getAttributeLocation("vertex");
     glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), 0);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), 0);
 
     attrib = _textShader->getAttributeLocation("texCoord");
     glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)));
+    glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 }
 
-void Renderer::drawText(std::string text, float x, float y, float scale) {
+void Renderer::drawText(std::string text, float x, float y, float scale, glm::vec3 color) {
+    drawTextShadow(text, x, y, scale, GLOBAL::TEXT_SHADOW);
+
     _textShader->use();
+    glUniform4f(_textShader->getUniformLocation("color"), color.r, color.g, color.b, 1.0f);
 
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(_textVAO);
 
+    Character character;
+
+    bool small = scale == -1;
+    if (small) {
+        scale = 1;
+    }
+
     for (char c: text) {
-        Character character = _characters[c];
+        if (small) {
+            character = _smallCharacters[c];
+        } else {
+            character = _characters[c];
+        }
 
         float xPos = x + character.bearing.x*scale;
-        float yPos = y + (character.size.y - character.bearing.y)*scale;
+        float yPos = y - (character.size.y - character.bearing.y)*scale;
 
         float w = character.size.x*scale;
         float h = character.size.y*scale;
 
-        GLfloat vertices[6*2*2] = {
-            xPos, yPos + h,     0, 0,
-            xPos, yPos,         0, 1,
-            xPos + w, yPos,     1, 1,
+        GLfloat vertices[6*3*2] = {
+            xPos, yPos + h, 1,     0, 0,
+            xPos, yPos, 1,         0, 1,
+            xPos + w, yPos, 1,     1, 1,
 
-            xPos, yPos + h,     0, 0,
-            xPos + w, yPos,     1, 1,
-            xPos + w, yPos + h, 1, 0,
+            xPos, yPos + h, 1,     0, 0,
+            xPos + w, yPos, 1,     1, 1,
+            xPos + w, yPos + h, 1, 1, 0,
         };
 
         glBindTexture(GL_TEXTURE_2D, character.textureID);
@@ -193,6 +247,98 @@ void Renderer::drawText(std::string text, float x, float y, float scale) {
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         x += (character.advance >> 6) * scale;
+    }
+}
+
+void Renderer::drawTextShadow(std::string text, float x, float y, float scale, glm::vec3 color) {
+    _textShader->use();
+    glUniform4f(_textShader->getUniformLocation("color"), color.r, color.g, color.b, 1.0f);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(_textVAO);
+
+    Character character;
+
+    bool small = scale == -1;
+    if (small) {
+        scale = 1;
+    }
+
+    for (char c: text) {
+        if (small) {
+            character = _smallCharacters[c];
+        } else {
+            character = _characters[c];
+        }
+
+        float xPos = x + character.bearing.x*scale;
+        float yPos = y - (character.size.y - character.bearing.y)*scale;
+
+        float w = character.size.x*scale;
+        float h = character.size.y*scale;
+
+        float offset = scale*2;
+        if (small) {
+            offset = offset/2;
+        }
+
+        GLfloat vertices[6*3*2] = {
+            xPos + offset,            yPos - offset + h,    0,  0, 0,
+            xPos + offset,            yPos - offset, 0,  0, 1,
+            xPos + w + offset, yPos - offset, 0,  1, 1,
+
+            xPos + offset,            yPos - offset + h,    0,  0, 0,
+            xPos + w + offset, yPos - offset, 0,  1, 1,
+            xPos + w + offset, yPos - offset + h,    0,  1, 0,
+        };
+        glBindTexture(GL_TEXTURE_2D, character.textureID);
+        glBindBuffer(GL_ARRAY_BUFFER, _textVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        x += (character.advance >> 6) * scale;
+    }
+}
+
+void Renderer::drawTextRight(std::string text, float x, float y, float scale, glm::vec3 color) {
+    bool small = scale == -1;
+    if (small) {
+        scale = 1;
+    }
+
+    for (char c: text) {
+        if (small) {
+            x -= (_smallCharacters[c].advance >> 6) * scale;
+        } else {
+            x -= (_characters[c].advance >> 6) * scale;
+        }
+    }
+    if (small) {
+        drawText(text, x, y, -1, GLOBAL::TEXT_COLOR);
+    } else {
+        drawText(text, x, y, scale, GLOBAL::TEXT_COLOR);
+    }
+}
+
+void Renderer::drawTextCenter(std::string text, float x, float y, float scale, glm::vec3 color) {
+    bool small = scale == -1;
+    if (small) {
+        scale = 1;
+    }
+
+    float w = 0;
+    for (char c: text) {
+        if (small) {
+            w += (_smallCharacters[c].advance >> 6) * scale;
+        } else {
+            w += (_characters[c].advance >> 6) * scale;
+        }
+    }
+    if (small) {
+        drawText(text, x - (w/2.0f), y, -1, GLOBAL::TEXT_COLOR);
+    } else {
+        drawText(text, x - (w/2.0f), y, scale, GLOBAL::TEXT_COLOR);
     }
 }
 

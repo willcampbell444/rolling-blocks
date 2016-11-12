@@ -924,8 +924,6 @@ void Player::attach() {
 }
 
 void Player::draw(glm::mat4 viewProjectionMatrix) {
-    _renderer->drawText("MOVE "+std::to_string(_moveCount), 20, GLOBAL::WINDOW_HEIGHT-55, 1);
-
     for (glm::vec3 peice: _playerPeices) {
         _renderer->drawRotatedBox(
             viewProjectionMatrix, 
@@ -951,6 +949,7 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
             _renderer->drawBox(viewProjectionMatrix, peice.x, peice.y-(peice.w*peice.x), peice.z, GLOBAL::VICTORY_COLOR);
         }
     }
+    _renderer->drawText("MOVE "+std::to_string(_moveCount), 20, GLOBAL::WINDOW_HEIGHT-55, 1, GLOBAL::TEXT_COLOR);
 }
 
 glm::vec3 Player::getCameraPos() {
