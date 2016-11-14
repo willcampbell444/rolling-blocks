@@ -1,19 +1,28 @@
 #include <game.h>
 
 Game::Game() {
-    glfwInit();
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        std::cout << "Failed to init SDL" << std::endl;
+    }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    _window = SDL_CreateWindow(
+        "Rolling Blocks",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        800,
+        600,
+        SDL_WINDOW_OPENGL
+    );
 
-    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    glfwWindowHint(GLFW_SAMPLES, 8);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
-    _window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr);
-
-    glfwMakeContextCurrent(_window);
+    _context = SDL_GL_CreateContext(_window);
+    _event = new SDL_Event();
 
     glewExperimental = GL_TRUE;
     glewInit();
@@ -50,8 +59,8 @@ Game::Game() {
 
     _menu->setOptions(_levelNames, 1, 0);
 
-    _lastFrameTime = glfwGetTime();
-    _lastFPSTime = glfwGetTime();
+    _lastFrameTime = SDL_GetTicks()/1000.0f;
+    _lastFPSTime = SDL_GetTicks()/1000.0f;
     _numFrames = 0;
 }
 
@@ -59,7 +68,9 @@ Game::~Game() {
     delete _floor;
     delete _player;
 
-    glfwTerminate();
+    SDL_GL_DeleteContext(_context);
+    SDL_DestroyWindow(_window);
+    SDL_Quit();
 }
 
 void Game::resize() {
@@ -103,7 +114,7 @@ void Game::previousOption() {
     }
 }
 
-GLFWwindow* Game::getWindow() {
+SDL_Window* Game::getWindow() {
     return _window;
 }
 
@@ -169,91 +180,145 @@ bool Game::isWon(pugi::xml_node node) {
 }
 
 void Game::update() {
-    glfwPollEvents();
+    // glfwPollEvents();
 
-    int w, h;
-    glfwGetFramebufferSize(_window, &w, &h);
-    if (w != _screenWidth || h != _screenHeight) {
-        _screenWidth = w;
-        _screenHeight = h;
-        resize();
-    }
+    // int w, h;
+    // glfwGetFramebufferSize(_window, &w, &h);
+    // if (w != _screenWidth || h != _screenHeight) {
+    //     _screenWidth = w;
+    //     _screenHeight = h;
+    //     resize();
+    // }
 
-    _deltaTime = glfwGetTime() - _lastFrameTime;
-    _lastFrameTime = glfwGetTime();
-    _numFrames += 1;
+    _deltaTime = (SDL_GetTicks()/1000.0f) - _lastFrameTime;
+    _lastFrameTime = SDL_GetTicks()/1000.0f;
 
-    if (_lastFPSTime < glfwGetTime()-1) {
-        // Print Framerate:
-        // std::cout << _numFrames << std::endl;
-        _lastFPSTime = glfwGetTime();
-        _numFrames = 0;
-    }
+    // _numFrames += 1;
+    // if (_lastFPSTime < (SDL_GetTicks()/1000.0f)-1) {
+    //     Print Framerate:
+    //     std::cout << _numFrames << std::endl;
+    //     _lastFPSTime = SDL_GetTicks()/1000.0f;
+    //     _numFrames = 0;
+    // }
 
     glm::vec3 cameraPos;
     glm::vec2 cameraDistance;
 
+    while (SDL_PollEvent(_event)) {
+        if (_event->type == SDL_QUIT) {
+            _end = true;
+        } else if (_event->type == SDL_KEYDOWN) {
+            if (_event->key.keysym.sym == SDLK_w) {
+                _keys[GLOBAL::KEY_W] = true;
+            } else if (_event->key.keysym.sym == SDLK_a) {
+                _keys[GLOBAL::KEY_A] = true;
+            } else if (_event->key.keysym.sym == SDLK_s) {
+                _keys[GLOBAL::KEY_S] = true;
+            } else if (_event->key.keysym.sym == SDLK_d) {
+                _keys[GLOBAL::KEY_D] = true;
+            } else if (_event->key.keysym.sym == SDLK_q) {
+                _keys[GLOBAL::KEY_Q] = true;
+            } else if (_event->key.keysym.sym == SDLK_e) {
+                _keys[GLOBAL::KEY_E] = true;
+            } else if (_event->key.keysym.sym == SDLK_x) {
+                _keys[GLOBAL::KEY_X] = true;
+            } else if (_event->key.keysym.sym == SDLK_z) {
+                _keys[GLOBAL::KEY_Z] = true;
+            } else if (_event->key.keysym.sym == SDLK_r) {
+                _keys[GLOBAL::KEY_R] = true;
+            } else if (_event->key.keysym.sym == SDLK_ESCAPE) {
+                _keys[GLOBAL::KEY_ESC] = true;
+            }
+        } else if (_event->type == SDL_KEYUP) {
+            if (_event->key.keysym.sym == SDLK_w) {
+                _keys[GLOBAL::KEY_W] = false;
+            } else if (_event->key.keysym.sym == SDLK_a) {
+                _keys[GLOBAL::KEY_A] = false;
+            } else if (_event->key.keysym.sym == SDLK_s) {
+                _keys[GLOBAL::KEY_S] = false;
+            } else if (_event->key.keysym.sym == SDLK_d) {
+                _keys[GLOBAL::KEY_D] = false;
+            } else if (_event->key.keysym.sym == SDLK_q) {
+                _keys[GLOBAL::KEY_Q] = false;
+            } else if (_event->key.keysym.sym == SDLK_e) {
+                _keys[GLOBAL::KEY_E] = false;
+            } else if (_event->key.keysym.sym == SDLK_x) {
+                _keys[GLOBAL::KEY_X] = false;
+            } else if (_event->key.keysym.sym == SDLK_z) {
+                _keys[GLOBAL::KEY_Z] = false;
+            } else if (_event->key.keysym.sym == SDLK_r) {
+                _keys[GLOBAL::KEY_R] = false;
+            } else if (_event->key.keysym.sym == SDLK_ESCAPE) {
+                _keys[GLOBAL::KEY_ESC] = false;
+            }
+        }
+    }
+
     if (_state == GLOBAL::STATE_PLAY) {
-        if (_cameraAngle > 315 || _cameraAngle < 45) {
-            if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
+        if (_keys[GLOBAL::KEY_ESC]) {
+            _player->end();
+        } else if (_keys[GLOBAL::KEY_R]) {
+            _player->restart();
+        } else if (_keys[GLOBAL::KEY_Q]) {
+            _cameraAngle += 90.0f * _deltaTime;
+        } else if (_keys[GLOBAL::KEY_E]) {
+            _cameraAngle -= 90.0f * _deltaTime;
+        } else if (_keys[GLOBAL::KEY_Z]) {
+            _player->changeGroup(-1);
+        } else if (_keys[GLOBAL::KEY_X]) {
+            _player->changeGroup(1);
+        } else if (_cameraAngle > 315 || _cameraAngle < 45) {
+            if (_keys[GLOBAL::KEY_W]) {
                 _player->move(1, 0, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_A]) {
                 _player->move(0, -1, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_S]) {
                 _player->move(-1, 0, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_D]) {
                 _player->move(0, 1, _map.getTiles());
             }
         } else if (_cameraAngle > 45 && _cameraAngle < 135) {
-            if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_W]) {
                 _player->move(0, 1, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_A]) {
                 _player->move(1, 0, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_S]) {
                 _player->move(0, -1, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_D]) {
                 _player->move(-1, 0, _map.getTiles());
             }
         } else if (_cameraAngle > 135 && _cameraAngle < 225) {
-            if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_W]) {
                 _player->move(-1, 0, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_A]) {
                 _player->move(0, 1, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_S]) {
                 _player->move(1, 0, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_D]) {
                 _player->move(0, -1, _map.getTiles());
             }
         } else {
-            if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_W]) {
                 _player->move(0, -1, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_A]) {
                 _player->move(-1, 0, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_S]) {
                 _player->move(0, 1, _map.getTiles());
             }
-            if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS) {
+            if (_keys[GLOBAL::KEY_D]) {
                 _player->move(1, 0, _map.getTiles());
             }
-        }
-
-        if (glfwGetKey(_window, GLFW_KEY_R) == GLFW_PRESS) {
-            _player->restart();
-        }
-
-        if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            _player->end();
         }
 
         _player->update(_map.getTiles(), _deltaTime);
@@ -261,24 +326,10 @@ void Game::update() {
         cameraPos = _player->getCameraPos();
         cameraDistance = _player->getCameraDistance();
 
-        if (glfwGetKey(_window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-            _cameraAngle += 90.0f * _deltaTime;
-        }
-        if (glfwGetKey(_window, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(_window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-            _cameraAngle -= 90.0f * _deltaTime;
-        }
-
         if (_cameraAngle > 360) {
             _cameraAngle = 0;
         } else if (_cameraAngle < 0) {
             _cameraAngle = 360;
-        }
-
-        if (glfwGetKey(_window, GLFW_KEY_Z) == GLFW_PRESS) {
-            _player->changeGroup(-1);
-        }
-        if (glfwGetKey(_window, GLFW_KEY_X) == GLFW_PRESS) {
-            _player->changeGroup(1);
         }
     
         if (_player->win()) {
@@ -307,30 +358,28 @@ void Game::update() {
             _state = GLOBAL::STATE_MENU;
         }
     } else if (_state == GLOBAL::STATE_MENU) {
-        cameraPos = _menu->getCameraPos();
-        cameraDistance = _menu->getCameraDistance();
-
-        if (
-            glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS
-            || glfwGetKey(_window, GLFW_KEY_Z) == GLFW_PRESS
+        if (_keys[GLOBAL::KEY_ESC]) {
+            previousOption();
+        } else if (
+            _keys[GLOBAL::KEY_A]
+            || _keys[GLOBAL::KEY_Z]
         ) {
             _menu->move(-1);
         } else if (
-            glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS
-            || glfwGetKey(_window, GLFW_KEY_X) == GLFW_PRESS
+            _keys[GLOBAL::KEY_D]
+            || _keys[GLOBAL::KEY_X]
         ) {
             _menu->move(1);
-        }
-
-        if (glfwGetKey(_window, GLFW_KEY_W)) {
+        } else if (_keys[GLOBAL::KEY_W]) {
             _menu->select();
         }
 
-        if (glfwGetKey(_window, GLFW_KEY_ESCAPE) && _menu->isStill()) {
-            previousOption();
-        }
-
         _menu->update(_deltaTime);
+
+        cameraPos = _menu->getCameraPos();
+        cameraDistance = _menu->getCameraDistance();
+
+
         if (_menu->result() != -1) {
             selectOption(_menu->result());
         }
@@ -403,5 +452,5 @@ void Game::draw() {
         _renderer->drawTextRightTop("ESC: BACK", 20, 38, -1, GLOBAL::TEXT_COLOR);
     }
 
-    glfwSwapBuffers(_window);
+    SDL_GL_SwapWindow(_window);
 }

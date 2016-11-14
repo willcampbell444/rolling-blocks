@@ -3,7 +3,7 @@
 int main()
 {
     Game game;
-    while(!glfwWindowShouldClose(game.getWindow()) && !game.end()) {
+    while(!game.end()) {
         game.update();
         game.draw();
     }

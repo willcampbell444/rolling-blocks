@@ -37,6 +37,17 @@ namespace GLOBAL {
 
 	const int WINDOW_WIDTH = 800;
 	const int WINDOW_HEIGHT = 600;
+
+	const unsigned char KEY_W = 0;
+	const unsigned char KEY_A = 1;
+	const unsigned char KEY_S = 2;
+	const unsigned char KEY_D = 3;
+	const unsigned char KEY_Q = 4;
+	const unsigned char KEY_E = 5;
+	const unsigned char KEY_X = 6;
+	const unsigned char KEY_Z = 7;
+	const unsigned char KEY_R = 8;
+	const unsigned char KEY_ESC = 9;
 }
 
 #endif
