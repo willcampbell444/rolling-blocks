@@ -31,7 +31,8 @@ namespace GLOBAL {
 
 	const int STATE_PLAY = 0;
 	const int STATE_MENU = 1;
-	const int STATE_PAUSE = 2;
+	const int STATE_PAUSE_MENU = 2;
+	const int STATE_PAUSE_PLAY = 3;
 
 	const int MAP_SIZE_LIMIT = 1000;
 
@@ -47,7 +48,8 @@ namespace GLOBAL {
 	const unsigned char KEY_X = 6;
 	const unsigned char KEY_Z = 7;
 	const unsigned char KEY_R = 8;
-	const unsigned char KEY_ESC = 9;
+	const unsigned char KEY_P = 9;
+	const unsigned char KEY_ESC = 10;
 }
 
 #endif

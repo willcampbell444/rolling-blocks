@@ -76,13 +76,15 @@ private:
 
     Map _map;
 
+    bool _pressed = false;
+
     float _cameraAngle = 0.0f;
     float _cameraHeight = 0.0f;
 
     GLfloat _lastFrameTime;
     GLfloat _deltaTime;
 
-    bool _keys[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    bool _keys[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     int _screenWidth, _screenHeight;
 };
