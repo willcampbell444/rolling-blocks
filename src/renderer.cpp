@@ -26,6 +26,17 @@ Renderer::Renderer() {
     _textShader->use();
     glUniform1i(_textShader->getUniformLocation("character"), 0);
 
+    _dimShader = new Shaders();
+    if (!_dimShader->loadShader(GL_VERTEX_SHADER, "shaders/dimVertex.glsl")) {
+        std::cout << "Dim Vertex Shader Failed To Compile" << std::endl;
+    }
+    if (!_dimShader->loadShader(GL_FRAGMENT_SHADER, "shaders/dimFragment.glsl")) {
+        std::cout << "Dim Fragment Shader Failed To Compile" << std::endl;
+    }
+    if (!_dimShader->createProgram()) {
+        std::cout << "Dim Shader Failed To Link" << std::endl;
+    }
+
     _shader->use();
 
     float vertices[36*6] = {
@@ -198,6 +209,26 @@ Renderer::Renderer() {
     attrib = _textShader->getAttributeLocation("texCoord");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+
+    GLfloat dimVertices[2*6] = {
+        -1.0f, -1.0f,
+         1.0f,  1.0f,
+        -1.0f,  1.0f,
+         1.0f,  1.0f,
+        -1.0f, -1.0f,
+         1.0f, -1.0f
+    };
+
+    glGenVertexArrays(1, &_dimVAO);
+    glBindVertexArray(_dimVAO);
+
+    glGenBuffers(1, &vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*2*6, dimVertices, GL_STATIC_DRAW);
+
+    attrib = _shader->getAttributeLocation("position");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
 }
 
 void Renderer::resize(int w, int h) {
@@ -244,13 +275,13 @@ void Renderer::drawText(std::string text, float x, float y, float scale, glm::ve
         float h = character.size.y*scale;
 
         GLfloat vertices[6*3*2] = {
-            xPos, yPos + h, 1,     0, 0,
-            xPos, yPos, 1,         0, 1,
-            xPos + w, yPos, 1,     1, 1,
+            xPos, yPos + h, -0.1,     0, 0,
+            xPos, yPos, -0.1,         0, 1,
+            xPos + w, yPos, -0.1,     1, 1,
 
-            xPos, yPos + h, 1,     0, 0,
-            xPos + w, yPos, 1,     1, 1,
-            xPos + w, yPos + h, 1, 1, 0,
+            xPos, yPos + h, -0.1,     0, 0,
+            xPos + w, yPos, -0.1,     1, 1,
+            xPos + w, yPos + h, -0.1, 1, 0,
         };
 
         glBindTexture(GL_TEXTURE_2D, character.textureID);
@@ -296,13 +327,13 @@ void Renderer::drawTextShadow(std::string text, float x, float y, float scale, g
         }
 
         GLfloat vertices[6*3*2] = {
-            xPos + offset,            yPos - offset + h,    0,  0, 0,
-            xPos + offset,            yPos - offset, 0,  0, 1,
-            xPos + w + offset, yPos - offset, 0,  1, 1,
+            xPos + offset,            yPos - offset + h,    -0.2f,  0, 0,
+            xPos + offset,            yPos - offset, -0.2f,  0, 1,
+            xPos + w + offset, yPos - offset, -0.2f,  1, 1,
 
-            xPos + offset,            yPos - offset + h,    0,  0, 0,
-            xPos + w + offset, yPos - offset, 0,  1, 1,
-            xPos + w + offset, yPos - offset + h,    0,  1, 0,
+            xPos + offset,            yPos - offset + h,    -0.2f,  0, 0,
+            xPos + w + offset, yPos - offset, -0.2f,  1, 1,
+            xPos + w + offset, yPos - offset + h,    -0.2f,  1, 0,
         };
         glBindTexture(GL_TEXTURE_2D, character.textureID);
         glBindBuffer(GL_ARRAY_BUFFER, _textVBO);
@@ -369,6 +400,16 @@ void Renderer::drawTextCenterTop(std::string text, float x, float y, float scale
     drawTextCenter(text, x, _screenHeight-y, scale, color);
 }
 
+void Renderer::dim(float amount) {
+    glDisable(GL_DEPTH_TEST);
+    _dimShader->use();
+
+    glUniform1f(_dimShader->getUniformLocation("amount"), amount);
+
+    glBindVertexArray(_dimVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEnable(GL_DEPTH_TEST);
+}
 
 Shaders* Renderer::getShader() {
     return _shader;

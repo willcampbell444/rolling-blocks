@@ -76,7 +76,12 @@ private:
 
     Map _map;
 
-    bool _pressed = false;
+    bool _pauseTransition = false;
+    bool _unpauseTransition = false;
+    GLfloat _transitionTime = 0;
+    GLfloat _dimAmount;
+    GLfloat _pauseTextHeight;
+    GLfloat _gameTextHeight;
 
     float _cameraAngle = 0.0f;
     float _cameraHeight = 0.0f;

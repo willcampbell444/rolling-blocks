@@ -180,15 +180,6 @@ bool Game::isWon(pugi::xml_node node) {
 }
 
 void Game::update() {
-    // glfwPollEvents();
-
-    // int w, h;
-    // glfwGetFramebufferSize(_window, &w, &h);
-    // if (w != _screenWidth || h != _screenHeight) {
-    //     _screenWidth = w;
-    //     _screenHeight = h;
-    //     resize();
-    // }
 
     _deltaTime = (SDL_GetTicks()/1000.0f) - _lastFrameTime;
     _lastFrameTime = SDL_GetTicks()/1000.0f;
@@ -200,6 +191,43 @@ void Game::update() {
     //     _lastFPSTime = SDL_GetTicks()/1000.0f;
     //     _numFrames = 0;
     // }
+
+    if (_pauseTransition) {
+        if (_transitionTime < GLOBAL::TRANSITION_LENGTH) {
+            _transitionTime += _deltaTime;
+            float mu = _transitionTime/GLOBAL::TRANSITION_LENGTH;
+            _dimAmount = mu*GLOBAL::MAX_DIM;
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _pauseTextHeight = (1.0f - mu)*(-GLOBAL::TRANSITION_TEXT_HEIGHT);
+            _gameTextHeight = mu*(-GLOBAL::TRANSITION_TEXT_HEIGHT);
+        } else {
+            _pauseTextHeight = 0;
+            _gameTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+            _transitionTime = 0;
+            _dimAmount = GLOBAL::MAX_DIM;
+            _pauseTransition = false;
+        }
+    } else if (_unpauseTransition) {
+        if (_transitionTime < GLOBAL::TRANSITION_LENGTH) {
+            _transitionTime += _deltaTime;
+            float mu = _transitionTime/GLOBAL::TRANSITION_LENGTH;
+            _dimAmount = (1 - mu)*GLOBAL::MAX_DIM;
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _pauseTextHeight = mu*(-GLOBAL::TRANSITION_TEXT_HEIGHT);
+            _gameTextHeight = (1.0f - mu)*(-GLOBAL::TRANSITION_TEXT_HEIGHT);
+        } else {
+            _pauseTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+            _gameTextHeight = 0;
+            _transitionTime = 0;
+            _unpauseTransition = false;
+            _dimAmount = 0.0f;
+            if (_state == GLOBAL::STATE_PAUSE_MENU) {
+                _state = GLOBAL::STATE_MENU;
+            } else if (_state == GLOBAL::STATE_PAUSE_PLAY) {
+                _state = GLOBAL::STATE_PLAY;
+            }
+        }
+    }
 
     glm::vec3 cameraPos;
     glm::vec2 cameraDistance;
@@ -255,36 +283,48 @@ void Game::update() {
             } else if (_event->key.keysym.sym == SDLK_ESCAPE) {
                 _keys[GLOBAL::KEY_ESC] = false;
             }
+        } else if (_event->type == SDL_WINDOWEVENT) {
+            if (_event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                _screenWidth = _event->window.data1;
+                _screenHeight = _event->window.data2;
+                resize();
+            }
         }
     }
 
     if (_state == GLOBAL::STATE_PAUSE_PLAY) {
-        if (_keys[GLOBAL::KEY_P] && !_pressed) {
-            _state = GLOBAL::STATE_PLAY;
-            _pressed = true;
-        } else if (!_keys[GLOBAL::KEY_P]) {
-            _pressed = false;
+        if (!_pauseTransition && !_unpauseTransition) {
+            if (_keys[GLOBAL::KEY_P]) {
+                _pauseTextHeight = 0;
+                _gameTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+                _dimAmount = GLOBAL::MAX_DIM;
+                _transitionTime = 0;
+                _unpauseTransition = true;
+            }
         }
     }
 
     if (_state == GLOBAL::STATE_PAUSE_MENU) {
-        if (_keys[GLOBAL::KEY_P] && !_pressed) {
-            _state = GLOBAL::STATE_MENU;
-            _pressed = true;
-        } else if (!_keys[GLOBAL::KEY_P]) {
-            _pressed = false;
+        if (!_pauseTransition && !_unpauseTransition) {
+            if (_keys[GLOBAL::KEY_P]) {
+                _pauseTextHeight = 0;
+                _gameTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+                _transitionTime = 0;
+                _dimAmount = GLOBAL::MAX_DIM;
+                _unpauseTransition = true;
+            }
         }
     }
 
     if (_state == GLOBAL::STATE_PLAY) {
-        if (_keys[GLOBAL::KEY_P] && !_pressed) {
+        if (_keys[GLOBAL::KEY_P]) {
             _state = GLOBAL::STATE_PAUSE_PLAY;
-            _pressed = true;
+            _pauseTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+            _gameTextHeight = 0;
+            _transitionTime = 0;
+            _dimAmount = 0.0f;
+            _pauseTransition = true;
         } else {
-            if (!_keys[GLOBAL::KEY_P]) {
-                _pressed = false;
-            }
-
             if (_keys[GLOBAL::KEY_ESC]) {
                 _player->end();
             } else if (_keys[GLOBAL::KEY_R]) {
@@ -353,9 +393,6 @@ void Game::update() {
 
             _player->update(_map.getTiles(), _deltaTime);
 
-            cameraPos = _player->getCameraPos();
-            cameraDistance = _player->getCameraDistance();
-
             if (_cameraAngle > 360) {
                 _cameraAngle = 0;
             } else if (_cameraAngle < 0) {
@@ -391,14 +428,14 @@ void Game::update() {
     } 
 
     if (_state == GLOBAL::STATE_MENU) {
-        if (_keys[GLOBAL::KEY_P] && !_pressed) {
+        if (_keys[GLOBAL::KEY_P]) {
             _state = GLOBAL::STATE_PAUSE_MENU;
-            _pressed = true;
+            _pauseTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+            _gameTextHeight = 0;
+            _transitionTime = 0;
+            _dimAmount = 0.0f;
+            _pauseTransition = true;
         } else {
-            if (!_keys[GLOBAL::KEY_P]) {
-                _pressed = false;
-            }
-
             if (_keys[GLOBAL::KEY_ESC]) {
                 previousOption();
             } else if (
@@ -417,33 +454,35 @@ void Game::update() {
 
             _menu->update(_deltaTime);
 
-            cameraPos = _menu->getCameraPos();
-            cameraDistance = _menu->getCameraDistance();
-
-
             if (_menu->result() != -1) {
                 selectOption(_menu->result());
             }
         }
     }
 
-    if (_state == GLOBAL::STATE_PLAY || _state == GLOBAL::STATE_MENU) {
-        cameraDistance = cameraDistance*std::max(std::max((800.0f/_screenWidth), (600.0f/_screenHeight)*0.5f), 0.6f)*std::max(_screenHeight/600.0f, 0.6f);
-
-        _cameraPos = glm::vec3(
-            cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*cameraDistance.x,
-            cameraPos.y + cameraDistance.y + _cameraHeight,
-            cameraPos.z - std::sin(_cameraAngle*(3.14159/180))*cameraDistance.x
-        );
-
-        _viewMatrix = glm::lookAt(
-            _cameraPos,
-            cameraPos,
-            glm::vec3(0.0f, 1.0f, 0.0f)
-        );
-
-        _projectionViewMatrix = _projectionMatrix * _viewMatrix;
+    if (_state == GLOBAL::STATE_MENU || _state == GLOBAL::STATE_PAUSE_MENU) {
+        cameraPos = _menu->getCameraPos();
+        cameraDistance = _menu->getCameraDistance();
+    } else if (_state == GLOBAL::STATE_PLAY || _state == GLOBAL::STATE_PAUSE_PLAY) {
+        cameraPos = _player->getCameraPos();
+        cameraDistance = _player->getCameraDistance();
     }
+
+    cameraDistance = cameraDistance*std::max(std::max((800.0f/_screenWidth), (600.0f/_screenHeight)*0.5f), 0.6f)*std::max(_screenHeight/600.0f, 0.6f);
+
+    _cameraPos = glm::vec3(
+        cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*cameraDistance.x,
+        cameraPos.y + cameraDistance.y + _cameraHeight,
+        cameraPos.z - std::sin(_cameraAngle*(3.14159/180))*cameraDistance.x
+    );
+
+    _viewMatrix = glm::lookAt(
+        _cameraPos,
+        cameraPos,
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+
+    _projectionViewMatrix = _projectionMatrix * _viewMatrix;
 }
 
 void Game::writeSave() {
@@ -484,13 +523,43 @@ void Game::draw() {
     if (_state == GLOBAL::STATE_PAUSE_PLAY) {
         _floor->draw(_projectionViewMatrix);
         _player->draw(_projectionViewMatrix);
-        _renderer->drawText("HIDE CONTROLS", 50, 100, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawText("QUIT TO MENU", 50, 60, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawText("QUIT TO DESKTOP", 50, 20, -1, GLOBAL::TEXT_COLOR);
+        if (_pauseTransition || _unpauseTransition) {
+            _renderer->dim(_dimAmount);
+
+            _renderer->drawText("ZX: SELECT BLOCK", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextCenter("WASD: MOVE", 0, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRight("QE: ROTATE CAMERA", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRightTop("ESC: BACK", 20, 38 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRightTop("R: RESTART", 20, 75 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+
+            _renderer->drawText("HIDE CONTROLS", 50, 100 + _pauseTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawText("QUIT TO MENU", 50, 60 + _pauseTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawText("QUIT TO DESKTOP", 50, 20 + _pauseTextHeight, -1, GLOBAL::TEXT_COLOR);
+        } else {
+            _renderer->dim(GLOBAL::MAX_DIM);
+
+            _renderer->drawText("HIDE CONTROLS", 50, 100, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawText("QUIT TO MENU", 50, 60, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawText("QUIT TO DESKTOP", 50, 20, -1, GLOBAL::TEXT_COLOR);
+        }
     } else if (_state == GLOBAL::STATE_PAUSE_MENU) {
         _menu->draw(_projectionViewMatrix);
-        _renderer->drawText("HIDE CONTROLS", 50, 100, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawText("QUIT TO DESKTOP", 50, 20, -1, GLOBAL::TEXT_COLOR);
+        if (_pauseTransition || _unpauseTransition) {
+            _renderer->dim(_dimAmount);
+
+            _renderer->drawText("A: LEFT", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextCenter("W: SELECT", 0, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRight("D: RIGHT", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRightTop("ESC: BACK", 20, 38 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+
+            _renderer->drawText("HIDE CONTROLS", 50, 60 + _pauseTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawText("QUIT TO DESKTOP", 50, 20 + _pauseTextHeight, -1, GLOBAL::TEXT_COLOR);
+        } else {
+            _renderer->dim(GLOBAL::MAX_DIM);
+
+            _renderer->drawText("HIDE CONTROLS", 50, 60, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawText("QUIT TO DESKTOP", 50, 20, -1, GLOBAL::TEXT_COLOR);
+        }
     } else if (_state == GLOBAL::STATE_PLAY) {
         _floor->draw(_projectionViewMatrix);
         _player->draw(_projectionViewMatrix);
