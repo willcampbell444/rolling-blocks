@@ -11,7 +11,7 @@ Game::Game() {
         SDL_WINDOWPOS_CENTERED,
         800,
         600,
-        SDL_WINDOW_OPENGL
+        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -234,6 +234,8 @@ void Game::update() {
     glm::vec3 cameraPos;
     glm::vec2 cameraDistance;
 
+    _mouseClick = false;
+
     while (SDL_PollEvent(_event)) {
         if (_event->type == SDL_QUIT) {
             _end = true;
@@ -291,10 +293,17 @@ void Game::update() {
                 _screenHeight = _event->window.data2;
                 resize();
             }
+        } else if (_event->type == SDL_MOUSEMOTION) {
+            _mousePos.x = _event->motion.x;
+            _mousePos.y = _screenHeight - _event->motion.y;
+        } else if (_event->type == SDL_MOUSEBUTTONUP) {
+            if (_event->button.button == SDL_BUTTON_LEFT) {
+                _mouseClick = true;
+            }
         }
     }
 
-    if (_state == GLOBAL::STATE_PAUSE_PLAY) {
+    if (_state == GLOBAL::STATE_PAUSE_PLAY | _state == GLOBAL::STATE_PAUSE_MENU) {
         if (!_pauseTransition && !_unpauseTransition) {
             if (_keys[GLOBAL::KEY_P]) {
                 _pauseTextHeight = 0;
@@ -304,16 +313,43 @@ void Game::update() {
                 _unpauseTransition = true;
             }
         }
-    }
+        _pause.update(_mousePos, _pauseTextHeight);
+        _pause.click(_mouseClick);
 
-    if (_state == GLOBAL::STATE_PAUSE_MENU) {
-        if (!_pauseTransition && !_unpauseTransition) {
-            if (_keys[GLOBAL::KEY_P]) {
-                _pauseTextHeight = 0;
-                _gameTextHeight = -_screenHeight;
-                _transitionTime = 0;
-                _dimAmount = GLOBAL::MAX_DIM;
-                _unpauseTransition = true;
+        int option = _pause.clicked();
+        if (option >= 0) {
+            if (_state == GLOBAL::STATE_PAUSE_MENU) {
+                if (option == 0) {
+                    _end = true;
+                } else if (option == 1) {
+                    _showControls = !_showControls;
+                } else if (option == 2) {
+                    _pauseTextHeight = 0;
+                    _gameTextHeight = -_screenHeight;
+                    _dimAmount = GLOBAL::MAX_DIM;
+                    _transitionTime = 0;
+                    _unpauseTransition = true;
+                }
+            }
+            if (_state == GLOBAL::STATE_PAUSE_PLAY) {
+                if (option == 0) {
+                    _end = true;
+                } else if (option == 1) {
+                    _player->end();
+                    _pauseTextHeight = 0;
+                    _gameTextHeight = -_screenHeight;
+                    _dimAmount = GLOBAL::MAX_DIM;
+                    _transitionTime = 0;
+                    _unpauseTransition = true;
+                } else if (option == 2) {
+                    _showControls = !_showControls;
+                } else if (option == 3) {
+                    _pauseTextHeight = 0;
+                    _gameTextHeight = -_screenHeight;
+                    _dimAmount = GLOBAL::MAX_DIM;
+                    _transitionTime = 0;
+                    _unpauseTransition = true;
+                }
             }
         }
     }
@@ -530,11 +566,14 @@ void Game::draw() {
         if (_pauseTransition || _unpauseTransition) {
             _renderer->dim(_dimAmount);
 
-            _renderer->drawText("ZX: SELECT BLOCK", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawTextCenter("WASD: MOVE", 0, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawTextRight("QE: ROTATE CAMERA", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawTextRightTop("ESC: BACK", 20, 38 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawTextRightTop("R: RESTART", 20, 75 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            if (_showControls) {
+                _renderer->drawText("ZX: SELECT BLOCK", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+                _renderer->drawTextCenter("WASD: MOVE", 0, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+                _renderer->drawTextRight("QE: ROTATE CAMERA", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+                _renderer->drawTextRightTop("ESC: BACK", 20, 38 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+                _renderer->drawTextRightTop("R: RESTART", 20, 75 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+                _renderer->drawTextRightTop("P: MENU", 20, 112 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            }
 
             _pause.draw(_pauseTextHeight);
         } else {
@@ -547,10 +586,13 @@ void Game::draw() {
         if (_pauseTransition || _unpauseTransition) {
             _renderer->dim(_dimAmount);
 
-            _renderer->drawText("A: LEFT", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawTextCenter("W: SELECT", 0, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawTextRight("D: RIGHT", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawTextRightTop("ESC: BACK", 20, 38 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            if (_showControls) {
+                _renderer->drawText("A: LEFT", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+                _renderer->drawTextCenter("W: SELECT", 0, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+                _renderer->drawTextRight("D: RIGHT", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+                _renderer->drawTextRightTop("ESC: BACK", 20, 38 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+                _renderer->drawTextRightTop("P: MENU", 20, 75 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
+            }
 
             _pause.draw(_pauseTextHeight);
         } else {
@@ -561,17 +603,23 @@ void Game::draw() {
     } else if (_state == GLOBAL::STATE_PLAY) {
         _floor->draw(_projectionViewMatrix);
         _player->draw(_projectionViewMatrix);
-        _renderer->drawText("ZX: SELECT BLOCK", 20, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextCenter("WASD: MOVE", 0, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextRight("QE: ROTATE CAMERA", 20, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextRightTop("ESC: BACK", 20, 38, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextRightTop("R: RESTART", 20, 75, -1, GLOBAL::TEXT_COLOR);
+        if (_showControls) {
+            _renderer->drawText("ZX: SELECT BLOCK", 20, 20, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextCenter("WASD: MOVE", 0, 20, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRight("QE: ROTATE CAMERA", 20, 20, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRightTop("ESC: BACK", 20, 38, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRightTop("R: RESTART", 20, 75, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRightTop("P: MENU", 20, 112, -1, GLOBAL::TEXT_COLOR);
+        }
     } else if (_state == GLOBAL::STATE_MENU) {
         _menu->draw(_projectionViewMatrix);
-        _renderer->drawText("A: LEFT", 20, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextCenter("W: SELECT", 0, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextRight("D: RIGHT", 20, 20, -1, GLOBAL::TEXT_COLOR);
-        _renderer->drawTextRightTop("ESC: BACK", 20, 38, -1, GLOBAL::TEXT_COLOR);
+        if (_showControls) {
+            _renderer->drawText("A: LEFT", 20, 20, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextCenter("W: SELECT", 0, 20, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRight("D: RIGHT", 20, 20, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRightTop("ESC: BACK", 20, 38, -1, GLOBAL::TEXT_COLOR);
+            _renderer->drawTextRightTop("P: MENU", 20, 75, -1, GLOBAL::TEXT_COLOR);
+        }
     }
 
     SDL_GL_SwapWindow(_window);

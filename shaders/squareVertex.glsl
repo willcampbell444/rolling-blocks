@@ -5,5 +5,6 @@ in vec2 position;
 uniform mat4 projection;
 
 void main() {
-	gl_Position = projection * vec4(position, 0, 1);
+	vec4 pos = projection * vec4(position, 0, 1);
+	gl_Position = vec4(pos.x, pos.y, pos.z, pos.w);
 }

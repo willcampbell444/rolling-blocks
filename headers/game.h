@@ -94,6 +94,10 @@ private:
     bool _keys[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     int _screenWidth, _screenHeight;
+    glm::vec2 _mousePos;
+    bool _mouseClick;
+
+    bool _showControls = true;
 };
 
 #endif
