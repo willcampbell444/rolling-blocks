@@ -62,6 +62,8 @@ Game::Game() {
     _lastFrameTime = SDL_GetTicks()/1000.0f;
     _lastFPSTime = SDL_GetTicks()/1000.0f;
     _numFrames = 0;
+
+    _pause.setRenderer(_renderer);
 }
 
 Game::~Game() {
@@ -74,10 +76,10 @@ Game::~Game() {
 }
 
 void Game::resize() {
-    // float change = (_screenHeight/600.0f);
     _projectionMatrix = glm::perspective(glm::radians(50.0f), (float)_screenWidth/_screenHeight, 1.0f, 1000.0f);
     glViewport(0, 0, _screenWidth, _screenHeight);
     _renderer->resize(_screenWidth, _screenHeight);
+    _pause.resize(_screenWidth, _screenHeight);
 }
 
 void Game::selectOption(int optionNum) {
@@ -198,11 +200,11 @@ void Game::update() {
             float mu = _transitionTime/GLOBAL::TRANSITION_LENGTH;
             _dimAmount = mu*GLOBAL::MAX_DIM;
             mu = (mu * mu * (3 - 2 * (mu)));
-            _pauseTextHeight = (1.0f - mu)*(-GLOBAL::TRANSITION_TEXT_HEIGHT);
-            _gameTextHeight = mu*(-GLOBAL::TRANSITION_TEXT_HEIGHT);
+            _pauseTextHeight = (1.0f - mu)*(-_screenHeight);
+            _gameTextHeight = mu*(-_screenHeight);
         } else {
             _pauseTextHeight = 0;
-            _gameTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+            _gameTextHeight = -_screenHeight;
             _transitionTime = 0;
             _dimAmount = GLOBAL::MAX_DIM;
             _pauseTransition = false;
@@ -213,10 +215,10 @@ void Game::update() {
             float mu = _transitionTime/GLOBAL::TRANSITION_LENGTH;
             _dimAmount = (1 - mu)*GLOBAL::MAX_DIM;
             mu = (mu * mu * (3 - 2 * (mu)));
-            _pauseTextHeight = mu*(-GLOBAL::TRANSITION_TEXT_HEIGHT);
-            _gameTextHeight = (1.0f - mu)*(-GLOBAL::TRANSITION_TEXT_HEIGHT);
+            _pauseTextHeight = mu*(-_screenHeight);
+            _gameTextHeight = (1.0f - mu)*(-_screenHeight);
         } else {
-            _pauseTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+            _pauseTextHeight = -_screenHeight;
             _gameTextHeight = 0;
             _transitionTime = 0;
             _unpauseTransition = false;
@@ -296,7 +298,7 @@ void Game::update() {
         if (!_pauseTransition && !_unpauseTransition) {
             if (_keys[GLOBAL::KEY_P]) {
                 _pauseTextHeight = 0;
-                _gameTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+                _gameTextHeight = -_screenHeight;
                 _dimAmount = GLOBAL::MAX_DIM;
                 _transitionTime = 0;
                 _unpauseTransition = true;
@@ -308,7 +310,7 @@ void Game::update() {
         if (!_pauseTransition && !_unpauseTransition) {
             if (_keys[GLOBAL::KEY_P]) {
                 _pauseTextHeight = 0;
-                _gameTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+                _gameTextHeight = -_screenHeight;
                 _transitionTime = 0;
                 _dimAmount = GLOBAL::MAX_DIM;
                 _unpauseTransition = true;
@@ -319,7 +321,8 @@ void Game::update() {
     if (_state == GLOBAL::STATE_PLAY) {
         if (_keys[GLOBAL::KEY_P]) {
             _state = GLOBAL::STATE_PAUSE_PLAY;
-            _pauseTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+            _pause.setPlay();
+            _pauseTextHeight = -_screenHeight;
             _gameTextHeight = 0;
             _transitionTime = 0;
             _dimAmount = 0.0f;
@@ -430,7 +433,8 @@ void Game::update() {
     if (_state == GLOBAL::STATE_MENU) {
         if (_keys[GLOBAL::KEY_P]) {
             _state = GLOBAL::STATE_PAUSE_MENU;
-            _pauseTextHeight = -GLOBAL::TRANSITION_TEXT_HEIGHT;
+            _pause.setMenu();
+            _pauseTextHeight = -_screenHeight;
             _gameTextHeight = 0;
             _transitionTime = 0;
             _dimAmount = 0.0f;
@@ -532,15 +536,11 @@ void Game::draw() {
             _renderer->drawTextRightTop("ESC: BACK", 20, 38 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
             _renderer->drawTextRightTop("R: RESTART", 20, 75 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
 
-            _renderer->drawText("HIDE CONTROLS", 50, 100 + _pauseTextHeight, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawText("QUIT TO MENU", 50, 60 + _pauseTextHeight, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawText("QUIT TO DESKTOP", 50, 20 + _pauseTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _pause.draw(_pauseTextHeight);
         } else {
             _renderer->dim(GLOBAL::MAX_DIM);
 
-            _renderer->drawText("HIDE CONTROLS", 50, 100, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawText("QUIT TO MENU", 50, 60, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawText("QUIT TO DESKTOP", 50, 20, -1, GLOBAL::TEXT_COLOR);
+            _pause.draw(0);
         }
     } else if (_state == GLOBAL::STATE_PAUSE_MENU) {
         _menu->draw(_projectionViewMatrix);
@@ -552,13 +552,11 @@ void Game::draw() {
             _renderer->drawTextRight("D: RIGHT", 20, 20 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
             _renderer->drawTextRightTop("ESC: BACK", 20, 38 + _gameTextHeight, -1, GLOBAL::TEXT_COLOR);
 
-            _renderer->drawText("HIDE CONTROLS", 50, 60 + _pauseTextHeight, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawText("QUIT TO DESKTOP", 50, 20 + _pauseTextHeight, -1, GLOBAL::TEXT_COLOR);
+            _pause.draw(_pauseTextHeight);
         } else {
             _renderer->dim(GLOBAL::MAX_DIM);
 
-            _renderer->drawText("HIDE CONTROLS", 50, 60, -1, GLOBAL::TEXT_COLOR);
-            _renderer->drawText("QUIT TO DESKTOP", 50, 20, -1, GLOBAL::TEXT_COLOR);
+            _pause.draw(0);
         }
     } else if (_state == GLOBAL::STATE_PLAY) {
         _floor->draw(_projectionViewMatrix);

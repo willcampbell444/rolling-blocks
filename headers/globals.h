@@ -13,12 +13,10 @@ namespace GLOBAL {
 	const glm::vec3 FRAME_COLOR_TWO(170.0f/256, 108.0f/256, 57.0f/256);
 	const glm::vec3 VICTORY_COLOR(170.0f/256, 57.0f/256, 57.0f/256);
 	const glm::vec3 WON_COLOR(85.0f/256, 170.0f/256, 85.0f/256);
-	// const glm::vec3 TEXT_COLOR(0.752941, 0.772549, 0.8078431);
-	// const glm::vec3 TEXT_COLOR(0.502, 0.515, 0.539);
-	// const glm::vec3 TEXT_COLOR(79.0f/256.0f, 98.0f/256.0f, 142.0f/256.0f);
-	// const glm::vec3 TEXT_COLOR(46.0f/256.0f, 65.0f/256.0f, 114.0f/256.0f);
 	const glm::vec3 TEXT_COLOR(244.0f/256.0f, 244.0f/256.0f, 244.0f/256.0f);
 	const glm::vec3 TEXT_SHADOW(0.0843135, 0.0941175, 0.115685);
+	const glm::vec3 BUTTON_COLOR(0.0843135, 0.0941175, 0.115685);
+	const glm::vec3 SELECTED_BUTTON_COLOR(170.0f/256, 57.0f/256, 57.0f/256);
 
 	const float GAP = 0.05f;
 	const float BLOCK_WIDTH = 1.0f-(GAP*2.0f);
@@ -27,8 +25,8 @@ namespace GLOBAL {
 	const float FALL_HEIGHT = 7;
 
 	const float TRANSITION_LENGTH = 0.75f;
-	const float TRANSITION_TEXT_HEIGHT = 300.0f;
-	const float MAX_DIM = 0.75f;
+	const float TRANSITION_TEXT_HEIGHT = 600.0f;
+	const float MAX_DIM = 0.6f;
 	const int FRAMES = 50.0f;
 
 	const int STATE_PLAY = 0;
@@ -40,6 +38,12 @@ namespace GLOBAL {
 
 	const int WINDOW_WIDTH = 800;
 	const int WINDOW_HEIGHT = 600;
+
+	const unsigned int BOOL_OPTION = 0;
+	const unsigned int CLICK_OPTION = 1;
+	const float LARGE_BUTTON_MARGIN = 8;
+	const float SMALL_BUTTON_MARGIN = 4;
+	const float BUTTON_TRANSPARANCY = 0.65f;
 
 	const unsigned char KEY_W = 0;
 	const unsigned char KEY_A = 1;

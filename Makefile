@@ -1,8 +1,8 @@
 CC=g++ -g
 INCLUDE=-Iheaders -I/usr/include/freetype2 -I/usr/include/SDL2
 
-all: shaders.o map.o heightMap.o renderer.o floor.o player.o menu.o game.o main.o
-	$(CC) shaders.o map.o heightMap.o renderer.o floor.o player.o menu.o game.o main.o -lGL -lfreetype -lSDL2 -lGLEW -lpugixml -DGLEW_STATIC $(INCLUDE) -o play
+all: shaders.o map.o heightMap.o pause.o renderer.o floor.o player.o menu.o game.o main.o
+	$(CC) shaders.o pause.o map.o heightMap.o renderer.o floor.o player.o menu.o game.o main.o -lGL -lfreetype -lSDL2 -lGLEW -lpugixml -DGLEW_STATIC $(INCLUDE) -o play
 
 lvledit: shaders.o map.o renderer.o levelEdit.o lvledit.o
 	$(CC) shaders.o map.o renderer.o lvledit.o levelEdit.o -lGL -lglfw -lGLEW -DGLEW_STATIC $(INCLUDE) -o lvledit
@@ -15,6 +15,9 @@ levelEdit.o: src/levelEdit.cpp headers/levelEdit.h headers/globals.h headers/ren
 
 shaders.o: src/shaders.cpp headers/shaders.h
 	$(CC) -c src/shaders.cpp $(INCLUDE)
+
+pause.o: src/pause.cpp headers/pause.h headers/globals.h headers/renderer.h
+	$(CC) -c src/pause.cpp $(INCLUDE)
 
 map.o: src/map.cpp headers/map.h
 	$(CC) -c src/map.cpp $(INCLUDE)

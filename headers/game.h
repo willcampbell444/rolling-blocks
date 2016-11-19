@@ -18,6 +18,7 @@
 #include <pugixml.hpp>
 #include <menu.h>
 #include <renderer.h>
+#include <pause.h>
 #include <cstring>
 #include <string>
 
@@ -73,6 +74,7 @@ private:
     Floor* _floor;
     Player* _player;
     Menu* _menu;
+    Pause _pause;
 
     Map _map;
 

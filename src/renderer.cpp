@@ -37,6 +37,17 @@ Renderer::Renderer() {
         std::cout << "Dim Shader Failed To Link" << std::endl;
     }
 
+    _squareShader = new Shaders();
+    if (!_squareShader->loadShader(GL_VERTEX_SHADER, "shaders/squareVertex.glsl")) {
+        std::cout << "Square Vertex Shader Failed To Compile" << std::endl;
+    }
+    if (!_squareShader->loadShader(GL_FRAGMENT_SHADER, "shaders/squareFragment.glsl")) {
+        std::cout << "Square Fragment Shader Failed To Compile" << std::endl;
+    }
+    if (!_squareShader->createProgram()) {
+        std::cout << "Square Shader Failed To Link" << std::endl;
+    }
+
     _shader->use();
 
     float vertices[36*6] = {
@@ -186,8 +197,15 @@ Renderer::Renderer() {
     FT_Done_Face(_font);
     FT_Done_FreeType(_freetype);
 
-    _textShader->use();
     _textProjection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
+    _textShader->use();
+    glUniformMatrix4fv(
+        _textShader->getUniformLocation("projection"), 
+        1,
+        GL_FALSE,
+        glm::value_ptr(_textProjection)
+    );
+    _squareShader->use();
     glUniformMatrix4fv(
         _textShader->getUniformLocation("projection"), 
         1,
@@ -229,6 +247,17 @@ Renderer::Renderer() {
     attrib = _shader->getAttributeLocation("position");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+
+    glGenVertexArrays(1, &_squareVAO);
+    glBindVertexArray(_squareVAO);
+
+    glGenBuffers(1, &_squareVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, _squareVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*6*2, NULL, GL_DYNAMIC_DRAW);
+
+    attrib = _shader->getAttributeLocation("position");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
 }
 
 void Renderer::resize(int w, int h) {
@@ -243,9 +272,17 @@ void Renderer::resize(int w, int h) {
         GL_FALSE,
         glm::value_ptr(_textProjection)
     );
+    _squareShader->use();
+    glUniformMatrix4fv(
+        _textShader->getUniformLocation("projection"), 
+        1,
+        GL_FALSE,
+        glm::value_ptr(_textProjection)
+    );
 }
 
 void Renderer::drawText(std::string text, float x, float y, float scale, glm::vec3 color) {
+    glDisable(GL_DEPTH_TEST);
     drawTextShadow(text, x, y, scale, GLOBAL::TEXT_SHADOW);
 
     _textShader->use();
@@ -292,6 +329,7 @@ void Renderer::drawText(std::string text, float x, float y, float scale, glm::ve
         glDrawArrays(GL_TRIANGLES, 0, 6);
         x += (character.advance >> 6) * scale;
     }
+    glEnable(GL_DEPTH_TEST);
 }
 
 void Renderer::drawTextShadow(std::string text, float x, float y, float scale, glm::vec3 color) {
@@ -398,6 +436,30 @@ void Renderer::drawTextRightTop(std::string text, float x, float y, float scale,
 
 void Renderer::drawTextCenterTop(std::string text, float x, float y, float scale, glm::vec3 color) {
     drawTextCenter(text, x, _screenHeight-y, scale, color);
+}
+
+void Renderer::drawSquare(float left, float right, float bottom, float top, glm::vec3 color, float trans) {
+    glDisable(GL_DEPTH_TEST);
+    _squareShader->use();
+    glUniform4f(_squareShader->getUniformLocation("color"), color.r, color.g, color.b, trans);
+
+    GLfloat vertices[2*6] = {
+        right, top,
+        left, top,
+        left, bottom,
+
+        left, bottom,
+        right, bottom,
+        right, top
+    };
+
+    glBindVertexArray(_squareVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, _squareVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void Renderer::dim(float amount) {

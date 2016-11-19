@@ -37,16 +37,19 @@ public:
     void drawTextRightTop(std::string text, float x, float y, float scale, glm::vec3 color);
     void drawTextCenterTop(std::string text, float x, float y, float scale, glm::vec3 color);
     void drawTextShadow(std::string text, float x, float y, float scale, glm::vec3 color);
+    void drawSquare(float left, float right, float bottom, float top, glm::vec3 color, float trans);
     void dim(float amount);
     void resize(int w, int h);
 private:
     GLuint _vertexArrayObject;
     GLuint _textVBO, _textVAO;
     GLuint _dimVAO;
+    GLuint _squareVAO, _squareVBO;
     glm::mat4 model, _textProjection;
     Shaders* _shader;
     Shaders* _textShader;
     Shaders* _dimShader;
+    Shaders* _squareShader;
     FT_Library _freetype;
     FT_Face _font;
 
