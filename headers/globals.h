@@ -26,7 +26,7 @@ namespace GLOBAL {
 
 	const float TRANSITION_LENGTH = 0.75f;
 	const float TRANSITION_TEXT_HEIGHT = 600.0f;
-	const float MAX_DIM = 0.6f;
+	const float MAX_DIM = 0.7f;
 	const int FRAMES = 50.0f;
 
 	const int STATE_PLAY = 0;

@@ -186,13 +186,12 @@ void Game::update() {
     _deltaTime = (SDL_GetTicks()/1000.0f) - _lastFrameTime;
     _lastFrameTime = SDL_GetTicks()/1000.0f;
 
-    // _numFrames += 1;
-    // if (_lastFPSTime < (SDL_GetTicks()/1000.0f)-1) {
-    //     Print Framerate:
-    //     std::cout << _numFrames << std::endl;
-    //     _lastFPSTime = SDL_GetTicks()/1000.0f;
-    //     _numFrames = 0;
-    // }
+    _numFrames += 1;
+    if (_lastFPSTime < (SDL_GetTicks()/1000.0f)-1) {
+        _FPS = _numFrames;
+        _lastFPSTime = SDL_GetTicks()/1000.0f;
+        _numFrames = 0;
+    }
 
     if (_pauseTransition) {
         if (_transitionTime < GLOBAL::TRANSITION_LENGTH) {
@@ -312,45 +311,47 @@ void Game::update() {
                 _transitionTime = 0;
                 _unpauseTransition = true;
             }
-        }
-        _pause.update(_mousePos, _pauseTextHeight);
-        _pause.click(_mouseClick);
+            _pause.update(_mousePos, _pauseTextHeight);
+            _pause.click(_mouseClick);
 
-        int option = _pause.clicked();
-        if (option >= 0) {
-            if (_state == GLOBAL::STATE_PAUSE_MENU) {
-                if (option == 0) {
-                    _end = true;
-                } else if (option == 1) {
-                    _showControls = !_showControls;
-                } else if (option == 2) {
-                    _pauseTextHeight = 0;
-                    _gameTextHeight = -_screenHeight;
-                    _dimAmount = GLOBAL::MAX_DIM;
-                    _transitionTime = 0;
-                    _unpauseTransition = true;
+            int option = _pause.clicked();
+            if (option >= 0) {
+                if (_state == GLOBAL::STATE_PAUSE_MENU) {
+                    if (option == 0) {
+                        _end = true;
+                    } else if (option == 1) {
+                        _showControls = !_showControls;
+                    } else if (option == 2) {
+                        _pauseTextHeight = 0;
+                        _gameTextHeight = -_screenHeight;
+                        _dimAmount = GLOBAL::MAX_DIM;
+                        _transitionTime = 0;
+                        _unpauseTransition = true;
+                    }
+                }
+                if (_state == GLOBAL::STATE_PAUSE_PLAY) {
+                    if (option == 0) {
+                        _end = true;
+                    } else if (option == 1) {
+                        _player->end();
+                        _pauseTextHeight = 0;
+                        _gameTextHeight = -_screenHeight;
+                        _dimAmount = GLOBAL::MAX_DIM;
+                        _transitionTime = 0;
+                        _unpauseTransition = true;
+                    } else if (option == 2) {
+                        _showControls = !_showControls;
+                    } else if (option == 3) {
+                        _pauseTextHeight = 0;
+                        _gameTextHeight = -_screenHeight;
+                        _dimAmount = GLOBAL::MAX_DIM;
+                        _transitionTime = 0;
+                        _unpauseTransition = true;
+                    }
                 }
             }
-            if (_state == GLOBAL::STATE_PAUSE_PLAY) {
-                if (option == 0) {
-                    _end = true;
-                } else if (option == 1) {
-                    _player->end();
-                    _pauseTextHeight = 0;
-                    _gameTextHeight = -_screenHeight;
-                    _dimAmount = GLOBAL::MAX_DIM;
-                    _transitionTime = 0;
-                    _unpauseTransition = true;
-                } else if (option == 2) {
-                    _showControls = !_showControls;
-                } else if (option == 3) {
-                    _pauseTextHeight = 0;
-                    _gameTextHeight = -_screenHeight;
-                    _dimAmount = GLOBAL::MAX_DIM;
-                    _transitionTime = 0;
-                    _unpauseTransition = true;
-                }
-            }
+        } else {
+            _pause.update(glm::vec2(-1, -1), _pauseTextHeight);
         }
     }
 
@@ -621,6 +622,9 @@ void Game::draw() {
             _renderer->drawTextRightTop("P: MENU", 20, 75, -1, GLOBAL::TEXT_COLOR);
         }
     }
+
+    // FPS COUNTER
+    // _renderer->drawText(std::to_string(_FPS), 100, 100, -1, GLOBAL::TEXT_COLOR);
 
     SDL_GL_SwapWindow(_window);
 }

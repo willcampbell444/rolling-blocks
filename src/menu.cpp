@@ -433,7 +433,40 @@ void Menu::setOptions(std::vector<MenuOption> options, int dir, int optionNum) {
     _oldCameraPos.y += GLOBAL::FALL_HEIGHT*_cameraDistance.y*dir;
     _oldCameraDistance = _cameraDistance;
 
+    fillFloor();
+
     update(0);
+}
+
+void Menu::fillFloor() {
+    _floorPeices.clear();
+    _victoryFloorPeices.clear();
+    int count = 0;
+    for (int m = 0; m < _options.size(); m++) {
+        for (int n = 0; n < _options[m].size(); n++) {
+            int letter = _options[m][n];
+            for (int i = 0; i < 25; i++) {
+                if (letter & (unsigned int)(1 << i)) {
+                    _victoryFloorPeices.push_back(glm::vec2(5 - (int)(i/5), i % 5 + count + 1.0f));
+                } else {
+                    _floorPeices.push_back(glm::vec2(5 - (int)(i/5), i % 5 + count + 1.0f));
+                }
+            }
+            for (int i = 0; i < 7; i++) {
+                _floorPeices.push_back(glm::vec2(i, count));
+            }
+            count += 1;
+            for (int i = 0; i < 5; i++) {
+                _floorPeices.push_back(glm::vec2(0, count+i));
+                _floorPeices.push_back(glm::vec2(6, count+i));
+            }
+            count += 5;
+        }
+        for (int i = 0; i < 7; i++) {
+            _floorPeices.push_back(glm::vec2(i, count));
+        }
+        count += 2;
+    }
 }
 
 unsigned int Menu::loadLetter(bool bits[25]) {
@@ -472,25 +505,19 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                             _renderer->drawBox(viewProjectionMatrix, 0, 4 - (int)(i/5), i % 5 + count + 1.0f, GLOBAL::PLAYER_COLOR);
                         }
                     }
-                    _renderer->drawVictoryTile(viewProjectionMatrix, 5 - (int)(i/5), i % 5 + count + 1.0f);
-                } else {
-                    _renderer->drawFloorTile(viewProjectionMatrix, 5 - (int)(i/5), i % 5 + count + 1.0f);
                 }
             }
-            for (int i = 0; i < 7; i++) {
-                _renderer->drawFloorTile(viewProjectionMatrix, i, count);
-            }
-            count += 1;
-            for (int i = 0; i < 5; i++) {
-                _renderer->drawFloorTile(viewProjectionMatrix, 0, count+i);
-                _renderer->drawFloorTile(viewProjectionMatrix, 6, count+i);
-            }
-            count += 5;
-        }
-        for (int i = 0; i < 7; i++) {
-            _renderer->drawFloorTile(viewProjectionMatrix, i, count);
+            count += 6;
         }
         count += 2;
+    }
+
+    for (glm::vec2 tile: _floorPeices) {
+        _renderer->drawFloorTile(viewProjectionMatrix, tile.x, tile.y);
+    }
+
+    for (glm::vec2 tile: _victoryFloorPeices) {
+        _renderer->drawVictoryTile(viewProjectionMatrix, tile.x, tile.y);
     }
 
     if (_menuOptions[_currentPeice].moves != -1) {

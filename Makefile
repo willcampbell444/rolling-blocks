@@ -1,4 +1,4 @@
-CC=g++ -g
+CC=g++
 INCLUDE=-Iheaders -I/usr/include/freetype2 -I/usr/include/SDL2
 
 all: shaders.o map.o heightMap.o pause.o renderer.o floor.o player.o menu.o game.o main.o

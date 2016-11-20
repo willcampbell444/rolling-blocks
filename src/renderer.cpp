@@ -479,14 +479,13 @@ Shaders* Renderer::getShader() {
 
 void Renderer::drawBox(glm::mat4 viewProjectionMatrix, float x, float y, float z, glm::vec3 color) {
     _shader->use();
-    model = (
-        glm::translate(glm::mat4(1.0f), glm::vec3(x, y+0.5f, z))
-        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH))
-    );
+    model = glm::translate(glm::mat4(1.0f), glm::vec3(x, y+0.5f, z));
+    model = glm::scale(model, glm::vec3(GLOBAL::BLOCK_WIDTH));
+
     glUniformMatrix4fv(
         _shader->getUniformLocation("transformMatrix"), 
-        1, 
-        GL_FALSE, 
+        1,
+        GL_FALSE,
         glm::value_ptr(viewProjectionMatrix*model)
     );
     glUniformMatrix4fv(
@@ -495,7 +494,6 @@ void Renderer::drawBox(glm::mat4 viewProjectionMatrix, float x, float y, float z
         GL_FALSE, 
         glm::value_ptr(model)
     );
-    glUniform1i(_shader->getUniformLocation("useLighting"), true);
     glUniform3f(_shader->getUniformLocation("color"), color.r, color.g, color.b);
     glBindVertexArray(_vertexArrayObject);
     glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -611,13 +609,12 @@ void Renderer::drawBoxFrame(glm::mat4 viewProjectionMatrix, float x, float y, fl
 
 void Renderer::drawRotatedBox(glm::mat4 viewProjectionMatrix, float x, float y, float z, float angle, glm::vec3 center, glm::vec3 axis, glm::vec3 color) {
     _shader->use();
-    model = (
-        glm::translate(glm::mat4(1.0f), center)
-        * glm::rotate(glm::mat4(1.0f), glm::radians(angle), axis)
-        * glm::translate(glm::mat4(1.0f), -center)
-        * glm::translate(glm::mat4(1.0f), glm::vec3(x, y+0.5f, z))
-        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::BLOCK_WIDTH))
-    );
+    model = glm::translate(glm::mat4(1.0f), center);
+    model = glm::rotate(model, glm::radians(angle), axis);
+    model = glm::translate(model, -center);
+    model = glm::translate(model, glm::vec3(x, y+0.5f, z));
+    model = glm::scale(model, glm::vec3(GLOBAL::BLOCK_WIDTH));
+
     glUniformMatrix4fv(
         _shader->getUniformLocation("transformMatrix"), 
         1, 
@@ -630,31 +627,21 @@ void Renderer::drawRotatedBox(glm::mat4 viewProjectionMatrix, float x, float y, 
         GL_FALSE, 
         glm::value_ptr(model)
     );
-    glUniform1i(_shader->getUniformLocation("useLighting"), true);
-    glUniform3f(
-        _shader->getUniformLocation("color"), 
-        color.r, 
-        color.g, 
-        color.b
-    );
+    glUniform3f(_shader->getUniformLocation("color"), color.r, color.g, color.b);
     glBindVertexArray(_vertexArrayObject);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 void Renderer::drawFloorTile(glm::mat4 viewProjectionMatrix, float x, float z) {
     _shader->use();
-    model = (
-        glm::translate(glm::mat4(1.0f), glm::vec3(x, -GLOBAL::GAP, z))
-        * glm::scale(glm::mat4(1.0f), glm::vec3(
-        	GLOBAL::BLOCK_WIDTH, 
-        	GLOBAL::FLOOR_HEIGHT-2*GLOBAL::GAP, 
-        	GLOBAL::BLOCK_WIDTH)
-        )
-        * glm::translate(
-            glm::mat4(1.0f),
-            glm::vec3(0, -0.5, 0)
-        )
+    model = glm::translate(glm::mat4(1.0f), glm::vec3(x, -GLOBAL::GAP, z));
+    model = glm::scale(model, glm::vec3(
+        GLOBAL::BLOCK_WIDTH, 
+        GLOBAL::FLOOR_HEIGHT-2*GLOBAL::GAP, 
+        GLOBAL::BLOCK_WIDTH)
     );
+    model = glm::translate(model, glm::vec3(0, -0.5, 0));
+
     glUniformMatrix4fv(
         _shader->getUniformLocation("transformMatrix"), 
         1, 
@@ -667,12 +654,12 @@ void Renderer::drawFloorTile(glm::mat4 viewProjectionMatrix, float x, float z) {
         GL_FALSE, 
         glm::value_ptr(model)
     );
-    glUniform1i(_shader->getUniformLocation("useLighting"), true);
+
     glUniform3f(
-    	_shader->getUniformLocation("color"), 
-    	GLOBAL::FLOOR_COLOR.r, 
-    	GLOBAL::FLOOR_COLOR.g, 
-    	GLOBAL::FLOOR_COLOR.b
+        _shader->getUniformLocation("color"), 
+        GLOBAL::FLOOR_COLOR.r, 
+        GLOBAL::FLOOR_COLOR.g, 
+        GLOBAL::FLOOR_COLOR.b
     );
     glBindVertexArray(_vertexArrayObject);
     glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -680,7 +667,6 @@ void Renderer::drawFloorTile(glm::mat4 viewProjectionMatrix, float x, float z) {
 
 void Renderer::drawFloorTileFrame(glm::mat4 viewProjectionMatrix, float x, float z, glm::vec3 color) {
     _shader->use();
-    glUniform1i(_shader->getUniformLocation("useLighting"), true);
     glUniform3f(
         _shader->getUniformLocation("color"), 
         color.r, 
@@ -804,18 +790,14 @@ void Renderer::drawFloorTileFrame(glm::mat4 viewProjectionMatrix, float x, float
 
 void Renderer::drawVictoryTile(glm::mat4 viewProjectionMatrix, float x, float z) {
     _shader->use();
-    model = (
-        glm::translate(glm::mat4(1.0f), glm::vec3(x, -GLOBAL::GAP*5, z))
-        * glm::scale(glm::mat4(1.0f), glm::vec3(
-        	GLOBAL::BLOCK_WIDTH, 
-        	GLOBAL::FLOOR_HEIGHT-6*GLOBAL::GAP, 
-        	GLOBAL::BLOCK_WIDTH)
-        )
-        * glm::translate(
-            glm::mat4(1.0f),
-            glm::vec3(0, -0.5, 0)
-        )
+    model = glm::translate(glm::mat4(1.0f), glm::vec3(x, -GLOBAL::GAP*5, z));
+    model = glm::scale(model, glm::vec3(
+        GLOBAL::BLOCK_WIDTH, 
+        GLOBAL::FLOOR_HEIGHT-6*GLOBAL::GAP, 
+        GLOBAL::BLOCK_WIDTH)
     );
+    model = glm::translate(model, glm::vec3(0, -0.5, 0));
+
     glUniformMatrix4fv(
         _shader->getUniformLocation("transformMatrix"), 
         1, 
@@ -828,12 +810,12 @@ void Renderer::drawVictoryTile(glm::mat4 viewProjectionMatrix, float x, float z)
         GL_FALSE, 
         glm::value_ptr(model)
     );
-    glUniform1i(_shader->getUniformLocation("useLighting"), true);
+
     glUniform3f(
-    	_shader->getUniformLocation("color"), 
-    	GLOBAL::VICTORY_COLOR.x, 
-    	GLOBAL::VICTORY_COLOR.y, 
-    	GLOBAL::VICTORY_COLOR.z
+        _shader->getUniformLocation("color"), 
+        GLOBAL::VICTORY_COLOR.x, 
+        GLOBAL::VICTORY_COLOR.y, 
+        GLOBAL::VICTORY_COLOR.z
     );
     glBindVertexArray(_vertexArrayObject);
     glDrawArrays(GL_TRIANGLES, 0, 36);

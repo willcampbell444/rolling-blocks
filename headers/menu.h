@@ -38,11 +38,15 @@ public:
 private:
 	unsigned int loadLetter(bool bits[25]);
 	void setCamera();
+	void fillFloor();
 	std::unordered_map<char, unsigned int> _chars;
 
 	int _currentPeice = 0;
 	std::vector<std::vector<unsigned int>> _options;
 	std::vector<MenuOption> _menuOptions;
+
+	std::vector<glm::vec2> _floorPeices;
+	std::vector<glm::vec2> _victoryFloorPeices;
 
 	bool _isBeginning = false;
 	bool _isCameraTransition = false;
