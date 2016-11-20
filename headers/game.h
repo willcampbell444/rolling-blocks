@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <fstream>
 #include <floor.h>
 #include <player.h>
 #include <cmath>
@@ -20,6 +21,7 @@
 #include <menu.h>
 #include <renderer.h>
 #include <cstring>
+#include <string>
 
 class Game {
 public:
@@ -32,53 +34,20 @@ public:
     GLFWwindow* getWindow();
 private:
     void selectOption(int optionNum);
+    void writeSave();
+    void loadSave();
     void previousOption();
-
-    GLfloat _vertices[56] = {
-        //side
-        -100, -0.01, -100, 1, 1, 1, 0.5,
-        -100, -0.01,  100, 1, 1, 1, 0.5,
-         100, -0.01,  100, 1, 1, 1, 0.5,
-         100, -0.01, -100,  1, 1, 1, 0.5,
-
-        -100, -10, -100, 1, 1, 1, 1,
-        -100, -10,  100, 1, 1, 1, 1,
-         100, -10,  100, 1, 1, 1, 1,
-         100, -10, -100, 1, 1, 1, 1,
-    };
-
-    GLfloat _verticesTwo[24] = {
-        //side
-        -0.5, -0.5,  0, 1, 0, 0,
-        -0.5,  0.5,  0, 0, 1, 0,
-         0.5,  0.5,  0, 0, 0, 1,
-         0.5, -0.5,  0, 1, 0, 0
-    };
-
-    GLuint _elements[36] = {
-        0, 1, 2, 2, 3, 0,
-        4, 5, 6, 6, 7, 4,
-        4, 5, 1, 1, 0, 4,
-        6, 7, 3, 3, 2, 6,
-        4, 0, 3, 3, 7, 4,
-        5, 1, 2, 2, 6, 5
-    };
-
-    GLuint _elementsTwo[3] = {
-        1, 2, 3
-    };
+    void setLevelNames(pugi::xml_node parent);
+    bool isWon(pugi::xml_node node);
 
     GLFWwindow* _window;
-    Shaders _shaders[2];
 
-    int _level = 0;
+    std::vector<int> _itemsSelected;
+
     std::vector<const char*> _levelFileNames;
-    std::vector<const char*> _levelNames;
+    std::vector<MenuOption> _levelNames;
+    std::vector<std::string> _beatLevels;
     bool _end = false;
-
-    GLuint _vao[2];
-    GLuint _vbo[2];
-    GLuint _ebo[2];
 
     Renderer* _renderer;
 
@@ -91,10 +60,12 @@ private:
     pugi::xml_node _currentLayer;
     pugi::xml_document _document;
 
+    double _lastFPSTime;
+    int _numFrames = 0;
+
     int _state;
 
-    glm::vec3 _gray;
-    glm::vec3 _blue;
+    std::string _levelFileName;
 
     Floor* _floor;
     Player* _player;

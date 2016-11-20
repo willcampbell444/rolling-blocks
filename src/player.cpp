@@ -10,6 +10,8 @@ void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> sta
     
     _heightMap.create(_floorWidth, _floorLength);
 
+    _startPosition = startPosition;
+
     _static.clear();
     _falling.clear();
     _done.clear();
@@ -20,14 +22,54 @@ void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> sta
     _playerPeices = startPosition;
     _newPeices = _playerPeices;
     gravity();
-    sever();
-
     onWinTile(map);
+
     _playerPeices = _newPeices;
 
     for (int i = 0; i < _playerPeices.size(); i++) {
+        if (_playerPeices[i].x < 0 
+            || _playerPeices[i].x > _floorWidth-1 
+            || _playerPeices[i].z < 0 
+            || _playerPeices[i].z > _floorLength-1
+            || map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 0
+        ) {
+            _falling.push_back(glm::vec4(
+                _playerPeices[i].x,
+                _playerPeices[i].y,
+                _playerPeices[i].z,
+                2
+            ));
+            _playerPeices.erase(_playerPeices.begin() + i);
+            i -= 1;
+        }
         if (map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 2) {
-            _done.push_back(glm::vec4(_playerPeices[i].x, _playerPeices[i].y, _playerPeices[i].z, 2));
+            _done.push_back(glm::vec4(
+                _playerPeices[i].x,
+                _playerPeices[i].y,
+                _playerPeices[i].z,
+                0
+            ));
+            _playerPeices.erase(_playerPeices.begin() + i);
+            i -= 1;
+        }
+    }
+
+    attach();
+    sever();
+
+    for (int i = 0; i < _playerPeices.size(); i++) {
+        if (playerGroups[i] != _groups[_group]) {
+            _static.push_back(_playerPeices[i]);
+            staticGroups.push_back(playerGroups[i]);
+            _playerPeices.erase(_playerPeices.begin() + i);
+            playerGroups.erase(playerGroups.begin() + i);
+            i -= 1;
+        }
+    }
+
+    for (int i = 0; i < _playerPeices.size(); i++) {
+        if (map[(int)(_playerPeices[i].x*_floorLength + _playerPeices[i].z)] == 2) {
+            _done.push_back(glm::vec4(_playerPeices[i].x, _playerPeices[i].y, _playerPeices[i].z, 0));
             _playerPeices.erase(_playerPeices.begin() + i);
             i -= 1;
         }
@@ -61,16 +103,23 @@ void Player::create(int x, int y, unsigned char* map, std::vector<glm::vec3> sta
     _finished = false;
     _isEnding = false;
     _wait = false;
+    _won = false;
+    _timeSinceTransition = 0;
+    _isRestartTransition = false;
+
+    update(map, 0);
 }
 
+// true if the game is over
 bool Player::win() {
-    if ((_playerPeices.size() == 0 || _won) && !_isEnding) {
+    if (_won && !_isEnding) {
         _isTransition = false;
         _isCameraTransition = false;
+        _timeSinceTransition = 0;
         _wait = true;
         _isEnding = true;
         _newCameraPos = _cameraPos;
-        _newCameraPos.y = -GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+        _newCameraPos.y = GLOBAL::FALL_HEIGHT*_cameraDistance.y;
         _newCameraDistance = _cameraDistance;
         _oldCameraPos = _cameraPos;
         _oldCameraDistance = _cameraDistance;
@@ -81,16 +130,50 @@ bool Player::win() {
     return false;
 }
 
-void Player::checkVictory(std::vector<glm::vec2> victoryTiles) {
-    for (int i = 0; i < victoryTiles.size(); i++) {
-        for (glm::vec3 peice: _done) {
-            if (peice.x == victoryTiles[i].x && peice.z == victoryTiles[i].y) {
-                victoryTiles.erase(victoryTiles.begin() + i);
-                i -= 1;
+void Player::restart() {
+    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_isRestartTransition) {
+        _isRestartTransition = true;
+        _newCameraPos = _cameraPos;
+        _newCameraPos.y = GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+        _newCameraDistance = _cameraDistance;
+        _oldCameraPos = _cameraPos;
+        _oldCameraDistance = _cameraDistance;
+    }
+}
+
+void Player::end() {
+    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_wait && !_isRestartTransition) {
+        _isEnding = true;
+        _newCameraPos = _cameraPos;
+        _newCameraPos.y = GLOBAL::FALL_HEIGHT*_cameraDistance.y;
+        _newCameraDistance = _cameraDistance;
+        _oldCameraPos = _cameraPos;
+        _oldCameraDistance = _cameraDistance;
+    }
+}
+
+bool Player::getWinStatus() {
+    return _won;
+}
+
+void Player::checkVictory(unsigned char* map) {
+    bool occupied;
+    bool success = true;
+    for (int i = 0; i < _floorLength*_floorWidth; i++) {
+        if (map[i] == 2) {
+            occupied = false;
+            for (glm::vec4 peice: _done) {
+                if (peice.x == i/_floorLength && peice.z == i % _floorLength) {
+                    occupied = true;
+                }
+            }
+            if (!occupied) {
+                success = false;
+                break;
             }
         }
     }
-    if (victoryTiles.size() == 0) {
+    if (success) {
         _won = true;
     }
 }
@@ -102,9 +185,6 @@ void Player::fillHeightMap() {
         }
     }
     for (glm::vec3 peice: _static) {
-        _heightMap[(int)peice.x][(int)peice.z] += 1;
-    }
-    for (glm::vec3 peice: _done) {
         _heightMap[(int)peice.x][(int)peice.z] += 1;
     }
 }
@@ -139,7 +219,7 @@ void Player::setMinMax() {
 }
 
 void Player::move(int x, int z, unsigned char* map) {
-    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_wait) {
+    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_wait && !_isRestartTransition) {
         fillHeightMap();
         _isTransition = true;
         _angle = 90.0f;
@@ -342,13 +422,14 @@ void Player::onBlock(int x, int z) {
     }
 }
 
-void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles, GLfloat deltaTime) {
+void Player::update(unsigned char* map, GLfloat deltaTime) {
     if (
         _wait
         || _isTransition
         || _isCameraTransition
         || _isBeginning
         || _isEnding
+        || _isRestartTransition
     ) {
         _timeSinceTransition += deltaTime;
         float mu = _timeSinceTransition/GLOBAL::TRANSITION_LENGTH;
@@ -396,7 +477,7 @@ void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles, GLf
                             _playerPeices[i].x,
                             _playerPeices[i].y,
                             _playerPeices[i].z,
-                            2
+                            0
                         ));
                         _playerPeices.erase(_playerPeices.begin() + i);
                         i -= 1;
@@ -428,7 +509,7 @@ void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles, GLf
                     _isCameraTransition = true;
                 }
 
-                checkVictory(victoryTiles);
+                checkVictory(map);
             }
         } else if (_isCameraTransition) {
             mu = (mu * mu * (3 - 2 * (mu)));
@@ -463,6 +544,13 @@ void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles, GLf
                 _oldCameraPos = _newCameraPos;
                 _timeSinceTransition = 0;
             }
+        } else if (_isRestartTransition) {
+            mu = (mu * mu * (3 - 2 * (mu)));
+            _cameraPos = _oldCameraPos*(1.0f-mu) + _newCameraPos*mu;
+            _cameraDistance = _oldCameraDistance*(1.0f-mu) + _newCameraDistance*mu;
+            if (_timeSinceTransition >= GLOBAL::TRANSITION_LENGTH) {
+                create(_floorWidth, _floorLength, map, _startPosition);
+            }
         }
     }
     for (int i = 0; i < _falling.size(); i++) {
@@ -471,10 +559,23 @@ void Player::update(unsigned char* map, std::vector<glm::vec2> victoryTiles, GLf
             _falling.erase(_falling.begin() + i);
         }
     }
+    if (!_won) {
+        for (int i = 0; i < _done.size(); i++) {
+            _done[i][3] += deltaTime;
+            if (_done[i].y - (_done[i].w*_done[i].w) < -5) {
+                _done.erase(_done.begin() + i);
+            }
+        }
+    }
+    if (_playerPeices.size() == 0 && !_won && !_isRestartTransition) {
+        restart();
+        _isCameraTransition = false;
+        _wait = true;
+    }
 }
 
 void Player::changeGroup(int direction) {
-    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_wait){
+    if (!_isTransition && !_isCameraTransition && !_isBeginning && !_isEnding && !_wait && !_isRestartTransition){
         _group += direction;
         if (_group < 0) {
             _group = _groups.size() - 1;
@@ -834,8 +935,12 @@ void Player::draw(glm::mat4 viewProjectionMatrix) {
     for (glm::vec3 peice: _static) {
         _renderer->drawBox(viewProjectionMatrix, peice.x, peice.y, peice.z, GLOBAL::PLAYER_COLOR);
     }
-    for (glm::vec3 peice: _done) {
-        _renderer->drawBox(viewProjectionMatrix, peice.x, peice.y, peice.z, GLOBAL::VICTORY_COLOR);
+    for (glm::vec4 peice: _done) {
+        if (_won) {
+            _renderer->drawBox(viewProjectionMatrix, peice.x, peice.y, peice.z, GLOBAL::WON_COLOR);
+        } else {
+            _renderer->drawBox(viewProjectionMatrix, peice.x, peice.y-(peice.w*peice.x), peice.z, GLOBAL::VICTORY_COLOR);
+        }
     }
 }
 

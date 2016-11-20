@@ -478,7 +478,7 @@ int Menu::result() {
     return -1;
 }
 
-void Menu::setOptions(std::vector<const char*> options, int dir) {
+void Menu::setOptions(std::vector<MenuOption> options, int dir, int optionNum) {
     _options.clear();
     _done = false;
     _isBeginning = true;
@@ -488,15 +488,16 @@ void Menu::setOptions(std::vector<const char*> options, int dir) {
     _wait = false;
     _forcedEnd = false;
     _timeSinceTransition = 0;
-    _currentPeice = 0;
+    _currentPeice = optionNum;
     _angle = 90.0f;
     _height = 0;
+    _menuOptions = options;
 
     for (int n = 0; n < options.size(); n++) {
         std::vector<unsigned int> v;
         _options.push_back(v);
-        for (int c = 0; c < std::string(options[n]).length(); c++) {
-            _options[n].push_back(_chars[options[n][c]]);
+        for (int c = 0; c < std::string(options[n].fileName).length(); c++) {
+            _options[n].push_back(_chars[options[n].fileName[c]]);
         }
     }
 
@@ -527,12 +528,24 @@ void Menu::draw(glm::mat4 viewProjectionMatrix) {
                 if (letter & (unsigned int)(1 << i)) {
                     if (m == _currentPeice) {
                         if (!_isEndTransition || _forcedEnd) {
-                            _renderer->drawRotatedBox(viewProjectionMatrix, 5 - (int)(i/5), _height, i % 5 + count + 1.0f, _angle, glm::vec3(0.5, 0, 0), glm::vec3(0, 0, 1), GLOBAL::PLAYER_COLOR);
+                            if (_menuOptions[m].completed) {
+                                _renderer->drawRotatedBox(viewProjectionMatrix, 5 - (int)(i/5), _height, i % 5 + count + 1.0f, _angle, glm::vec3(0.5, 0, 0), glm::vec3(0, 0, 1), GLOBAL::WON_COLOR);
+                            } else {
+                                _renderer->drawRotatedBox(viewProjectionMatrix, 5 - (int)(i/5), _height, i % 5 + count + 1.0f, _angle, glm::vec3(0.5, 0, 0), glm::vec3(0, 0, 1), GLOBAL::PLAYER_COLOR);
+                            }
                         } else {
-                            _renderer->drawBox(viewProjectionMatrix, 5 - (int)(i/5), _height, i % 5 + count + 1.0f, GLOBAL::VICTORY_COLOR);
+                            if (_menuOptions[m].completed) {
+                                _renderer->drawBox(viewProjectionMatrix, 5 - (int)(i/5), _height, i % 5 + count + 1.0f, GLOBAL::WON_COLOR);
+                            } else {
+                                _renderer->drawBox(viewProjectionMatrix, 5 - (int)(i/5), _height, i % 5 + count + 1.0f, GLOBAL::VICTORY_COLOR);
+                            }
                         }
                     } else {
-                        _renderer->drawBox(viewProjectionMatrix, 0, 4 - (int)(i/5), i % 5 + count + 1.0f, GLOBAL::PLAYER_COLOR);
+                        if (_menuOptions[m].completed) {
+                            _renderer->drawBox(viewProjectionMatrix, 0, 4 - (int)(i/5), i % 5 + count + 1.0f, GLOBAL::WON_COLOR);
+                        } else {
+                            _renderer->drawBox(viewProjectionMatrix, 0, 4 - (int)(i/5), i % 5 + count + 1.0f, GLOBAL::PLAYER_COLOR);
+                        }
                     }
                     _renderer->drawVictoryTile(viewProjectionMatrix, 5 - (int)(i/5), i % 5 + count + 1.0f);
                 } else {

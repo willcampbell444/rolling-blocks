@@ -1,13 +1,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <GL/glew.h>
-#include <shaders.h>
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <shaders.h>
 #include <cmath>
 #include <iostream>
 #include <globals.h>
@@ -23,16 +20,19 @@ public:
     void draw(glm::mat4 viewProjectionMatrix);
     void move(int x, int z, unsigned char* map);
     void changeGroup(int direction);
-    void update(unsigned char* map, std::vector<glm::vec2> victoryTiles, GLfloat deltaTime);
+    void update(unsigned char* map, GLfloat deltaTime);
     bool win();
+    bool getWinStatus();
     glm::vec3 getCameraPos();
     glm::vec2 getCameraDistance();
+    void restart();
+    void end();
 private:
     void setMinMax();
     void gravity();
     void onBlock(int x, int z);
     void onWinTile(unsigned char* map);
-    void checkVictory(std::vector<glm::vec2> victoryTiles);
+    void checkVictory(unsigned char* map);
     void fillHeightMap();
     void sever();
     void attach();
@@ -43,6 +43,7 @@ private:
     bool _wait = false;
     bool _isTransition = false;
     bool _isCameraTransition = false;
+    bool _isRestartTransition = false;
     bool _finished = false;
     bool _won = false;
     glm::vec3 _rotationAxis;
@@ -65,11 +66,12 @@ private:
     std::vector<glm::vec3> _oldPeices;
     std::vector<glm::vec3> _newPeices;
     std::vector<glm::vec3> _static;
-    std::vector<glm::vec3> _done;
+    std::vector<glm::vec4> _done;
     std::vector<glm::vec4> _falling;
     std::vector<int> playerGroups;
     std::vector<int> staticGroups;
     std::vector<int> _groups;
+    std::vector<glm::vec3> _startPosition;
     HeightMap _heightMap;
     glm::mat4 _transformMatrix;
 

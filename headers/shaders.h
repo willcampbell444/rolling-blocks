@@ -8,7 +8,6 @@
 
 class Shaders {
 public:
-    Shaders();
     ~Shaders();
     bool loadShader(GLenum shaderType, const char* filename);
     void createProgram();

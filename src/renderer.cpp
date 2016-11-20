@@ -1,7 +1,17 @@
 #include <renderer.h>
 
-Renderer::Renderer(Shaders* shader) {
-	_shader = shader;
+Renderer::Renderer() {
+    _shader = new Shaders();
+
+    if (!_shader->loadShader(GL_VERTEX_SHADER, "shaders/vertex.glsl")) {
+        std::cout << "Vertex Shader Failed To Compile" << std::endl;
+    }
+    if (!_shader->loadShader(GL_FRAGMENT_SHADER, "shaders/fragment.glsl")) {
+        std::cout << "Fragment Shader Failed To Compile" << std::endl;
+    }
+    _shader->createProgram();
+
+    _shader->use();
 
     float vertices[36*6] = {
         -0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
@@ -12,11 +22,11 @@ Renderer::Renderer(Shaders* shader) {
         -0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
 
         -0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
+         0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
         -0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
          0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
-         0.5, -0.5f,   0.5, 0.0f, -1.0f, 0.0f,
-         0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
         -0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
+         0.5, -0.5f,  -0.5, 0.0f, -1.0f, 0.0f,
 
         -0.5, -0.5f,  -0.5, -1.0f, 0.0f, 0.0f,
         -0.5, -0.5f,   0.5, -1.0f, 0.0f, 0.0f,
@@ -40,11 +50,11 @@ Renderer::Renderer(Shaders* shader) {
         -0.5, -0.5f,  -0.5, 0.0f, 0.0f, -1.0f,
 
         -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f,
+         0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
         -0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
          0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-         0.5,  0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-         0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f,
-        -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f
+        -0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f,
+         0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f
     };
 
     glGenVertexArrays(1, &_vertexArrayObject);
@@ -62,6 +72,10 @@ Renderer::Renderer(Shaders* shader) {
     attrib = _shader->getAttributeLocation("normal");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+}
+
+Shaders* Renderer::getShader() {
+    return _shader;
 }
 
 void Renderer::drawBox(glm::mat4 viewProjectionMatrix, float x, float y, float z, glm::vec3 color) {
@@ -88,6 +102,114 @@ void Renderer::drawBox(glm::mat4 viewProjectionMatrix, float x, float y, float z
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
+void Renderer::drawBoxFrame(glm::mat4 viewProjectionMatrix, float x, float y, float z, glm::vec3 color) {
+    _shader->use();
+    glUniform1i(_shader->getUniformLocation("useLighting"), true);
+    glUniform3f(_shader->getUniformLocation("color"), color.r, color.g, color.b);
+    glBindVertexArray(_vertexArrayObject);
+    float dif = 0.5f-GLOBAL::GAP;
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x-dif, y+0.5f, z-dif))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, 1, GLOBAL::GAP*2))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x+dif, y+0.5f, z-dif))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, 1, GLOBAL::GAP*2))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x+dif, y+0.5f, z+dif))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, 1, GLOBAL::GAP*2))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x-dif, y+0.5f, z+dif))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, 1, GLOBAL::GAP*2))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x, y+0.5f+dif, z+dif))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(1, GLOBAL::GAP*2, GLOBAL::GAP*2))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x, y+0.5f-dif, z+dif))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(1, GLOBAL::GAP*2, GLOBAL::GAP*2))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x, y+0.5f-dif, z-dif))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(1, GLOBAL::GAP*2, GLOBAL::GAP*2))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x, y+0.5f+dif, z-dif))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(1, GLOBAL::GAP*2, GLOBAL::GAP*2))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x+dif, y+0.5f+dif, z))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::GAP*2, 1))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x-dif, y+0.5f+dif, z))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::GAP*2, 1))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x+dif, y+0.5f-dif, z))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::GAP*2, 1))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x-dif, y+0.5f-dif, z))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::GAP*2, 1))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+}
+
 void Renderer::drawRotatedBox(glm::mat4 viewProjectionMatrix, float x, float y, float z, float angle, glm::vec3 center, glm::vec3 axis, glm::vec3 color) {
     _shader->use();
     model = (
@@ -110,7 +232,12 @@ void Renderer::drawRotatedBox(glm::mat4 viewProjectionMatrix, float x, float y, 
         glm::value_ptr(model)
     );
     glUniform1i(_shader->getUniformLocation("useLighting"), true);
-    glUniform3f(_shader->getUniformLocation("color"), GLOBAL::PLAYER_COLOR.x, GLOBAL::PLAYER_COLOR.y, GLOBAL::PLAYER_COLOR.z);
+    glUniform3f(
+        _shader->getUniformLocation("color"), 
+        color.r, 
+        color.g, 
+        color.b
+    );
     glBindVertexArray(_vertexArrayObject);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
@@ -149,6 +276,130 @@ void Renderer::drawFloorTile(glm::mat4 viewProjectionMatrix, float x, float z) {
     	GLOBAL::FLOOR_COLOR.b
     );
     glBindVertexArray(_vertexArrayObject);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+}
+
+void Renderer::drawFloorTileFrame(glm::mat4 viewProjectionMatrix, float x, float z, glm::vec3 color) {
+    _shader->use();
+    glUniform1i(_shader->getUniformLocation("useLighting"), true);
+    glUniform3f(
+        _shader->getUniformLocation("color"), 
+        color.r, 
+        color.g, 
+        color.b
+    );
+    glBindVertexArray(_vertexArrayObject);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x+(0.5f-GLOBAL::GAP), 0, z+(0.5f-GLOBAL::GAP)))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::FLOOR_HEIGHT, GLOBAL::GAP*2))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x-(0.5f-GLOBAL::GAP), 0, z+(0.5f-GLOBAL::GAP)))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::FLOOR_HEIGHT, GLOBAL::GAP*2))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x-(0.5f-GLOBAL::GAP), 0, z-(0.5f-GLOBAL::GAP)))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::FLOOR_HEIGHT, GLOBAL::GAP*2))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x+(0.5f-GLOBAL::GAP), 0, z-(0.5f-GLOBAL::GAP)))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::FLOOR_HEIGHT, GLOBAL::GAP*2))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x, 0, z-(0.5f-GLOBAL::GAP)))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(1, GLOBAL::GAP*2, GLOBAL::GAP*2))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x, 0, z+(0.5f-GLOBAL::GAP)))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(1, GLOBAL::GAP*2, GLOBAL::GAP*2))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x, -(GLOBAL::FLOOR_HEIGHT)+GLOBAL::GAP*2, z-(0.5f-GLOBAL::GAP)))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(1, GLOBAL::GAP*2, GLOBAL::GAP*2))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x, -(GLOBAL::FLOOR_HEIGHT)+GLOBAL::GAP*2, z+(0.5f-GLOBAL::GAP)))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(1, GLOBAL::GAP*2, GLOBAL::GAP*2))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x-(0.5f-GLOBAL::GAP), 0, z))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::GAP*2, 1))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x+(0.5f-GLOBAL::GAP), 0, z))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::GAP*2, 1))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x-(0.5f-GLOBAL::GAP), -GLOBAL::FLOOR_HEIGHT+GLOBAL::GAP*2, z))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::GAP*2, 1))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    model = (
+        glm::translate(glm::mat4(1.0f), glm::vec3(x+(0.5f-GLOBAL::GAP), -GLOBAL::FLOOR_HEIGHT+GLOBAL::GAP*2, z))
+        * glm::scale(glm::mat4(1.0f), glm::vec3(GLOBAL::GAP*2, GLOBAL::GAP*2, 1))
+        * glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 0))
+    );
+    glUniformMatrix4fv(_shader->getUniformLocation("transformMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix*model));
+    glUniformMatrix4fv(_shader->getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
