@@ -258,6 +258,13 @@ Renderer::Renderer() {
     attrib = _shader->getAttributeLocation("position");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+
+GLenum error = glGetError();
+if (error != GL_NO_ERROR) {
+std::cout << "bad" << std::endl;
+} else {
+std::cout <<"good" << std::endl;
+}
 }
 
 void Renderer::resize(int w, int h) {
@@ -457,6 +464,7 @@ void Renderer::drawSquare(float left, float right, float bottom, float top, glm:
     glBindBuffer(GL_ARRAY_BUFFER, _squareVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(_squareVAO);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glEnable(GL_DEPTH_TEST);
