@@ -1,9 +1,9 @@
 #include <game.h>
 
-int main()
+int main(int argc, char* argv[])
 {
     Game game;
-    while(!glfwWindowShouldClose(game.getWindow()) && !game.end()) {
+    while(!game.end()) {
         game.update();
         game.draw();
     }

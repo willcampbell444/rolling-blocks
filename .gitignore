@@ -9,6 +9,9 @@ menu.o
 player.o
 renderer.o
 shaders.o
+pause.o
+gmon.out
+profile
 play
 lvledit
 save

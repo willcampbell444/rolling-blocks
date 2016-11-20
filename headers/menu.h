@@ -9,14 +9,18 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <to_string.h>
 #include <algorithm>
 #include <iostream>
 #include <renderer.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 struct MenuOption {
 	bool completed;
+	int moves;
 	const char* fileName;
-	MenuOption(const char* fileName, bool completed): fileName(fileName), completed(completed) {};
+	MenuOption(const char* fileName, bool completed, int moves): fileName(fileName), completed(completed), moves(moves) {};
 };
 
 class Menu {
@@ -35,11 +39,15 @@ public:
 private:
 	unsigned int loadLetter(bool bits[25]);
 	void setCamera();
+	void fillFloor();
 	std::unordered_map<char, unsigned int> _chars;
 
 	int _currentPeice = 0;
 	std::vector<std::vector<unsigned int>> _options;
 	std::vector<MenuOption> _menuOptions;
+
+	std::vector<glm::vec2> _floorPeices;
+	std::vector<glm::vec2> _victoryFloorPeices;
 
 	bool _isBeginning = false;
 	bool _isCameraTransition = false;

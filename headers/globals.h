@@ -13,6 +13,10 @@ namespace GLOBAL {
 	const glm::vec3 FRAME_COLOR_TWO(170.0f/256, 108.0f/256, 57.0f/256);
 	const glm::vec3 VICTORY_COLOR(170.0f/256, 57.0f/256, 57.0f/256);
 	const glm::vec3 WON_COLOR(85.0f/256, 170.0f/256, 85.0f/256);
+	const glm::vec3 TEXT_COLOR(244.0f/256.0f, 244.0f/256.0f, 244.0f/256.0f);
+	const glm::vec3 TEXT_SHADOW(0.0843135, 0.0941175, 0.115685);
+	const glm::vec3 BUTTON_COLOR(0.0843135, 0.0941175, 0.115685);
+	const glm::vec3 SELECTED_BUTTON_COLOR(170.0f/256, 57.0f/256, 57.0f/256);
 
 	const float GAP = 0.05f;
 	const float BLOCK_WIDTH = 1.0f-(GAP*2.0f);
@@ -21,16 +25,37 @@ namespace GLOBAL {
 	const float FALL_HEIGHT = 7;
 
 	const float TRANSITION_LENGTH = 0.75f;
+	const float TRANSITION_TEXT_HEIGHT = 600.0f;
+	const float MAX_DIM = 0.7f;
 	const int FRAMES = 50.0f;
 
 	const int STATE_PLAY = 0;
 	const int STATE_MENU = 1;
-	const int STATE_PAUSE = 2;
+	const int STATE_PAUSE_MENU = 2;
+	const int STATE_PAUSE_PLAY = 3;
 
 	const int MAP_SIZE_LIMIT = 1000;
 
 	const int WINDOW_WIDTH = 800;
 	const int WINDOW_HEIGHT = 600;
+
+	const unsigned int BOOL_OPTION = 0;
+	const unsigned int CLICK_OPTION = 1;
+	const float LARGE_BUTTON_MARGIN = 8;
+	const float SMALL_BUTTON_MARGIN = 4;
+	const float BUTTON_TRANSPARANCY = 0.65f;
+
+	const unsigned char KEY_W = 0;
+	const unsigned char KEY_A = 1;
+	const unsigned char KEY_S = 2;
+	const unsigned char KEY_D = 3;
+	const unsigned char KEY_Q = 4;
+	const unsigned char KEY_E = 5;
+	const unsigned char KEY_X = 6;
+	const unsigned char KEY_Z = 7;
+	const unsigned char KEY_R = 8;
+	const unsigned char KEY_P = 9;
+	const unsigned char KEY_ESC = 10;
 }
 
 #endif

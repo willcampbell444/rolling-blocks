@@ -1,10 +1,10 @@
 CC=g++
 FILES=src/main.cpp src/shaders.cpp src/game.cpp src/floor.cpp src/player.cpp src/map.cpp src/heightMap.cpp src/menu.cpp src/renderer.cpp
-LINK=-lopengl32 -lglfw3 -lglew32 -lpugixml
-OPTIONS=-DGLEW_STATIC -Iheaders -IC:\C++\include -LC:\C++\lib -std=c++11 -mwindows -static-libgcc -static-libstdc++
+LINK=-lmingw32 -lopengl32 -lglew32 -lpugixml -lfreetype -lSDL2main -lSDL2
+OPTIONS=-DGLEW_STATIC -Iheaders -IC:\C++\include -IC:\C++\include\freetype -IC:\C++\include\SDL2 -LC:\C++\lib -std=c++11 -mwindows -static-libgcc -static-libstdc++
 
-all: shaders.o map.o heightMap.o renderer.o floor.o player.o menu.o game.o main.o
-	$(CC) shaders.o map.o heightMap.o renderer.o floor.o player.o menu.o game.o main.o $(OPTIONS) -lopengl32 -lglfw3 -lglew32 -lpugixml -o play
+all: shaders.o map.o pause.o heightMap.o renderer.o floor.o player.o menu.o game.o main.o
+	$(CC) main.o shaders.o map.o heightMap.o renderer.o floor.o player.o menu.o pause.o game.o $(OPTIONS) $(LINK) -o play
 
 lvledit: shaders.o map.o renderer.o levelEdit.o lvledit.o
 	$(CC) shaders.o map.o renderer.o lvledit.o levelEdit.o $(OPTIONS) -lopengl32 -lglfw3 -lglew32 -static-libgcc -static-libstdc++ -o lvledit
@@ -26,6 +26,9 @@ heightMap.o: src/heightMap.cpp headers/heightMap.h
 
 renderer.o: src/renderer.cpp headers/renderer.h headers/globals.h
 	$(CC) -c src/renderer.cpp $(OPTIONS)
+
+pause.o: src/pause.cpp headers/pause.h headers/renderer.h headers/globals.h
+	$(CC) -c src/pause.cpp $(OPTIONS)
 
 floor.o: src/floor.cpp headers/floor.h headers/globals.h headers/renderer.h
 	$(CC) -c src/floor.cpp $(OPTIONS)

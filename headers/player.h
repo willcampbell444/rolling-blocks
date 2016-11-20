@@ -10,7 +10,8 @@
 #include <globals.h>
 #include <heightMap.h>
 #include <math.h>
-#include <vector>
+#include <string>
+#include <to_string.h>
 #include <renderer.h>
 
 class Player {
@@ -23,6 +24,7 @@ public:
     void update(unsigned char* map, GLfloat deltaTime);
     bool win();
     bool getWinStatus();
+    int getMoveCount();
     glm::vec3 getCameraPos();
     glm::vec2 getCameraDistance();
     void restart();
@@ -74,6 +76,8 @@ private:
     std::vector<glm::vec3> _startPosition;
     HeightMap _heightMap;
     glm::mat4 _transformMatrix;
+
+    int _moveCount = 0;
 
     Renderer* _renderer;
 
