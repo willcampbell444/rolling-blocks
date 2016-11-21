@@ -5,7 +5,7 @@ all: shaders.o map.o heightMap.o pause.o renderer.o floor.o player.o menu.o game
 	$(CC) shaders.o pause.o map.o heightMap.o renderer.o floor.o player.o menu.o game.o main.o -lGL -lfreetype -lSDL2 -lGLEW -lpugixml -DGLEW_STATIC $(INCLUDE) -o play
 
 lvledit: shaders.o map.o renderer.o levelEdit.o lvledit.o
-	$(CC) shaders.o map.o renderer.o lvledit.o levelEdit.o -lGL -lglfw -lGLEW -DGLEW_STATIC $(INCLUDE) -o lvledit
+	$(CC) shaders.o map.o renderer.o lvledit.o levelEdit.o -lGL -lglfw -lGLEW -lfreetype -DGLEW_STATIC $(INCLUDE) -o lvledit
 
 lvledit.o: src/lvledit.cpp headers/levelEdit.h
 	$(CC) -c src/lvledit.cpp $(INCLUDE)

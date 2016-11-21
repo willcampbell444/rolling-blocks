@@ -45,6 +45,8 @@ namespace GLOBAL {
 	const float SMALL_BUTTON_MARGIN = 4;
 	const float BUTTON_TRANSPARANCY = 0.65f;
 
+	const char* const FONT_PATH = "assets/Mohave-Bold.ttf";
+
 	const unsigned char KEY_W = 0;
 	const unsigned char KEY_A = 1;
 	const unsigned char KEY_S = 2;

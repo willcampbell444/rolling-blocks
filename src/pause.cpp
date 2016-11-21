@@ -4,28 +4,30 @@ void Pause::setRenderer(Renderer* renderer) {
     _renderer = renderer;
 }
 
-void Pause::setPlay() {
+void Pause::setPlay(bool showControls) {
     _options.clear();
 
     _options.push_back(Option("QUIT TO DESKTOP", GLOBAL::CLICK_OPTION));
     _options.push_back(Option("EXIT LEVEL", GLOBAL::CLICK_OPTION));
-    _options.push_back(Option("SHOW CONTROLS", GLOBAL::BOOL_OPTION));
+    _options.push_back(Option("SHOW CONTROLS", GLOBAL::BOOL_OPTION, showControls));
     _options.push_back(Option("RESUME", GLOBAL::CLICK_OPTION));
 
     _clicked = -1;
+    _current = -1;
 }
 
-void Pause::setMenu() {
+void Pause::setMenu(bool showControls) {
     _options.clear();
 
     _options.push_back(Option("QUIT TO DESKTOP", GLOBAL::CLICK_OPTION));
-    _options.push_back(Option("SHOW CONTROLS", GLOBAL::BOOL_OPTION));
+    _options.push_back(Option("SHOW CONTROLS", GLOBAL::BOOL_OPTION, showControls));
     _options.push_back(Option("RESUME", GLOBAL::CLICK_OPTION));
 
     _clicked = -1;
+    _current = -1;
 }
 
-void Pause::update(glm::vec2 mousePos, float height) {
+void Pause::mouseMove(glm::vec2 mousePos, float height) {
     int step, textHeight, margin;
     float scale;
     if (_width < 500 || _height < 400) {
@@ -49,31 +51,41 @@ void Pause::update(glm::vec2 mousePos, float height) {
             && height - margin < mousePos.y
             && height + textHeight + margin > mousePos.y
         ) {
-            _options[i].hover = true;
+            _current = i;
+            break;
         } else {
-            _options[i].hover = false;
+            _current = -1;
         }
         height += step;
     }
 }
 
-void Pause::click(bool mouseClick) {
-    if (mouseClick) {
-        for (int i = 0; i < _options.size(); i++) {
-            if (_options[i].hover) {
-                _clicked = i;
-                if (_options[i].type == GLOBAL::BOOL_OPTION) {
-                    _options[i].value = !_options[i].value;
-                }
-            }
+void Pause::click(bool click) {
+    if (click) {
+        _clicked = _current;
+        if (_current != -1 && _options[_current].type == GLOBAL::BOOL_OPTION) {
+            _options[_current].value = !_options[_current].value;
         }
     } else {
         _clicked = -1;
     }
 }
 
+void Pause::keyPress(int dir) {
+    _current += dir;
+    if (_current < 0) {
+        _current = _options.size() - 1;
+    } else if (_current > _options.size() - 1) {
+        _current = 0;
+    }
+}
+
 int Pause::clicked() {
     return _clicked;
+}
+
+void Pause::setCurrent(int x) {
+    _current = x;
 }
 
 void Pause::resize(int w, int h) {
@@ -98,8 +110,9 @@ void Pause::draw(float height) {
 
     height += (_height - ((_options.size() - 1)*step + textHeight + margin))/2.0f;
 
-    for (Option option: _options) {
-        if (option.hover) {
+    for (int i = 0; i < _options.size(); i++) {
+        Option option = _options[i];
+        if (i == _current) {
             _renderer->drawSquare(
                 50 - margin,
                 _width - 50 + margin,

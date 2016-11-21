@@ -97,7 +97,7 @@ private:
 
     int _screenWidth, _screenHeight;
     glm::vec2 _mousePos;
-    bool _mouseClick;
+    bool _click;
 
     bool _showControls = true;
 };

@@ -233,17 +233,20 @@ void Game::update() {
     glm::vec3 cameraPos;
     glm::vec2 cameraDistance;
 
-    _mouseClick = false;
+    _click = false;
+    int pauseDir = 0;
 
     while (SDL_PollEvent(_event)) {
         if (_event->type == SDL_QUIT) {
             _end = true;
         } else if (_event->type == SDL_KEYDOWN) {
             if (_event->key.keysym.sym == SDLK_w) {
+                pauseDir = 1;
                 _keys[GLOBAL::KEY_W] = true;
             } else if (_event->key.keysym.sym == SDLK_a) {
                 _keys[GLOBAL::KEY_A] = true;
             } else if (_event->key.keysym.sym == SDLK_s) {
+                pauseDir = -1;
                 _keys[GLOBAL::KEY_S] = true;
             } else if (_event->key.keysym.sym == SDLK_d) {
                 _keys[GLOBAL::KEY_D] = true;
@@ -261,6 +264,10 @@ void Game::update() {
                 _keys[GLOBAL::KEY_P] = true;
             } else if (_event->key.keysym.sym == SDLK_ESCAPE) {
                 _keys[GLOBAL::KEY_ESC] = true;
+            } else if (_event->key.keysym.sym == SDLK_SPACE) {
+                _click = true;
+            } else if (_event->key.keysym.sym == SDLK_RETURN) {
+                _click = true;
             }
         } else if (_event->type == SDL_KEYUP) {
             if (_event->key.keysym.sym == SDLK_w) {
@@ -295,9 +302,11 @@ void Game::update() {
         } else if (_event->type == SDL_MOUSEMOTION) {
             _mousePos.x = _event->motion.x;
             _mousePos.y = _screenHeight - _event->motion.y;
+            _pause.mouseMove(_mousePos, _pauseTextHeight);
         } else if (_event->type == SDL_MOUSEBUTTONUP) {
+            _pause.mouseMove(_mousePos, _pauseTextHeight);
             if (_event->button.button == SDL_BUTTON_LEFT) {
-                _mouseClick = true;
+                _click = true;
             }
         }
     }
@@ -311,8 +320,10 @@ void Game::update() {
                 _transitionTime = 0;
                 _unpauseTransition = true;
             }
-            _pause.update(_mousePos, _pauseTextHeight);
-            _pause.click(_mouseClick);
+            _pause.click(_click);
+            if (pauseDir != 0) {
+                _pause.keyPress(pauseDir);
+            }
 
             int option = _pause.clicked();
             if (option >= 0) {
@@ -351,14 +362,14 @@ void Game::update() {
                 }
             }
         } else {
-            _pause.update(glm::vec2(-1, -1), _pauseTextHeight);
+            _pause.setCurrent(-1);
         }
     }
 
     if (_state == GLOBAL::STATE_PLAY) {
         if (_keys[GLOBAL::KEY_P]) {
             _state = GLOBAL::STATE_PAUSE_PLAY;
-            _pause.setPlay();
+            _pause.setPlay(_showControls);
             _pauseTextHeight = -_screenHeight;
             _gameTextHeight = 0;
             _transitionTime = 0;
@@ -470,7 +481,7 @@ void Game::update() {
     if (_state == GLOBAL::STATE_MENU) {
         if (_keys[GLOBAL::KEY_P]) {
             _state = GLOBAL::STATE_PAUSE_MENU;
-            _pause.setMenu();
+            _pause.setMenu(_showControls);
             _pauseTextHeight = -_screenHeight;
             _gameTextHeight = 0;
             _transitionTime = 0;

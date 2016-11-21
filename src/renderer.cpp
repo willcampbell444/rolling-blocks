@@ -116,7 +116,7 @@ Renderer::Renderer() {
         std::cout << "Could not init FreeType Library" << std::endl;
     }
 
-    if (FT_New_Face(_freetype, "Mohave-Bold.ttf", 0, &_font)) {
+    if (FT_New_Face(_freetype, GLOBAL::FONT_PATH, 0, &_font)) {
         std::cout << "Failed to load font" << std::endl;  
     }
     FT_Set_Pixel_Sizes(_font, 0, 48);
@@ -244,7 +244,7 @@ Renderer::Renderer() {
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*2*6, dimVertices, GL_STATIC_DRAW);
 
-    attrib = _shader->getAttributeLocation("position");
+    attrib = _dimShader->getAttributeLocation("position");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
 
@@ -255,7 +255,7 @@ Renderer::Renderer() {
     glBindBuffer(GL_ARRAY_BUFFER, _squareVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*6*2, NULL, GL_DYNAMIC_DRAW);
 
-    attrib = _shader->getAttributeLocation("position");
+    attrib = _squareShader->getAttributeLocation("position");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
 }
