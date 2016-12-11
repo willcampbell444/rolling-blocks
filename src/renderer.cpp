@@ -50,6 +50,11 @@ Renderer::Renderer() {
 
     _shader->use();
 
+    // only for non mobile:
+    GLuint VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
     float vertices[36*6] = {
         -0.5,  0.5f,  -0.5, 0.0f, 1.0f, 0.0f,
         -0.5,  0.5f,   0.5, 0.0f, 1.0f, 0.0f,
@@ -94,21 +99,9 @@ Renderer::Renderer() {
          0.5, -0.5f,   0.5, 0.0f, 0.0f, 1.0f
     };
 
-    glGenVertexArrays(1, &_vertexArrayObject);
-    glBindVertexArray(_vertexArrayObject);
-
-    GLuint vertexBufferObject;
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glGenBuffers(1, &_boxVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, _boxVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*36*6, vertices, GL_STATIC_DRAW);
-
-    GLuint attrib = _shader->getAttributeLocation("position");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
-
-    attrib = _shader->getAttributeLocation("normal");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
     
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -116,7 +109,7 @@ Renderer::Renderer() {
         std::cout << "Could not init FreeType Library" << std::endl;
     }
 
-    if (FT_New_Face(_freetype, GLOBAL::FONT_PATH, 0, &_font)) {
+    if (FT_New_Face(_freetype, "assets/Mohave-Bold.ttf", 0, &_font)) {
         std::cout << "Failed to load font" << std::endl;  
     }
     FT_Set_Pixel_Sizes(_font, 0, 48);
@@ -213,20 +206,9 @@ Renderer::Renderer() {
         glm::value_ptr(_textProjection)
     );
 
-    glGenVertexArrays(1, &_textVAO);
-    glBindVertexArray(_textVAO);
-
     glGenBuffers(1, &_textVBO);
     glBindBuffer(GL_ARRAY_BUFFER, _textVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*6*3*2, NULL, GL_DYNAMIC_DRAW);
-
-    attrib = _textShader->getAttributeLocation("vertex");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), 0);
-
-    attrib = _textShader->getAttributeLocation("texCoord");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 
     GLfloat dimVertices[2*6] = {
         -1.0f, -1.0f,
@@ -237,25 +219,51 @@ Renderer::Renderer() {
          1.0f, -1.0f
     };
 
-    glGenVertexArrays(1, &_dimVAO);
-    glBindVertexArray(_dimVAO);
-
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glGenBuffers(1, &_dimVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, _dimVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*2*6, dimVertices, GL_STATIC_DRAW);
-
-    attrib = _dimShader->getAttributeLocation("position");
-    glEnableVertexAttribArray(attrib);
-    glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
-
-    glGenVertexArrays(1, &_squareVAO);
-    glBindVertexArray(_squareVAO);
 
     glGenBuffers(1, &_squareVBO);
     glBindBuffer(GL_ARRAY_BUFFER, _squareVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*6*2, NULL, GL_DYNAMIC_DRAW);
+}
 
-    attrib = _squareShader->getAttributeLocation("position");
+void Renderer::loadTextBuffer() {
+    glBindBuffer(GL_ARRAY_BUFFER, _textVBO);
+
+    GLuint attrib = _textShader->getAttributeLocation("vertex");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), 0);
+
+    attrib = _textShader->getAttributeLocation("texCoord");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+}
+
+void Renderer::loadBoxBuffer() {
+    glBindBuffer(GL_ARRAY_BUFFER, _boxVBO);
+
+    GLuint attrib = _shader->getAttributeLocation("position");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
+
+    attrib = _shader->getAttributeLocation("normal");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+}
+
+void Renderer::loadDimBuffer() {
+    glBindBuffer(GL_ARRAY_BUFFER, _dimVBO);
+
+    GLuint attrib = _shader->getAttributeLocation("position");
+    glEnableVertexAttribArray(attrib);
+    glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+}
+
+void Renderer::loadSquareBuffer() {
+    glBindBuffer(GL_ARRAY_BUFFER, _squareVBO);
+
+    GLuint attrib = _shader->getAttributeLocation("position");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
 }
@@ -289,7 +297,7 @@ void Renderer::drawText(std::string text, float x, float y, float scale, glm::ve
     glUniform4f(_textShader->getUniformLocation("color"), color.r, color.g, color.b, 1.0f);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(_textVAO);
+    loadTextBuffer();
 
     Character character;
 
@@ -337,7 +345,7 @@ void Renderer::drawTextShadow(std::string text, float x, float y, float scale, g
     glUniform4f(_textShader->getUniformLocation("color"), color.r, color.g, color.b, 1.0f);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(_textVAO);
+    loadTextBuffer();
 
     Character character;
 
@@ -453,10 +461,9 @@ void Renderer::drawSquare(float left, float right, float bottom, float top, glm:
         right, top
     };
 
-    glBindVertexArray(_squareVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, _squareVBO);
+    loadSquareBuffer();
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // MAYBE LOAD SQUARE BUFFER AGAIN HERE
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glEnable(GL_DEPTH_TEST);
@@ -468,7 +475,7 @@ void Renderer::dim(float amount) {
 
     glUniform1f(_dimShader->getUniformLocation("amount"), amount);
 
-    glBindVertexArray(_dimVAO);
+    loadDimBuffer();
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glEnable(GL_DEPTH_TEST);
 }
@@ -495,7 +502,7 @@ void Renderer::drawBox(glm::mat4 viewProjectionMatrix, float x, float y, float z
         glm::value_ptr(model)
     );
     glUniform3f(_shader->getUniformLocation("color"), color.r, color.g, color.b);
-    glBindVertexArray(_vertexArrayObject);
+    loadBoxBuffer();
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
@@ -503,7 +510,7 @@ void Renderer::drawBoxFrame(glm::mat4 viewProjectionMatrix, float x, float y, fl
     _shader->use();
     glUniform1i(_shader->getUniformLocation("useLighting"), true);
     glUniform3f(_shader->getUniformLocation("color"), color.r, color.g, color.b);
-    glBindVertexArray(_vertexArrayObject);
+    loadBoxBuffer();
     float dif = 0.5f-GLOBAL::GAP;
 
     model = (
@@ -628,7 +635,7 @@ void Renderer::drawRotatedBox(glm::mat4 viewProjectionMatrix, float x, float y, 
         glm::value_ptr(model)
     );
     glUniform3f(_shader->getUniformLocation("color"), color.r, color.g, color.b);
-    glBindVertexArray(_vertexArrayObject);
+    loadBoxBuffer();
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
@@ -661,7 +668,7 @@ void Renderer::drawFloorTile(glm::mat4 viewProjectionMatrix, float x, float z) {
         GLOBAL::FLOOR_COLOR.g, 
         GLOBAL::FLOOR_COLOR.b
     );
-    glBindVertexArray(_vertexArrayObject);
+    loadBoxBuffer();
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
@@ -673,7 +680,7 @@ void Renderer::drawFloorTileFrame(glm::mat4 viewProjectionMatrix, float x, float
         color.g, 
         color.b
     );
-    glBindVertexArray(_vertexArrayObject);
+    loadBoxBuffer();
 
     model = (
         glm::translate(glm::mat4(1.0f), glm::vec3(x+(0.5f-GLOBAL::GAP), 0, z+(0.5f-GLOBAL::GAP)))
@@ -817,6 +824,6 @@ void Renderer::drawVictoryTile(glm::mat4 viewProjectionMatrix, float x, float z)
         GLOBAL::VICTORY_COLOR.y, 
         GLOBAL::VICTORY_COLOR.z
     );
-    glBindVertexArray(_vertexArrayObject);
+    loadBoxBuffer();
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
