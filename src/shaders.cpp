@@ -8,14 +8,14 @@ Shaders::~Shaders() {
 }
 
 bool Shaders::loadShader(GLenum shaderType, const char* filename) {
-    std::ifstream inVertex(filename);
-    std::string shaderContents((std::istreambuf_iterator<char>(inVertex)), std::istreambuf_iterator<char>());
-    const char* shaderSource = shaderContents.c_str();
+    const char* shaderSource = loadFile(filename);
 
     GLuint shader = glCreateShader(shaderType);
     glShaderSource(shader, 1, &shaderSource, NULL);
     glCompileShader(shader);
     _shaders.push_back(shader);
+    
+    delete[] shaderSource;
 
     GLint status;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);

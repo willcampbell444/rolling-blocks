@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <fstream>
 #include <string>
+#include <fileLoader.h>
 
 class Shaders {
 public:
