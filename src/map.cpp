@@ -1,13 +1,15 @@
 #include <map.h>
-#include <iostream>
 
 Map::~Map() {
 	delete _tiles;
 }
 
 void Map::read(const char* filename) {
-	std::ifstream file;
-	file.open(filename);
+	char* fileContents = loadFile(filename);
+
+	std::stringstream file;
+	file << fileContents;
+	delete[] fileContents;
 
 	file >> _width;
 	file >> _length;

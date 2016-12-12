@@ -4,6 +4,8 @@
 #include <fstream>
 #include <vector>
 #include <glm/glm.hpp>
+#include <fileLoader.h>
+#include <sstream>
 
 class Map {
 public:

@@ -48,7 +48,12 @@ Game::Game() {
 
     _state = GLOBAL::STATE_MENU;
 
-    if (!_document.load_file("maps/gameOrder.xml")) {
+    char* fileContents = loadFile("maps/gameOrder.xml");
+    std::stringstream file;
+    file << fileContents;
+    delete[] fileContents;
+
+    if (!_document.load(file)) {
         std::cout << "Game order failed to load!" << std::endl;
     }
     _currentLayer = _document.first_child();
@@ -537,15 +542,22 @@ void Game::update() {
     _projectionViewMatrix = _projectionMatrix * _viewMatrix;
 }
 
+// RWOPS THIS
 void Game::writeSave() {
-    std::ofstream file("save");
+    std::stringstream out;
     for (int i = 0; i < _beatLevels.size(); i++) {
-        file << _beatLevels[i] << " " << _moveCounts[i] << std::endl;
+        out << _beatLevels[i] << " " << _moveCounts[i] << std::endl;
     }
+    writeFile("save", out.str().c_str());
 }
 
 void Game::loadSave() {
-    std::ifstream file("save");
+    char* fileContents = loadFile("save");
+
+    std::stringstream file;
+    file << fileContents;
+    delete[] fileContents;
+
     if (file) {
         while (!file.eof()) {
             std::string fileName;

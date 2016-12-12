@@ -20,6 +20,8 @@
 #include <renderer.h>
 #include <pause.h>
 #include <cstring>
+#include <sstream>
+#include <fileLoader.h>
 #include <string>
 
 class Game {
