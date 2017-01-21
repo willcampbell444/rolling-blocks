@@ -4,6 +4,7 @@ game.o
 heightMap.o
 main.o
 lvledit.o
+fileLoader.o
 map.o
 menu.o
 player.o
