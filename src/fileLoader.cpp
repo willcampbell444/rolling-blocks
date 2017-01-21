@@ -1,5 +1,10 @@
 #include <fileLoader.h>
 
+size_t fileSize(const char* filename) {
+    SDL_RWops* file = SDL_RWFromFile(filename, "rb");
+    return SDL_RWsize(file);
+}
+
 char* loadFile(const char* filename) {
     SDL_RWops* file = SDL_RWFromFile(filename, "rb");
     if (file != NULL) {

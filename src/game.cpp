@@ -525,7 +525,9 @@ void Game::update() {
         cameraDistance = _player->getCameraDistance();
     }
 
-    cameraDistance = cameraDistance*std::max(std::max((800.0f/_screenWidth), (600.0f/_screenHeight)*0.5f), 0.6f)*std::max(_screenHeight/600.0f, 0.6f);
+    // cameraDistance = cameraDistance*std::max(std::max((800.0f/_screenWidth), (600.0f/_screenHeight)*0.5f), 0.6f)*std::max(_screenHeight/600.0f, 0.6f);
+    cameraDistance = cameraDistance*((800.0f/600.0f)/((float)_screenWidth/_screenHeight));
+    // std::cout << 800.0f/600.0f << ", " << _screenWidth/_screenHeight << std::endl;
 
     _cameraPos = glm::vec3(
         cameraPos.x - std::cos(_cameraAngle*(3.14159/180))*cameraDistance.x,

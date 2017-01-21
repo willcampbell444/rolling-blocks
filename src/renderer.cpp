@@ -109,7 +109,12 @@ Renderer::Renderer() {
         std::cout << "Could not init FreeType Library" << std::endl;
     }
 
-    if (FT_New_Face(_freetype, "assets/Mohave-Bold.ttf", 0, &_font)) {
+    FT_Open_Args args;
+    args.flags = FT_OPEN_MEMORY;
+    args.memory_base = (const FT_Byte*)loadFile("assets/Mohave-Bold.ttf");
+    args.memory_size = fileSize("assets/Mohave-Bold.ttf");
+
+    if (FT_Open_Face(_freetype, &args, 0, &_font)) {
         std::cout << "Failed to load font" << std::endl;  
     }
     FT_Set_Pixel_Sizes(_font, 0, 48);
@@ -188,6 +193,7 @@ Renderer::Renderer() {
     }
 
     FT_Done_Face(_font);
+    delete[] args.memory_base;
     FT_Done_FreeType(_freetype);
 
     _textProjection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
@@ -200,7 +206,7 @@ Renderer::Renderer() {
     );
     _squareShader->use();
     glUniformMatrix4fv(
-        _textShader->getUniformLocation("projection"), 
+        _squareShader->getUniformLocation("projection"), 
         1,
         GL_FALSE,
         glm::value_ptr(_textProjection)
@@ -255,7 +261,7 @@ void Renderer::loadBoxBuffer() {
 void Renderer::loadDimBuffer() {
     glBindBuffer(GL_ARRAY_BUFFER, _dimVBO);
 
-    GLuint attrib = _shader->getAttributeLocation("position");
+    GLuint attrib = _dimShader->getAttributeLocation("position");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
 }
@@ -263,7 +269,7 @@ void Renderer::loadDimBuffer() {
 void Renderer::loadSquareBuffer() {
     glBindBuffer(GL_ARRAY_BUFFER, _squareVBO);
 
-    GLuint attrib = _shader->getAttributeLocation("position");
+    GLuint attrib = _squareShader->getAttributeLocation("position");
     glEnableVertexAttribArray(attrib);
     glVertexAttribPointer(attrib, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
 }
@@ -282,7 +288,7 @@ void Renderer::resize(int w, int h) {
     );
     _squareShader->use();
     glUniformMatrix4fv(
-        _textShader->getUniformLocation("projection"), 
+        _squareShader->getUniformLocation("projection"), 
         1,
         GL_FALSE,
         glm::value_ptr(_textProjection)
