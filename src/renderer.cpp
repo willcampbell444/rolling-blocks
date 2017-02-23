@@ -131,11 +131,11 @@ Renderer::Renderer() {
         glTexImage2D(
             GL_TEXTURE_2D,
             0,
-            GL_RED,
+            GL_LUMINANCE,
             (GLuint)_font->glyph->bitmap.width,
             (GLuint)_font->glyph->bitmap.rows,
             0,
-            GL_RED,
+            GL_LUMINANCE,
             GL_UNSIGNED_BYTE,
             _font->glyph->bitmap.buffer
         );
@@ -169,11 +169,11 @@ Renderer::Renderer() {
         glTexImage2D(
             GL_TEXTURE_2D,
             0,
-            GL_RED,
+            GL_LUMINANCE,
             (GLuint)_font->glyph->bitmap.width,
             (GLuint)_font->glyph->bitmap.rows,
             0,
-            GL_RED,
+            GL_LUMINANCE,
             GL_UNSIGNED_BYTE,
             _font->glyph->bitmap.buffer
         );

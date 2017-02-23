@@ -554,7 +554,7 @@ void Game::writeSave() {
 }
 
 void Game::loadSave() {
-    char* fileContents = loadFile("save");
+    char* fileContents = loadFileSave("save");
 
     std::stringstream file;
     file << fileContents;
